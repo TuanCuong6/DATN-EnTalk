@@ -5,6 +5,7 @@ import { dashboardAPI } from "../services/api";
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchStats();
@@ -16,12 +17,31 @@ const Dashboard = () => {
       setStats(response.data);
     } catch (error) {
       console.error("Error fetching stats:", error);
+      setError("Không thể tải dữ liệu dashboard");
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) return <div>Loading...</div>;
+
+  if (error) {
+    return (
+      <div>
+        <h1>Dashboard</h1>
+        <div
+          style={{
+            color: "red",
+            padding: "20px",
+            background: "#ffeaea",
+            borderRadius: "5px",
+          }}
+        >
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -45,7 +65,7 @@ const Dashboard = () => {
         >
           <h3>Tổng Users</h3>
           <p style={{ fontSize: "24px", fontWeight: "bold" }}>
-            {stats.totalUsers}
+            {stats?.totalUsers ?? 0}
           </p>
         </div>
 
@@ -59,7 +79,7 @@ const Dashboard = () => {
         >
           <h3>Tổng Bài đọc</h3>
           <p style={{ fontSize: "24px", fontWeight: "bold" }}>
-            {stats.totalReadings}
+            {stats?.totalReadings ?? 0}
           </p>
         </div>
 
@@ -73,7 +93,7 @@ const Dashboard = () => {
         >
           <h3>Tổng Luyện tập</h3>
           <p style={{ fontSize: "24px", fontWeight: "bold" }}>
-            {stats.totalRecords}
+            {stats?.totalRecords ?? 0}
           </p>
         </div>
 
@@ -87,7 +107,7 @@ const Dashboard = () => {
         >
           <h3>Điểm TB</h3>
           <p style={{ fontSize: "24px", fontWeight: "bold" }}>
-            {stats.avgScore}
+            {stats?.avgScore ?? 0}
           </p>
         </div>
       </div>

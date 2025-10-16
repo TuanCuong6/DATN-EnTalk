@@ -23,11 +23,25 @@ import TopicAdd from "./pages/Topics/TopicAdd";
 import TopicEdit from "./pages/Topics/TopicEdit";
 import RecordList from "./pages/Records/RecordList";
 
+// Loading Component
+const LoadingSpinner = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+    }}
+  >
+    <div>Loading...</div>
+  </div>
+);
+
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { admin, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingSpinner />;
 
   return admin ? children : <Navigate to="/login" />;
 };
@@ -156,6 +170,9 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+
+        {/* Catch all route - redirect to dashboard */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );

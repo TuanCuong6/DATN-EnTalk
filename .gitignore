@@ -9,9 +9,6 @@ backend/.env
 firebase-service-account.json
 frontend/android/app/google-services.json
 
-# # Python cache (whisper)
-# __pycache__/
-# whisper/__pycache__/
 
 # Logs
 *.log

@@ -35,6 +35,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminData");
     setAdmin(null);
+    // Redirect to login page
+    window.location.href = "/login";
   };
 
   const value = {
