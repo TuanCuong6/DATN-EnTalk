@@ -17,26 +17,26 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const topicImages = {
-  thamhiem: require('../assets/topics/thamhiem.png'),
-  dulich: require('../assets/topics/dulich.png'),
-  khoahoc: require('../assets/topics/khoahoc.png'),
-  tintuc: require('../assets/topics/tintuc.png'),
-  suckhoevadoisong: require('../assets/topics/suckhoevadoisong.png'),
-  khampha: require('../assets/topics/khampha.png'),
-  hoctapvatruonghoc: require('../assets/topics/hoctapvatruonghoc.png'),
-  giadinhvabanbe: require('../assets/topics/giadinhvabanbe.png'),
-};
+// const topicImages = {
+//   thamhiem: require('../assets/topics/thamhiem.png'),
+//   dulich: require('../assets/topics/dulich.png'),
+//   khoahoc: require('../assets/topics/khoahoc.png'),
+//   tintuc: require('../assets/topics/tintuc.png'),
+//   suckhoevadoisong: require('../assets/topics/suckhoevadoisong.png'),
+//   khampha: require('../assets/topics/khampha.png'),
+//   hoctapvatruonghoc: require('../assets/topics/hoctapvatruonghoc.png'),
+//   giadinhvabanbe: require('../assets/topics/giadinhvabanbe.png'),
+// };
 
-const removeVietnameseTones = str => {
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .replace(/\s+/g, '')
-    .toLowerCase();
-};
+// const removeVietnameseTones = str => {
+//   return str
+//     .normalize('NFD')
+//     .replace(/[\u0300-\u036f]/g, '')
+//     .replace(/đ/g, 'd')
+//     .replace(/Đ/g, 'D')
+//     .replace(/\s+/g, '')
+//     .toLowerCase();
+// };
 
 export default function TopicListScreen() {
   const [topics, setTopics] = useState([]);
@@ -57,9 +57,15 @@ export default function TopicListScreen() {
     loadTopics();
   }, []);
 
+  // const getImageForTopic = topic => {
+  //   const key = removeVietnameseTones(topic.name);
+  //   return topicImages[key] || require('../assets/topics/default.png');
+  // };
   const getImageForTopic = topic => {
-    const key = removeVietnameseTones(topic.name);
-    return topicImages[key] || require('../assets/topics/default.png');
+    if (topic.image_url) {
+      return { uri: topic.image_url }; // ảnh từ backend
+    }
+    return require('../assets/topics/hoctapvatruonghoc.png'); // ảnh mặc định
   };
 
   if (loading)

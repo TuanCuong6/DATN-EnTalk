@@ -2,6 +2,7 @@
 const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const upload = require("../middleware/uploadTopicImage");
 
 // Admin Login
 exports.adminLogin = async (req, res) => {
@@ -93,11 +94,13 @@ exports.getTopics = async (req, res) => {
 // Create Topic
 exports.createTopic = async (req, res) => {
   const { name, description } = req.body;
+  const imageUrl = req.file ? req.file.path : null;
+
   try {
-    await db.execute("INSERT INTO topics (name, description) VALUES (?, ?)", [
-      name,
-      description,
-    ]);
+    await db.execute(
+      "INSERT INTO topics (name, description, image_url) VALUES (?, ?, ?)",
+      [name, description, imageUrl]
+    );
     res.status(201).json({ message: "Tạo chủ đề thành công" });
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
@@ -111,11 +114,20 @@ exports.createTopic = async (req, res) => {
 exports.updateTopic = async (req, res) => {
   const { id } = req.params;
   const { name, description } = req.body;
+  const imageUrl = req.file ? req.file.path : null;
+
   try {
-    await db.execute(
-      "UPDATE topics SET name = ?, description = ? WHERE id = ?",
-      [name, description, id]
-    );
+    if (imageUrl) {
+      await db.execute(
+        "UPDATE topics SET name = ?, description = ?, image_url = ? WHERE id = ?",
+        [name, description, imageUrl, id]
+      );
+    } else {
+      await db.execute(
+        "UPDATE topics SET name = ?, description = ? WHERE id = ?",
+        [name, description, id]
+      );
+    }
     res.json({ message: "Cập nhật chủ đề thành công" });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });

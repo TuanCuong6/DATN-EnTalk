@@ -71,6 +71,7 @@ const TopicList = () => {
             <th style={{ padding: "10px", border: "1px solid #ddd" }}>
               Tên chủ đề
             </th>
+            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Ảnh</th>
             <th style={{ padding: "10px", border: "1px solid #ddd" }}>Mô tả</th>
             <th style={{ padding: "10px", border: "1px solid #ddd" }}>
               Actions
@@ -86,17 +87,53 @@ const TopicList = () => {
               <td style={{ padding: "10px", border: "1px solid #ddd" }}>
                 {topic.name}
               </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  textAlign: "center",
+                }}
+              >
+                {topic.image_url ? (
+                  <img
+                    src={topic.image_url}
+                    alt={topic.name}
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      objectFit: "cover",
+                      borderRadius: "5px",
+                    }}
+                  />
+                ) : (
+                  <span style={{ color: "#888" }}>—</span>
+                )}
+              </td>
               <td style={{ padding: "10px", border: "1px solid #ddd" }}>
                 {topic.description}
               </td>
               <td style={{ padding: "10px", border: "1px solid #ddd" }}>
                 <Link
                   to={`/topics/edit/${topic.id}`}
-                  style={{ marginRight: "10px" }}
+                  style={{
+                    marginRight: "10px",
+                    color: "#007bff",
+                    textDecoration: "none",
+                  }}
                 >
                   Sửa
                 </Link>
-                <button onClick={() => handleDelete(topic.id, topic.name)}>
+                <button
+                  onClick={() => handleDelete(topic.id, topic.name)}
+                  style={{
+                    background: "#dc3545",
+                    color: "white",
+                    border: "none",
+                    padding: "5px 10px",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                  }}
+                >
                   Xóa
                 </button>
               </td>

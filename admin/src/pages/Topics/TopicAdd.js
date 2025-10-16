@@ -8,6 +8,7 @@ const TopicAdd = () => {
     name: "",
     description: "",
   });
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -19,7 +20,15 @@ const TopicAdd = () => {
     setError("");
 
     try {
-      await topicsAPI.create(formData);
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("description", formData.description);
+      if (imageFile) data.append("image", imageFile);
+
+      await topicsAPI.create(data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       navigate("/topics");
     } catch (error) {
       setError(error.response?.data?.message || "Lỗi khi tạo chủ đề");
@@ -37,6 +46,7 @@ const TopicAdd = () => {
       )}
 
       <form onSubmit={handleSubmit} style={{ maxWidth: "500px" }}>
+        {/* Name */}
         <div style={{ marginBottom: "15px" }}>
           <label style={{ display: "block", marginBottom: "5px" }}>
             Tên chủ đề *
@@ -50,6 +60,7 @@ const TopicAdd = () => {
           />
         </div>
 
+        {/* Description */}
         <div style={{ marginBottom: "15px" }}>
           <label style={{ display: "block", marginBottom: "5px" }}>Mô tả</label>
           <textarea
@@ -60,6 +71,27 @@ const TopicAdd = () => {
             rows="4"
             style={{ width: "100%", padding: "8px", border: "1px solid #ddd" }}
           />
+        </div>
+
+        {/* Image */}
+        <div style={{ marginBottom: "15px" }}>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            Ảnh chủ đề
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files[0])}
+          />
+          {imageFile && (
+            <div style={{ marginTop: "10px" }}>
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt="preview"
+                style={{ width: "100px", borderRadius: "5px" }}
+              />
+            </div>
+          )}
         </div>
 
         <div style={{ display: "flex", gap: "10px" }}>

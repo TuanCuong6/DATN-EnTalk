@@ -1,8 +1,9 @@
-// Cập nhật backend/routes/admin.js - thêm routes readings và records
+// backend/routes/admin.js
 const express = require("express");
 const router = express.Router();
 const adminController = require("../controllers/adminController");
 const adminAuth = require("../middleware/adminAuth");
+const uploadTopicImage = require("../middleware/uploadTopicImage");
 
 // Public routes
 router.post("/login", adminController.adminLogin);
@@ -13,8 +14,18 @@ router.get("/users", adminAuth, adminController.getUsers);
 
 // Topics management
 router.get("/topics", adminAuth, adminController.getTopics);
-router.post("/topics", adminAuth, adminController.createTopic);
-router.put("/topics/:id", adminAuth, adminController.updateTopic);
+// router.post("/topics", adminAuth, adminController.createTopic);
+// router.put("/topics/:id", adminAuth, adminController.updateTopic);
+router.post(
+  "/topics",
+  uploadTopicImage.single("image"),
+  adminController.createTopic
+);
+router.put(
+  "/topics/:id",
+  uploadTopicImage.single("image"),
+  adminController.updateTopic
+);
 router.delete("/topics/:id", adminAuth, adminController.deleteTopic);
 
 // Readings management
