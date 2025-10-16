@@ -1,0 +1,29 @@
+// Cập nhật backend/routes/admin.js - thêm routes readings và records
+const express = require("express");
+const router = express.Router();
+const adminController = require("../controllers/adminController");
+const adminAuth = require("../middleware/adminAuth");
+
+// Public routes
+router.post("/login", adminController.adminLogin);
+
+// Protected routes
+router.get("/dashboard", adminAuth, adminController.getDashboardStats);
+router.get("/users", adminAuth, adminController.getUsers);
+
+// Topics management
+router.get("/topics", adminAuth, adminController.getTopics);
+router.post("/topics", adminAuth, adminController.createTopic);
+router.put("/topics/:id", adminAuth, adminController.updateTopic);
+router.delete("/topics/:id", adminAuth, adminController.deleteTopic);
+
+// Readings management
+router.get("/readings", adminAuth, adminController.getReadings);
+router.post("/readings", adminAuth, adminController.createReading);
+router.put("/readings/:id", adminAuth, adminController.updateReading);
+router.delete("/readings/:id", adminAuth, adminController.deleteReading);
+
+// Records management
+router.get("/records", adminAuth, adminController.getRecords);
+
+module.exports = router;

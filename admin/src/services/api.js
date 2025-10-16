@@ -1,0 +1,63 @@
+// admin/src/services/api.js
+import axios from "axios";
+
+const BASE_URL = "http://localhost:3000/api/admin";
+
+export const adminAPI = axios.create({
+  baseURL: BASE_URL,
+});
+
+// Request interceptor để thêm token
+adminAPI.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor để xử lý lỗi
+adminAPI.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("adminToken");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
+// API endpoints
+export const authAPI = {
+  login: (data) => adminAPI.post("/login", data),
+};
+
+export const dashboardAPI = {
+  getStats: () => adminAPI.get("/dashboard"),
+};
+
+export const usersAPI = {
+  getAll: () => adminAPI.get("/users"),
+};
+
+export const topicsAPI = {
+  getAll: () => adminAPI.get("/topics"),
+  create: (data) => adminAPI.post("/topics", data),
+  update: (id, data) => adminAPI.put(`/topics/${id}`, data),
+  delete: (id) => adminAPI.delete(`/topics/${id}`),
+};
+
+export const readingsAPI = {
+  getAll: () => adminAPI.get("/readings"),
+  create: (data) => adminAPI.post("/readings", data),
+  update: (id, data) => adminAPI.put(`/readings/${id}`, data),
+  delete: (id) => adminAPI.delete(`/readings/${id}`),
+};
+
+export const recordsAPI = {
+  getAll: () => adminAPI.get("/records"),
+};

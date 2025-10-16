@@ -1,0 +1,18 @@
+# Node modules (backend)
+backend/node_modules/
+
+# Environment files
+backend/.env
+.env
+
+# Firebase / Google secrets
+firebase-service-account.json
+frontend/android/app/google-services.json
+
+# # Python cache (whisper)
+# __pycache__/
+# whisper/__pycache__/
+
+# Logs
+*.log
+logs/
