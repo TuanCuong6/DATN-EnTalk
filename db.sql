@@ -197,3 +197,6 @@ CREATE TABLE admins (
 -- Thêm admin mặc định (password: password)
 INSERT INTO admins (username, email, password_hash) 
 VALUES ('admin', 'admin@entalk.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+
+ALTER TABLE topics ADD COLUMN image_url TEXT;
+

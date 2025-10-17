@@ -19,32 +19,32 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Easing } from 'react-native';
 
 // Mapping ảnh chủ đề
-const topicImages = {
-  thamhiem: require('../assets/topics/thamhiem.png'),
-  dulich: require('../assets/topics/dulich.png'),
-  khoahoc: require('../assets/topics/khoahoc.png'),
-  tintuc: require('../assets/topics/tintuc.png'),
-  suckhoevadoisong: require('../assets/topics/suckhoevadoisong.png'),
-  khampha: require('../assets/topics/khampha.png'),
-  hoctapvatruonghoc: require('../assets/topics/hoctapvatruonghoc.png'),
-  giadinhvabanbe: require('../assets/topics/giadinhvabanbe.png'),
-};
+// const topicImages = {
+//   thamhiem: require('../assets/topics/thamhiem.png'),
+//   dulich: require('../assets/topics/dulich.png'),
+//   khoahoc: require('../assets/topics/khoahoc.png'),
+//   tintuc: require('../assets/topics/tintuc.png'),
+//   suckhoevadoisong: require('../assets/topics/suckhoevadoisong.png'),
+//   khampha: require('../assets/topics/khampha.png'),
+//   hoctapvatruonghoc: require('../assets/topics/hoctapvatruonghoc.png'),
+//   giadinhvabanbe: require('../assets/topics/giadinhvabanbe.png'),
+// };
 
 // Hàm chuẩn hoá tên chủ đề
-const removeVietnameseTones = str => {
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .replace(/\s+/g, '')
-    .toLowerCase();
-};
+// const removeVietnameseTones = str => {
+//   return str
+//     .normalize('NFD')
+//     .replace(/[\u0300-\u036f]/g, '')
+//     .replace(/đ/g, 'd')
+//     .replace(/Đ/g, 'D')
+//     .replace(/\s+/g, '')
+//     .toLowerCase();
+// };
 
-const getImageForTopic = topic => {
-  const key = removeVietnameseTones(topic.name);
-  return topicImages[key] || require('../assets/topics/default.png');
-};
+// const getImageForTopic = topic => {
+//   const key = removeVietnameseTones(topic.name);
+//   return topicImages[key] || require('../assets/topics/default.png');
+// };
 
 export default function TopicReadingsScreen() {
   const [readings, setReadings] = useState([]);
@@ -179,8 +179,17 @@ export default function TopicReadingsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topicHeader}>
           <View style={styles.topicImageContainer}>
-            <Image
+            {/* <Image
               source={getImageForTopic(topic)}
+              style={styles.topicImage}
+              resizeMode="cover"
+            /> */}
+            <Image
+              source={
+                topic.image_url
+                  ? { uri: topic.image_url }
+                  : require('../assets/topics/default.png')
+              }
               style={styles.topicImage}
               resizeMode="cover"
             />
