@@ -154,7 +154,6 @@ exports.deleteTopic = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
-// Thêm vào backend/controllers/adminController.js
 
 // Get All Readings với thông tin topic
 exports.getReadings = async (req, res) => {

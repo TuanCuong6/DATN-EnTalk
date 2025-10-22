@@ -15,7 +15,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { BlurView } from '@react-native-community/blur';
 
-// Giả định bạn có ảnh chatbot trong assets
 const chatbotImage = require('../assets/chatbot.png');
 
 export default function HomeScreen() {

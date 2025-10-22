@@ -188,7 +188,7 @@ export default function TopicReadingsScreen() {
               source={
                 topic.image_url
                   ? { uri: topic.image_url }
-                  : require('../assets/topics/default.png')
+                  : require('../assets/topics/hoctapvatruonghoc.png')
               }
               style={styles.topicImage}
               resizeMode="cover"
