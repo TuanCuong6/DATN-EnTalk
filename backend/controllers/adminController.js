@@ -134,17 +134,31 @@ exports.updateTopic = async (req, res) => {
   }
 };
 
-// Delete Topic
-// Delete Topic - SỬA: cho phép xóa cả readings
+// Delete Topic - SỬA: xóa readings nhưng GIỮ LẠI records
 exports.deleteTopic = async (req, res) => {
   const { id } = req.params;
   try {
-    // Xóa tất cả readings thuộc topic này trước
+    // 1. Đặt reading_id = NULL cho tất cả records liên quan trước khi xóa readings
+    await db.execute(
+      `
+      UPDATE records 
+      SET reading_id = NULL 
+      WHERE reading_id IN (SELECT id FROM readings WHERE topic_id = ?)
+    `,
+      [id]
+    );
+
+    // 2. Sau đó xóa readings thuộc topic này
     await db.execute("DELETE FROM readings WHERE topic_id = ?", [id]);
-    // Sau đó xóa topic
+
+    // 3. Cuối cùng xóa topic
     await db.execute("DELETE FROM topics WHERE id = ?", [id]);
-    res.json({ message: "Xóa chủ đề và tất cả bài đọc thành công" });
+
+    res.json({
+      message: "Xóa chủ đề và bài đọc thành công, đã giữ lại lịch sử",
+    });
   } catch (err) {
+    console.error("❌ Lỗi xóa topic:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
@@ -193,18 +207,26 @@ exports.updateReading = async (req, res) => {
   }
 };
 
-// Delete Reading
+// Delete Reading - SỬA: GIỮ LẠI records
 exports.deleteReading = async (req, res) => {
   const { id } = req.params;
   try {
+    // 1. Đặt reading_id = NULL cho tất cả records liên quan trước khi xóa reading
+    await db.execute(
+      "UPDATE records SET reading_id = NULL WHERE reading_id = ?",
+      [id]
+    );
+
+    // 2. Sau đó xóa reading
     await db.execute("DELETE FROM readings WHERE id = ?", [id]);
-    res.json({ message: "Xóa bài đọc thành công" });
+
+    res.json({ message: "Xóa bài đọc thành công, đã giữ lại lịch sử" });
   } catch (err) {
+    console.error("❌ Lỗi xóa reading:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
 
-// Get Records với thông tin user
 // Get Records với thông tin user - SỬA
 exports.getRecords = async (req, res) => {
   try {
