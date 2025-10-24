@@ -36,19 +36,64 @@ exports.getReadingsByTopic = async (req, res) => {
 };
 
 // GET /api/reading/:id
+// exports.getReadingById = async (req, res) => {
+//   try {
+//     const reading = await require("../models/Reading").getReadingById(
+//       req.params.id
+//     );
+
+//     if (!reading) {
+//       return res.status(404).json({ message: "Không tìm thấy bài đọc" });
+//     }
+
+//     res.json(reading); // 👈 trả trực tiếp
+//   } catch (err) {
+//     console.error("❌ Lỗi khi lấy bài đọc theo ID:", err);
+//     res.status(500).json({ message: "Lỗi server", error: err.message });
+//   }
+// };
+
 exports.getReadingById = async (req, res) => {
+  const { id } = req.params;
   try {
+    const [rows] = await db.query("SELECT * FROM readings WHERE id = ?", [id]);
+    if (!rows.length) {
+      return res.status(404).json({ message: "Reading not found" });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
+// Kiểm tra bài đọc có bị sửa so với bản ghi
+exports.checkReadingModified = async (req, res) => {
+  try {
+    const { readingId, originalContent } = req.body;
+
     const reading = await require("../models/Reading").getReadingById(
-      req.params.id
+      readingId
     );
 
     if (!reading) {
-      return res.status(404).json({ message: "Không tìm thấy bài đọc" });
+      return res.json({
+        exists: false,
+        modified: true,
+        message: "Bài đọc đã bị xóa",
+      });
     }
 
-    res.json(reading); // 👈 trả trực tiếp
+    // So sánh nội dung hiện tại với nội dung gốc từ record
+    const isModified = reading.content !== originalContent;
+
+    res.json({
+      exists: true,
+      modified: isModified,
+      currentContent: reading.content,
+      originalContent: originalContent,
+    });
   } catch (err) {
-    console.error("❌ Lỗi khi lấy bài đọc theo ID:", err);
+    console.error("❌ Lỗi kiểm tra bài đọc:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };

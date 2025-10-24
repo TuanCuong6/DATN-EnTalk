@@ -135,21 +135,15 @@ exports.updateTopic = async (req, res) => {
 };
 
 // Delete Topic
+// Delete Topic - SỬA: cho phép xóa cả readings
 exports.deleteTopic = async (req, res) => {
   const { id } = req.params;
   try {
-    const [readings] = await db.execute(
-      "SELECT id FROM readings WHERE topic_id = ?",
-      [id]
-    );
-    if (readings.length > 0) {
-      return res.status(400).json({
-        message: "Không thể xóa chủ đề đang có bài đọc",
-      });
-    }
-
+    // Xóa tất cả readings thuộc topic này trước
+    await db.execute("DELETE FROM readings WHERE topic_id = ?", [id]);
+    // Sau đó xóa topic
     await db.execute("DELETE FROM topics WHERE id = ?", [id]);
-    res.json({ message: "Xóa chủ đề thành công" });
+    res.json({ message: "Xóa chủ đề và tất cả bài đọc thành công" });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
@@ -211,10 +205,12 @@ exports.deleteReading = async (req, res) => {
 };
 
 // Get Records với thông tin user
+// Get Records với thông tin user - SỬA
 exports.getRecords = async (req, res) => {
   try {
     const [records] = await db.execute(`
-      SELECT rec.*, u.name as user_name, r.content as reading_content
+      SELECT rec.*, u.name as user_name, 
+             COALESCE(r.content, rec.original_content) as reading_content
       FROM records rec
       LEFT JOIN users u ON rec.user_id = u.id
       LEFT JOIN readings r ON rec.reading_id = r.id

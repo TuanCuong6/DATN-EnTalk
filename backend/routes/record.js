@@ -63,15 +63,17 @@ router.post(
 
       const geminiRes = await scoreWithGemini(transcript, originalText);
 
+      // SỬA phần tạo record
       await dbConnection.execute(
         `INSERT INTO records (
-          user_id, reading_id, transcript,
-          score_pronunciation, score_fluency, score_intonation,
-          score_speed, score_overall, comment
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    user_id, reading_id, original_content, transcript,
+    score_pronunciation, score_fluency, score_intonation,
+    score_speed, score_overall, comment, custom_text
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           userId,
           readingIdToUse,
+          originalText, // Lưu original_content
           transcript,
           geminiRes.scores.pronunciation,
           geminiRes.scores.fluency,
@@ -79,6 +81,7 @@ router.post(
           geminiRes.scores.speed,
           geminiRes.scores.overall,
           geminiRes.comment,
+          customText || null, // custom_text
         ]
       );
 
