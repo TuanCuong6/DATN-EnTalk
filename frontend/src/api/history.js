@@ -26,3 +26,11 @@ export const fetchRecentRecords = ({
   params.append('page', page); // luôn append
   return API_HISTORY.get(`/recent?${params.toString()}`);
 };
+
+// THÊM API để lấy original_content từ record
+export const getRecordWithOriginalContent = async recordId => {
+  const token = await AsyncStorage.getItem('token');
+  return API_HISTORY.get(`/${recordId}/detail`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};

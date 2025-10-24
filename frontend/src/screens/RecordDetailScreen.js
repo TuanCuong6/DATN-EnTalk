@@ -1,4 +1,4 @@
-//frontend/src/screens/RecordDetailScreen.js
+// frontend/src/screens/RecordDetailScreen.js
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -8,8 +8,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
+  Alert,
 } from 'react-native';
 import { getRecordDetail } from '../api/history';
+import { getReadingById, checkReadingModified } from '../api/reading';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -20,6 +22,7 @@ export default function RecordDetailScreen({ route }) {
   const { recordId } = route.params;
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [readingStatus, setReadingStatus] = useState('checking'); // 'checking', 'valid', 'modified', 'deleted'
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -27,18 +30,42 @@ export default function RecordDetailScreen({ route }) {
       try {
         const res = await getRecordDetail(recordId);
         setDetail(res.data);
+
+        // KIỂM TRA CHI TIẾT trạng thái bài đọc
+        if (res.data.reading_id) {
+          try {
+            // Gọi API kiểm tra bài đọc có bị sửa
+            const checkRes = await checkReadingModified({
+              readingId: res.data.reading_id,
+              originalContent:
+                res.data.original_content || res.data.reading_content,
+            });
+
+            if (!checkRes.data.exists) {
+              setReadingStatus('deleted');
+            } else if (checkRes.data.modified) {
+              setReadingStatus('modified');
+            } else {
+              setReadingStatus('valid');
+            }
+          } catch (err) {
+            console.error('❌ Lỗi kiểm tra bài đọc:', err);
+            // Nếu API lỗi, mặc định cho là bài đọc hợp lệ
+            setReadingStatus('valid');
+          }
+        } else {
+          // Không có reading_id -> đây là custom text
+          setReadingStatus('deleted');
+        }
       } catch (err) {
         console.error('❌ Lỗi lấy chi tiết record:', err);
-        Alert.alert(
-          '⛔ Thông báo',
-          'Bản ghi đã bị xóa hoặc không còn tồn tại.',
-        );
+        Alert.alert('Lỗi', 'Không thể tải chi tiết bản ghi');
       } finally {
         setLoading(false);
       }
     })();
 
-    // Rotate animation for circles
+    // Rotate animation
     Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
@@ -49,28 +76,34 @@ export default function RecordDetailScreen({ route }) {
     ).start();
   }, []);
 
-  // Rotate animation interpolation
+  // SỬA hàm handleRetry - CHUYỂN ĐÚNG MÀN HÌNH
+  const handleRetry = () => {
+    if (readingStatus === 'valid') {
+      // Bài đọc còn tồn tại và không sửa -> ReadingPractice
+      navigation.navigate('ReadingPractice', {
+        readingId: detail.reading_id,
+      });
+    } else {
+      // Bài đọc bị xóa/sửa -> CustomReadingScreen với nội dung cũ
+      navigation.navigate('CustomReadingScreen', {
+        customText: detail.original_content || detail.reading_content,
+      });
+    }
+  };
+
+  // SỬA: Chuyển sang màn hình TopicList thay vì Home
+  const handleChooseNewReading = () => {
+    navigation.navigate('TopicList');
+  };
+
+  // HIỆN CẢNH BÁO KHI BÀI ĐỌC BỊ SỬA/XÓA
+  const showWarning =
+    readingStatus === 'modified' || readingStatus === 'deleted';
+
   const rotateInterpolation = rotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
-
-  const handleRetry = () => {
-    if (detail.is_community_post) {
-      navigation.navigate('CustomReadingScreen', {
-        customText: detail.reading_content,
-      });
-    } else {
-      navigation.navigate('ReadingPractice', {
-        reading: {
-          id: detail.reading_id,
-          title: detail.topic_name || 'Không rõ',
-          level: 'A1',
-          content: detail.reading_content,
-        },
-      });
-    }
-  };
 
   if (loading) {
     return (
@@ -134,6 +167,30 @@ export default function RecordDetailScreen({ route }) {
           <Text style={styles.sectionText}>{detail.reading_content}</Text>
         </View>
 
+        {/* CẢNH BÁO KHI BÀI ĐỌC BỊ SỬA/XÓA */}
+        {showWarning && (
+          <View style={styles.warningSection}>
+            <Text style={styles.warningText}>
+              ⚠️{' '}
+              {readingStatus === 'deleted'
+                ? 'Bài đọc này đã bị xóa'
+                : 'Bài đọc này đã bị sửa đổi'}
+            </Text>
+            <TouchableOpacity
+              onPress={handleChooseNewReading} // ĐÃ SỬA: gọi hàm mới
+              style={styles.chooseButton}
+            >
+              <Icon
+                name="menu-book"
+                size={24}
+                color="#FFF"
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.chooseButtonText}>📚 Chọn bài mới</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🗣 Transcript:</Text>
           <Text style={styles.sectionText}>{detail.transcript}</Text>
@@ -174,6 +231,7 @@ export default function RecordDetailScreen({ route }) {
           <Text style={styles.sectionText}>{detail.comment}</Text>
         </View>
 
+        {/* NÚT LUYỆN LẠI - LUÔN HIỂN THỊ */}
         <TouchableOpacity onPress={handleRetry} style={styles.retryButton}>
           <Icon
             name="replay"
@@ -181,7 +239,9 @@ export default function RecordDetailScreen({ route }) {
             color="#FFF"
             style={styles.buttonIcon}
           />
-          <Text style={styles.retryButtonText}>🔁 Luyện lại</Text>
+          <Text style={styles.retryButtonText}>
+            {showWarning ? '🔄 Luyện với nội dung cũ' : '🔁 Luyện lại'}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -320,5 +380,42 @@ const styles = StyleSheet.create({
   },
   buttonIcon: {
     marginRight: 5,
+  },
+  warningSection: {
+    backgroundColor: '#FFF3CD',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FFC107',
+    borderWidth: 1,
+    borderColor: '#FFEaaA',
+  },
+  warningText: {
+    color: '#856404',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  chooseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#28a745',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    shadowColor: '#28a745',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  chooseButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
 });

@@ -28,6 +28,7 @@ export default function ReadingPracticeScreen({ route, navigation }) {
   const buttonScale = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
+  // Trong useEffect fetch reading, sửa phần xử lý lỗi:
   useEffect(() => {
     if (!reading && readingId) {
       const fetchReading = async () => {
@@ -35,24 +36,36 @@ export default function ReadingPracticeScreen({ route, navigation }) {
           const res = await getReadingById(readingId);
           setReading(res.data);
         } catch (err) {
-          Alert.alert('Lỗi', 'Không lấy được bài đọc');
+          // Nếu bài đọc bị xóa, điều hướng về CustomReadingScreen
+          if (err.response?.status === 404) {
+            Alert.alert(
+              'Bài đọc không khả dụng',
+              'Bài đọc này đã bị xóa. Bạn có thể luyện tập với nội dung cũ hoặc chọn bài mới.',
+              [
+                {
+                  text: 'Chọn bài khác',
+                  onPress: () => navigation.navigate('Home'),
+                },
+                {
+                  text: 'Luyện với nội dung cũ',
+                  onPress: () => {
+                    // Cần lấy original_content từ record trước đó
+                    // Tạm thời điều hướng về màn hình chi tiết
+                    navigation.goBack();
+                  },
+                },
+              ],
+            );
+          } else {
+            Alert.alert('Lỗi', 'Không lấy được bài đọc');
+          }
         } finally {
           setLoading(false);
         }
       };
       fetchReading();
     }
-
-    // Rotate animation for circles
-    Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 10000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    ).start();
-  }, []);
+  }, [readingId]);
 
   const handlePressIn = () => {
     Animated.spring(buttonScale, {

@@ -200,3 +200,4 @@ VALUES ('admin', 'admin@entalk.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC
 
 ALTER TABLE topics ADD COLUMN image_url TEXT;
 
+ALTER TABLE records ADD COLUMN original_content TEXT AFTER reading_id;

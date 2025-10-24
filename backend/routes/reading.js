@@ -7,4 +7,7 @@ router.get("/all", readingController.getAllReadings);
 router.get("/topic/:id", readingController.getReadingsByTopic);
 router.get("/:id", readingController.getReadingById);
 
+//thêm
+router.post("/check-modified", readingController.checkReadingModified);
+
 module.exports = router;

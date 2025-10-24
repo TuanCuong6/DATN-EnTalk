@@ -134,23 +134,31 @@ exports.updateTopic = async (req, res) => {
   }
 };
 
-// Delete Topic
+// Delete Topic - SỬA: xóa readings nhưng GIỮ LẠI records
 exports.deleteTopic = async (req, res) => {
   const { id } = req.params;
   try {
-    const [readings] = await db.execute(
-      "SELECT id FROM readings WHERE topic_id = ?",
+    // 1. Đặt reading_id = NULL cho tất cả records liên quan trước khi xóa readings
+    await db.execute(
+      `
+      UPDATE records 
+      SET reading_id = NULL 
+      WHERE reading_id IN (SELECT id FROM readings WHERE topic_id = ?)
+    `,
       [id]
     );
-    if (readings.length > 0) {
-      return res.status(400).json({
-        message: "Không thể xóa chủ đề đang có bài đọc",
-      });
-    }
 
+    // 2. Sau đó xóa readings thuộc topic này
+    await db.execute("DELETE FROM readings WHERE topic_id = ?", [id]);
+
+    // 3. Cuối cùng xóa topic
     await db.execute("DELETE FROM topics WHERE id = ?", [id]);
-    res.json({ message: "Xóa chủ đề thành công" });
+
+    res.json({
+      message: "Xóa chủ đề và bài đọc thành công, đã giữ lại lịch sử",
+    });
   } catch (err) {
+    console.error("❌ Lỗi xóa topic:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
@@ -199,22 +207,32 @@ exports.updateReading = async (req, res) => {
   }
 };
 
-// Delete Reading
+// Delete Reading - SỬA: GIỮ LẠI records
 exports.deleteReading = async (req, res) => {
   const { id } = req.params;
   try {
+    // 1. Đặt reading_id = NULL cho tất cả records liên quan trước khi xóa reading
+    await db.execute(
+      "UPDATE records SET reading_id = NULL WHERE reading_id = ?",
+      [id]
+    );
+
+    // 2. Sau đó xóa reading
     await db.execute("DELETE FROM readings WHERE id = ?", [id]);
-    res.json({ message: "Xóa bài đọc thành công" });
+
+    res.json({ message: "Xóa bài đọc thành công, đã giữ lại lịch sử" });
   } catch (err) {
+    console.error("❌ Lỗi xóa reading:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
 
-// Get Records với thông tin user
+// Get Records với thông tin user - SỬA
 exports.getRecords = async (req, res) => {
   try {
     const [records] = await db.execute(`
-      SELECT rec.*, u.name as user_name, r.content as reading_content
+      SELECT rec.*, u.name as user_name, 
+             COALESCE(r.content, rec.original_content) as reading_content
       FROM records rec
       LEFT JOIN users u ON rec.user_id = u.id
       LEFT JOIN readings r ON rec.reading_id = r.id

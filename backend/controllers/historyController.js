@@ -41,7 +41,7 @@ exports.getChartData = async (req, res) => {
   }
 };
 
-// 🧾 Danh sách bản ghi mới nhất (limit 50)
+// 🧾 Danh sách bản ghi mới nhất (limit 50) - ĐÃ SỬA
 exports.getRecordList = async (req, res) => {
   const userId = req.user.id;
 
@@ -50,7 +50,9 @@ exports.getRecordList = async (req, res) => {
       `
       SELECT r.id, r.reading_id, r.score_overall,
              r.score_pronunciation, r.score_fluency, r.score_intonation,
-             r.created_at, rd.content, rd.topic_id, rd.is_community_post, tp.name AS topic_name
+             r.created_at, 
+             COALESCE(r.original_content, rd.content) AS content,
+             rd.topic_id, rd.is_community_post, tp.name AS topic_name
       FROM records r
       LEFT JOIN readings rd ON r.reading_id = rd.id
       LEFT JOIN topics tp ON rd.topic_id = tp.id
@@ -68,7 +70,7 @@ exports.getRecordList = async (req, res) => {
   }
 };
 
-// 📆 Danh sách bản ghi theo ngày cụ thể
+// 📆 Danh sách bản ghi theo ngày cụ thể - ĐÃ SỬA
 exports.getRecordsByDate = async (req, res) => {
   const userId = req.user.id;
   const date = req.query.date;
@@ -78,7 +80,9 @@ exports.getRecordsByDate = async (req, res) => {
       `
       SELECT r.id, r.reading_id, r.score_overall,
              r.score_pronunciation, r.score_fluency, r.score_intonation,
-             r.created_at, rd.content, rd.topic_id, rd.is_community_post, tp.name AS topic_name
+             r.created_at, 
+             COALESCE(r.original_content, rd.content) AS content,
+             rd.topic_id, rd.is_community_post, tp.name AS topic_name
       FROM records r
       LEFT JOIN readings rd ON r.reading_id = rd.id
       LEFT JOIN topics tp ON rd.topic_id = tp.id
@@ -95,7 +99,7 @@ exports.getRecordsByDate = async (req, res) => {
   }
 };
 
-// 🔍 Chi tiết bản ghi
+// 🔍 Chi tiết bản ghi - ĐÃ SỬA
 exports.getRecordDetail = async (req, res) => {
   const userId = req.user.id;
   const recordId = req.params.id;
@@ -103,10 +107,10 @@ exports.getRecordDetail = async (req, res) => {
   try {
     const [rows] = await db.execute(
       `
-      SELECT r.id, r.reading_id, r.transcript, r.comment,
+      SELECT r.id, r.reading_id, r.transcript, r.comment, r.original_content,
              r.score_overall, r.score_pronunciation, r.score_fluency,
              r.score_intonation, r.score_speed, r.created_at,
-             rd.content AS reading_content,
+             COALESCE(r.original_content, rd.content) AS reading_content,
              rd.is_community_post, rd.topic_id, tp.name AS topic_name
       FROM records r
       LEFT JOIN readings rd ON r.reading_id = rd.id
@@ -127,7 +131,7 @@ exports.getRecordDetail = async (req, res) => {
   }
 };
 
-// 🆕 Danh sách bản ghi gần đây, lọc theo topic + limit
+// 🆕 Danh sách bản ghi gần đây, lọc theo topic + limit - ĐÃ SỬA
 exports.getRecentRecords = async (req, res) => {
   const userId = req.user.id;
   const { topic_id, limit, page = 1 } = req.query;
@@ -149,7 +153,9 @@ exports.getRecentRecords = async (req, res) => {
   const dataSql = `
     SELECT r.id, r.reading_id, r.score_overall,
            r.score_pronunciation, r.score_fluency, r.score_intonation,
-           r.created_at, rd.content, rd.topic_id, rd.is_community_post, tp.name AS topic_name
+           r.created_at, 
+           COALESCE(r.original_content, rd.content) AS content,
+           rd.topic_id, rd.is_community_post, tp.name AS topic_name
     FROM records r
     LEFT JOIN readings rd ON r.reading_id = rd.id
     LEFT JOIN topics tp ON rd.topic_id = tp.id
