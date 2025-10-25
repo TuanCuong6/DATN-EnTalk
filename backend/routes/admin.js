@@ -4,6 +4,7 @@ const router = express.Router();
 const adminController = require("../controllers/adminController");
 const adminAuth = require("../middleware/adminAuth");
 const uploadTopicImage = require("../middleware/uploadTopicImage");
+const feedbackController = require("../controllers/feedbackController");
 
 // Public routes
 router.post("/login", adminController.adminLogin);
@@ -36,5 +37,12 @@ router.delete("/readings/:id", adminAuth, adminController.deleteReading);
 
 // Records management
 router.get("/records", adminAuth, adminController.getRecords);
+// THÊM: Feedback management
+router.get("/feedbacks", adminAuth, feedbackController.getFeedbacks);
+router.post(
+  "/feedbacks/:id/reply",
+  adminAuth,
+  feedbackController.replyFeedback
+);
 
 module.exports = router;

@@ -22,7 +22,7 @@ import TopicList from "./pages/Topics/TopicList";
 import TopicAdd from "./pages/Topics/TopicAdd";
 import TopicEdit from "./pages/Topics/TopicEdit";
 import RecordList from "./pages/Records/RecordList";
-
+import FeedbackList from "./pages/Feedbacks/FeedbackList";
 // Loading Component
 const LoadingSpinner = () => (
   <div
@@ -51,7 +51,6 @@ function AppContent() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-
         <Route
           path="/"
           element={
@@ -62,7 +61,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         {/* Users Routes */}
         <Route
           path="/users"
@@ -94,7 +92,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         {/* Readings Routes */}
         <Route
           path="/readings"
@@ -126,7 +123,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         {/* Topics Routes */}
         <Route
           path="/topics"
@@ -158,7 +154,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         {/* Records Routes */}
         <Route
           path="/records"
@@ -170,7 +165,17 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
+        // Thêm route mới
+        <Route
+          path="/feedbacks"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <FeedbackList />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         {/* Catch all route - redirect to dashboard */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

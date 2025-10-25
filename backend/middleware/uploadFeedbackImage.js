@@ -1,7 +1,17 @@
 //backend/middleware/uploadFeedbackImage.js
 const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../services/cloudinary");
 
-const storage = multer.memoryStorage(); // ảnh chỉ giữ trong RAM tạm thời
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "entalk/feedbacks",
+    allowed_formats: ["jpg", "jpeg", "png"],
+    quality: "auto:good", // Giảm chất lượng tự động nhưng vẫn tốt
+    format: "jpg", // Chuyển sang JPG để giảm dung lượng
+  },
+});
 
 const upload = multer({
   storage,

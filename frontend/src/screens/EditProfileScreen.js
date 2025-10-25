@@ -1,4 +1,4 @@
-//frontend/src/screens/EditProfileScreen.js
+// frontend/src/screens/EditProfileScreen.js
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -63,6 +63,17 @@ export default function EditProfileScreen() {
       tension: 40,
       useNativeDriver: true,
     }).start();
+  };
+
+  // Format date function
+  const formatDate = dateString => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   };
 
   // Rotate animation interpolation
@@ -235,6 +246,27 @@ export default function EditProfileScreen() {
           />
         </View>
 
+        {/* THÊM: Thông tin chỉ xem, không chỉnh sửa */}
+        <View style={styles.infoGroup}>
+          <Text style={styles.label}>📧 Email</Text>
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoText}>
+              {profile?.email || 'Chưa có email'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.infoGroup}>
+          <Text style={styles.label}>📅 Ngày tham gia</Text>
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoText}>
+              {profile?.created_at
+                ? formatDate(profile.created_at)
+                : 'Chưa có thông tin'}
+            </Text>
+          </View>
+        </View>
+
         <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
           <TouchableOpacity
             onPressIn={handlePressIn}
@@ -401,7 +433,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   inputGroup: {
-    marginBottom: 25,
+    marginBottom: 20,
+    width: '100%',
+  },
+  infoGroup: {
+    marginBottom: 20,
     width: '100%',
   },
   label: {
@@ -418,6 +454,18 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     color: '#343A40',
+  },
+  infoContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(94, 114, 235, 0.2)',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#6C757D',
+    fontWeight: '500',
   },
   actionButton: {
     flexDirection: 'row',

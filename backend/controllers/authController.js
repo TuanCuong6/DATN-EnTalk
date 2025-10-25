@@ -116,9 +116,18 @@ exports.forgotPassword = async (req, res) => {
 };
 
 // 1. Lấy thông tin người dùng
+// exports.getProfile = async (req, res) => {
+//   const [rows] = await db.execute(
+//     "SELECT id, name, email, avatar_url FROM users WHERE id = ?",
+//     [req.user.id]
+//   );
+//   res.json(rows[0]);
+// };
+
+// 1. Lấy thông tin người dùng
 exports.getProfile = async (req, res) => {
   const [rows] = await db.execute(
-    "SELECT id, name, email, avatar_url FROM users WHERE id = ?",
+    "SELECT id, name, email, avatar_url, created_at FROM users WHERE id = ?",
     [req.user.id]
   );
   res.json(rows[0]);

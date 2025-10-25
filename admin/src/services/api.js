@@ -67,3 +67,9 @@ export const readingsAPI = {
 export const recordsAPI = {
   getAll: () => adminAPI.get("/records"),
 };
+
+//Thêm feedback APIs:
+export const feedbacksAPI = {
+  getAll: () => adminAPI.get("/feedbacks"),
+  reply: (id, data) => adminAPI.post(`/feedbacks/${id}/reply`, data),
+};

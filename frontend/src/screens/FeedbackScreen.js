@@ -77,7 +77,7 @@ export default function FeedbackScreen({ navigation }) {
     if (image) {
       formData.append('screenshot', {
         uri: image.uri,
-        name: image.fileName || 'screenshot.jpg',
+        name: image.name || 'screenshot.jpg',
         type: image.type || 'image/jpeg',
       });
     }
