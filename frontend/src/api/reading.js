@@ -52,7 +52,6 @@ export const getReadingById = async id => {
   });
 };
 
-//thêm
 // Kiểm tra bài đọc có bị sửa so với bản ghi
 export const checkReadingModified = data => {
   const token = AsyncStorage.getItem('token');

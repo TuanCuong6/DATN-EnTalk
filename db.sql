@@ -115,6 +115,46 @@ CREATE TABLE chat_messages (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- thêm bảng admin
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Thêm admin mặc định (password: password)
+INSERT INTO admins (username, email, password_hash) 
+VALUES ('admin', 'admin@entalk.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+
+-- thêm cột hình ảnh
+ALTER TABLE topics ADD COLUMN image_url TEXT;
+
+-- thêm cột để lưu nội dung bài đọc khi bị sửa/xóa
+ALTER TABLE records ADD COLUMN original_content TEXT AFTER reading_id;
+
+-- Cho phép cột reading_id được NULL
+ALTER TABLE records MODIFY reading_id INT NULL;
+
+-- Xóa ràng buộc cũ và tạo lại ràng buộc mới
+ALTER TABLE records 
+DROP FOREIGN KEY records_ibfk_2,
+ADD FOREIGN KEY (reading_id) REFERENCES readings(id) ON DELETE SET NULL;
+
+-- Thêm bảng feedbacks để lưu phản hồi từ người dùng
+CREATE TABLE feedbacks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    user_email VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    screenshot_url TEXT,
+    status ENUM('pending', 'replied') DEFAULT 'pending',
+    admin_reply TEXT,
+    replied_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
 -- Thêm chủ đề mẫu
 INSERT INTO topics (name, description) VALUES 
@@ -128,7 +168,6 @@ INSERT INTO readings (content, level, topic_id, is_community_post) VALUES
 ('London is the capital city of England. It has many famous landmarks such as Big Ben and the London Eye.', 'A1', 1, FALSE),
 ('Water is made of two elements: hydrogen and oxygen. It is essential for life on Earth.', 'A2', 2, FALSE),
 ('The stock market had a surprising increase yesterday, with major tech companies reporting record profits.', 'B1', 3, FALSE);
-
 
 INSERT INTO topics (name, description) VALUES 
 ('Khám phá', 'Bài đọc liên quan đến du lịch và khám phá'),
@@ -197,7 +236,3 @@ CREATE TABLE admins (
 -- Thêm admin mặc định (password: password)
 INSERT INTO admins (username, email, password_hash) 
 VALUES ('admin', 'admin@entalk.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
-
-ALTER TABLE topics ADD COLUMN image_url TEXT;
-
-ALTER TABLE records ADD COLUMN original_content TEXT AFTER reading_id;

@@ -11,6 +11,8 @@ const Sidebar = () => {
     { path: "/readings", label: "Quản lý Bài đọc", icon: "📖" },
     { path: "/topics", label: "Quản lý Chủ đề", icon: "🏷️" },
     { path: "/records", label: "Lịch sử Luyện tập", icon: "🎯" },
+    // THÊM MENU PHẢN HỒI Ở ĐÂY
+    { path: "/feedbacks", label: "Quản lý Phản hồi", icon: "💬" },
   ];
 
   return (
