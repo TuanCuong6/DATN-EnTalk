@@ -134,7 +134,7 @@ export default function FeedbackScreen({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.screenTitle}>🧪 Góp ý / Báo lỗi</Text>
+        <Text style={styles.screenTitle}>💬 Góp ý / Báo lỗi</Text>
 
         <Text style={styles.label}>Nội dung góp ý:</Text>
         <TextInput

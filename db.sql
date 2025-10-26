@@ -156,7 +156,6 @@ CREATE TABLE feedbacks (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-
 -- Thêm chủ đề mẫu
 INSERT INTO topics (name, description) VALUES 
 ('Du lịch', 'Bài đọc liên quan đến du lịch và khám phá'),

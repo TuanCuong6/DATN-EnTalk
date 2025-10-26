@@ -58,7 +58,7 @@ exports.sendFeedbackEmail = async ({
   const mailOptions = {
     from: `"EnTalk" <${process.env.MAIL_USER}>`,
     to: "vubatuancuong2306@gmail.com",
-    subject: `🧪 Phản hồi mới từ ${fromUser}`,
+    subject: `📧 Phản hồi mới từ ${fromUser}`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; color: #2c3e50;">
         <!-- Header -->
@@ -174,7 +174,7 @@ exports.sendReplyEmail = async ({
 
           <!-- Thank You Card -->
           <div style="background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); padding: 25px; border-radius: 8px; text-align: center;">
-            <div style="font-size: 20px; color: #2e7d32; margin-bottom: 10px;">🙏</div>
+            <div style="font-size: 20px; color: #2e7d32; margin-bottom: 10px;">🫶💖</div>
             <p style="margin: 0; color: #2e7d32; font-weight: 500; line-height: 1.5;">
               Cảm ơn bạn đã đóng góp ý kiến cho EnTalk<br>
               <span style="font-size: 14px; color: #388e3c;">Chúng tôi luôn lắng nghe để cải thiện sản phẩm</span>
