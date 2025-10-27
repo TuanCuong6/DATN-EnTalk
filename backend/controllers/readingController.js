@@ -36,23 +36,6 @@ exports.getReadingsByTopic = async (req, res) => {
 };
 
 // GET /api/reading/:id
-// exports.getReadingById = async (req, res) => {
-//   try {
-//     const reading = await require("../models/Reading").getReadingById(
-//       req.params.id
-//     );
-
-//     if (!reading) {
-//       return res.status(404).json({ message: "Không tìm thấy bài đọc" });
-//     }
-
-//     res.json(reading); // 👈 trả trực tiếp
-//   } catch (err) {
-//     console.error("❌ Lỗi khi lấy bài đọc theo ID:", err);
-//     res.status(500).json({ message: "Lỗi server", error: err.message });
-//   }
-// };
-
 exports.getReadingById = async (req, res) => {
   const { id } = req.params;
   try {

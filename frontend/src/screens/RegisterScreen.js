@@ -1,15 +1,16 @@
-//frontend/src/screens/RegisterScreen.js
+// frontend/src/screens/RegisterScreen.js
 import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   TextInput,
-  Button,
   Alert,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
   Animated,
+  ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { register } from '../api/auth';
 import { Easing } from 'react-native';
@@ -20,6 +21,7 @@ export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Thêm state loading
 
   // Animation values
   const registerButtonScale = useRef(new Animated.Value(1)).current;
@@ -60,6 +62,9 @@ export default function RegisterScreen({ navigation }) {
   };
 
   const handleRegister = async () => {
+    // Chặn spam - nếu đang loading thì không làm gì
+    if (isLoading) return;
+
     if (!name || !email || !password) {
       Alert.alert(
         'Thiếu thông tin',
@@ -75,12 +80,17 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
+      setIsLoading(true);
+      Keyboard.dismiss(); // Đóng bàn phím khi bắt đầu đăng ký
+
       await register({ name, email, password });
       Alert.alert('Đăng ký thành công', 'Vui lòng kiểm tra email để xác nhận');
       navigation.navigate('VerifyEmail', { name, email, password });
     } catch (err) {
       console.log('Register error:', err?.response?.data);
       Alert.alert('Lỗi', err.response?.data?.message || 'Đã có lỗi xảy ra');
+    } finally {
+      setIsLoading(false); // Luôn tắt loading dù thành công hay thất bại
     }
   };
 
@@ -111,6 +121,7 @@ export default function RegisterScreen({ navigation }) {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          disabled={isLoading} // Vô hiệu hóa khi loading
         >
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
@@ -126,7 +137,10 @@ export default function RegisterScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled" // Cho phép tap bên ngoài input
+      >
         <Text style={styles.screenTitle}>Tạo tài khoản mới</Text>
 
         <View style={styles.inputGroup}>
@@ -143,6 +157,7 @@ export default function RegisterScreen({ navigation }) {
               placeholderTextColor="#888"
               value={name}
               onChangeText={setName}
+              editable={!isLoading} // Không cho edit khi loading
             />
           </View>
 
@@ -160,6 +175,8 @@ export default function RegisterScreen({ navigation }) {
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
+              caretHidden={false} // Fix cursor nhấp nháy
+              editable={!isLoading} // Không cho edit khi loading
             />
           </View>
 
@@ -177,24 +194,36 @@ export default function RegisterScreen({ navigation }) {
               secureTextEntry
               value={password}
               onChangeText={setPassword}
+              editable={!isLoading} // Không cho edit khi loading
             />
           </View>
         </View>
 
         <Animated.View style={{ transform: [{ scale: registerButtonScale }] }}>
           <TouchableOpacity
-            onPressIn={() => handlePressIn(registerButtonScale)}
-            onPressOut={() => handlePressOut(registerButtonScale)}
+            onPressIn={() => !isLoading && handlePressIn(registerButtonScale)}
+            onPressOut={() => !isLoading && handlePressOut(registerButtonScale)}
             onPress={handleRegister}
-            style={[styles.actionButton, styles.registerButton]}
+            style={[
+              styles.actionButton,
+              styles.registerButton,
+              isLoading && styles.buttonDisabled, // Style khi disabled
+            ]}
+            disabled={isLoading} // Vô hiệu hóa khi loading
           >
-            <Icon
-              name="how-to-reg"
-              size={24}
-              color="#FFF"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.buttonText}>Đăng ký tài khoản</Text>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <Icon
+                  name="how-to-reg"
+                  size={24}
+                  color="#FFF"
+                  style={styles.buttonIcon}
+                />
+                <Text style={styles.buttonText}>Đăng ký tài khoản</Text>
+              </>
+            )}
           </TouchableOpacity>
         </Animated.View>
 
@@ -208,8 +237,12 @@ export default function RegisterScreen({ navigation }) {
           <TouchableOpacity
             onPressIn={() => handlePressIn(loginButtonScale)}
             onPressOut={() => handlePressOut(loginButtonScale)}
-            onPress={() => navigation.navigate('Login')}
-            style={styles.loginButton}
+            onPress={() => !isLoading && navigation.navigate('Login')}
+            style={[
+              styles.loginButton,
+              isLoading && styles.buttonDisabled, // Style khi disabled
+            ]}
+            disabled={isLoading} // Vô hiệu hóa khi loading
           >
             <Icon
               name="login"
@@ -352,6 +385,9 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     backgroundColor: '#5E72EB',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonIcon: {
     marginRight: 12,
