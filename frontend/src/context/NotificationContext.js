@@ -2,10 +2,10 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { getNotificationList } from '../api/notification';
 
-// 👉 Context tạo để chia sẻ unreadCount + trigger reload
+// Context tạo để chia sẻ unreadCount + trigger reload
 export const NotificationContext = createContext();
 
-// 👉 Biến và hàm để dùng toàn cục
+// Biến và hàm để dùng toàn cục
 let _fetchUnreadCount = () => {};
 let _triggerReload = () => {};
 export const getGlobalFetchUnreadCount = () => _fetchUnreadCount;

@@ -74,7 +74,14 @@ export default function RecordsByDateScreen({ route, navigation }) {
     >
       <View style={styles.recordHeader}>
         <Icon name="access-time" size={20} color="#5E72EB" />
-        <Text style={styles.recordTime}>{item.created_at.slice(11, 16)}</Text>
+        <Text style={styles.recordTime}>
+          {new Date(item.created_at).toLocaleTimeString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          })}
+        </Text>
+
         <View style={styles.scoreBadge}>
           <Icon name="star" size={16} color="#FFD700" />
           <Text style={styles.scoreText}>{item.score_overall?.toFixed(2)}</Text>

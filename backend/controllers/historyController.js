@@ -1,7 +1,7 @@
 // backend/controllers/historyController.js
 const db = require("../config/db");
 
-// 📈 Dữ liệu cho biểu đồ tiến bộ
+// 📈 Dữ liệu cho biểu đồ tiến bộ - ĐÃ SỬA
 exports.getChartData = async (req, res) => {
   const userId = req.user.id;
   const range = req.query.range || "7";
@@ -12,24 +12,22 @@ exports.getChartData = async (req, res) => {
       const days = parseInt(range);
       if (!isNaN(days)) {
         dateFilter = `
-          AND DATE(CONVERT_TZ(created_at, '+00:00', '+07:00')) BETWEEN 
-              DATE_SUB(DATE(CONVERT_TZ(NOW(), '+00:00', '+07:00')), INTERVAL ${
-                days - 1
-              } DAY)
-              AND DATE(CONVERT_TZ(NOW(), '+00:00', '+07:00'))
+          AND DATE(r.created_at) BETWEEN 
+              DATE_SUB(CURDATE(), INTERVAL ${days - 1} DAY)
+              AND CURDATE()
         `;
       }
     }
 
     const [rows] = await db.execute(
       `
-      SELECT DATE(CONVERT_TZ(created_at, '+00:00', '+07:00')) AS date,
+      SELECT DATE(r.created_at) AS date,
              ROUND(AVG(score_overall), 2) AS avg_score
-      FROM records
-      WHERE user_id = ? ${dateFilter}
-        AND score_overall IS NOT NULL
-      GROUP BY DATE(CONVERT_TZ(created_at, '+00:00', '+07:00'))
-      ORDER BY DATE(CONVERT_TZ(created_at, '+00:00', '+07:00'))
+      FROM records r
+      WHERE r.user_id = ? ${dateFilter}
+        AND r.score_overall IS NOT NULL
+      GROUP BY DATE(r.created_at)
+      ORDER BY DATE(r.created_at)
       `,
       [userId]
     );
@@ -41,7 +39,7 @@ exports.getChartData = async (req, res) => {
   }
 };
 
-// 🧾 Danh sách bản ghi mới nhất (limit 50) - ĐÃ SỬA
+// 🧾 Danh sách bản ghi mới nhất - ĐÃ SỬA
 exports.getRecordList = async (req, res) => {
   const userId = req.user.id;
 
@@ -52,7 +50,8 @@ exports.getRecordList = async (req, res) => {
              r.score_pronunciation, r.score_fluency, r.score_intonation,
              r.created_at, 
              COALESCE(r.original_content, rd.content) AS content,
-             rd.topic_id, rd.is_community_post, tp.name AS topic_name
+             rd.topic_id, rd.is_community_post, tp.name AS topic_name,
+             DATE_FORMAT(CONVERT_TZ(r.created_at, '+00:00', '+07:00'), '%Y-%m-%d %H:%i:%s') AS local_created_at
       FROM records r
       LEFT JOIN readings rd ON r.reading_id = rd.id
       LEFT JOIN topics tp ON rd.topic_id = tp.id
@@ -70,7 +69,7 @@ exports.getRecordList = async (req, res) => {
   }
 };
 
-// 📆 Danh sách bản ghi theo ngày cụ thể - ĐÃ SỬA
+// 📆 Danh sách bản ghi theo ngày cụ thể - ĐÃ SỬA (FIX AMBIGUOUS COLUMN)
 exports.getRecordsByDate = async (req, res) => {
   const userId = req.user.id;
   const date = req.query.date;
@@ -82,7 +81,8 @@ exports.getRecordsByDate = async (req, res) => {
              r.score_pronunciation, r.score_fluency, r.score_intonation,
              r.created_at, 
              COALESCE(r.original_content, rd.content) AS content,
-             rd.topic_id, rd.is_community_post, tp.name AS topic_name
+             rd.topic_id, rd.is_community_post, tp.name AS topic_name,
+             DATE_FORMAT(CONVERT_TZ(r.created_at, '+00:00', '+07:00'), '%H:%i') AS display_time
       FROM records r
       LEFT JOIN readings rd ON r.reading_id = rd.id
       LEFT JOIN topics tp ON rd.topic_id = tp.id
@@ -131,7 +131,7 @@ exports.getRecordDetail = async (req, res) => {
   }
 };
 
-// 🆕 Danh sách bản ghi gần đây, lọc theo topic + limit - ĐÃ SỬA
+// 🆕 Danh sách bản ghi gần đây - ĐÃ SỬA
 exports.getRecentRecords = async (req, res) => {
   const userId = req.user.id;
   const { topic_id, limit, page = 1 } = req.query;
