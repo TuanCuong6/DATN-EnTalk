@@ -21,9 +21,9 @@ export const fetchRecentRecords = ({
   page = 1,
 } = {}) => {
   const params = new URLSearchParams();
-  if (topicId !== null) params.append('topic_id', topicId); // ⚠️ CHỈ append nếu khác null
-  params.append('limit', limit); // luôn append
-  params.append('page', page); // luôn append
+  if (topicId !== null) params.append('topic_id', topicId);
+  params.append('limit', limit);
+  params.append('page', page);
   return API_HISTORY.get(`/recent?${params.toString()}`);
 };
 
