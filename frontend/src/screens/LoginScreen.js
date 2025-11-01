@@ -1,4 +1,4 @@
-//frontend/src/screens/LoginScreen.js
+// frontend/src/screens/LoginScreen.js
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import {
   View,
@@ -9,7 +9,8 @@ import {
   Alert,
   Animated,
   ScrollView,
-  Image,
+  ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { login as apiLogin } from '../api/auth';
 import { AuthContext } from '../context/AuthContext';
@@ -21,7 +22,14 @@ import { Easing } from 'react-native';
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const { login } = useContext(AuthContext);
+
+  // Refs cho TextInput
+  const emailInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
 
   // Animation values
   const loginButtonScale = useRef(new Animated.Value(1)).current;
@@ -62,13 +70,37 @@ export default function LoginScreen({ navigation }) {
     outputRange: ['0deg', '360deg'],
   });
 
+  // Hàm focus input
+  const focusInput = inputRef => {
+    if (inputRef.current && !isLoading) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Hàm toggle hiển thị mật khẩu
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   const handleLogin = async () => {
+    // Chặn spam - nếu đang loading thì không làm gì
+    if (isLoading) return;
+
     if (!email || !password) {
       Alert.alert('Thiếu thông tin', 'Vui lòng nhập email và mật khẩu.');
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Email không hợp lệ', 'Vui lòng nhập địa chỉ email hợp lệ.');
+      return;
+    }
+
     try {
+      setIsLoading(true);
+      Keyboard.dismiss(); // Đóng bàn phím khi bắt đầu đăng nhập
+
       const res = await apiLogin({ email, password });
       console.log('🎯 API login response:', res.data);
       const { token, user } = res.data;
@@ -78,6 +110,8 @@ export default function LoginScreen({ navigation }) {
     } catch (err) {
       console.log('❌ Login failed error:', err?.response?.data || err.message);
       Alert.alert('Đăng nhập thất bại', err.response?.data?.message || 'Lỗi');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -110,14 +144,21 @@ export default function LoginScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.screenTitle}>Đăng nhập tài khoản</Text>
         <Text style={styles.subtitle}>
           Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục
         </Text>
 
         {/* Email Input */}
-        <View style={styles.inputContainer}>
+        <TouchableOpacity
+          style={styles.inputContainer}
+          onPress={() => focusInput(emailInputRef)}
+          activeOpacity={1}
+        >
           <Icon
             name="email"
             size={20}
@@ -125,6 +166,7 @@ export default function LoginScreen({ navigation }) {
             style={styles.inputIcon}
           />
           <TextInput
+            ref={emailInputRef}
             placeholder="Email"
             placeholderTextColor="#888"
             style={styles.input}
@@ -132,11 +174,19 @@ export default function LoginScreen({ navigation }) {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={!isLoading}
+            cursorColor="#5E72EB"
+            selectionColor="rgba(94, 114, 235, 0.2)"
+            underlineColorAndroid="transparent"
           />
-        </View>
+        </TouchableOpacity>
 
         {/* Password Input */}
-        <View style={styles.inputContainer}>
+        <TouchableOpacity
+          style={styles.inputContainer}
+          onPress={() => focusInput(passwordInputRef)}
+          activeOpacity={1}
+        >
           <Icon
             name="lock"
             size={20}
@@ -144,39 +194,62 @@ export default function LoginScreen({ navigation }) {
             style={styles.inputIcon}
           />
           <TextInput
+            ref={passwordInputRef}
             placeholder="Mật khẩu"
             placeholderTextColor="#888"
             style={styles.input}
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
+            secureTextEntry={!showPassword}
+            editable={!isLoading}
+            cursorColor="#5E72EB"
+            selectionColor="rgba(94, 114, 235, 0.2)"
+            underlineColorAndroid="transparent"
           />
-        </View>
+          <TouchableOpacity
+            onPress={toggleShowPassword}
+            style={styles.eyeIcon}
+            disabled={isLoading}
+          >
+            <Icon
+              name={showPassword ? 'visibility' : 'visibility-off'}
+              size={20}
+              color="#6C757D"
+            />
+          </TouchableOpacity>
+        </TouchableOpacity>
 
         {/* Login Button */}
         <Animated.View style={{ transform: [{ scale: loginButtonScale }] }}>
           <TouchableOpacity
-            onPressIn={() => handlePressIn(loginButtonScale)}
-            onPressOut={() => handlePressOut(loginButtonScale)}
+            onPressIn={() => !isLoading && handlePressIn(loginButtonScale)}
+            onPressOut={() => !isLoading && handlePressOut(loginButtonScale)}
             onPress={handleLogin}
-            style={styles.loginButton}
+            style={[styles.loginButton, isLoading && styles.buttonDisabled]}
+            disabled={isLoading}
           >
-            <Text style={styles.loginButtonText}>Đăng nhập</Text>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.loginButtonText}>Đăng nhập</Text>
+            )}
           </TouchableOpacity>
         </Animated.View>
 
         {/* Footer Links */}
         <View style={styles.footerLinks}>
           <TouchableOpacity
-            onPress={() => navigation.navigate('Register')}
-            style={styles.linkButton}
+            onPress={() => !isLoading && navigation.navigate('Register')}
+            style={[styles.linkButton, isLoading && styles.linkDisabled]}
+            disabled={isLoading}
           >
             <Text style={styles.linkText}>Chưa có tài khoản? Đăng ký</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('ForgotPassword')}
-            style={styles.linkButton}
+            onPress={() => !isLoading && navigation.navigate('ForgotPassword')}
+            style={[styles.linkButton, isLoading && styles.linkDisabled]}
+            disabled={isLoading}
           >
             <Text style={styles.linkText}>Quên mật khẩu?</Text>
           </TouchableOpacity>
@@ -264,8 +337,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(94, 114, 235, 0.3)',
     borderWidth: 1,
     borderRadius: 16,
-    padding: 16,
+    paddingHorizontal: 16,
     marginBottom: 20,
+    overflow: 'hidden',
   },
   inputIcon: {
     marginRight: 12,
@@ -274,6 +348,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#343A40',
+    backgroundColor: 'transparent',
+    paddingVertical: 16,
+  },
+  eyeIcon: {
+    padding: 8,
+    marginLeft: 8,
   },
   loginButton: {
     backgroundColor: '#5E72EB',
@@ -289,6 +369,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 30,
   },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   loginButtonText: {
     fontSize: 18,
     fontWeight: '600',
@@ -300,6 +383,9 @@ const styles = StyleSheet.create({
   },
   linkButton: {
     paddingVertical: 10,
+  },
+  linkDisabled: {
+    opacity: 0.5,
   },
   linkText: {
     fontSize: 16,

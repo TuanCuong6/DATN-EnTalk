@@ -21,7 +21,13 @@ export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // Thêm state loading
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Thêm state cho hiển thị mật khẩu
+
+  // Refs cho TextInput
+  const nameInputRef = useRef(null);
+  const emailInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
 
   // Animation values
   const registerButtonScale = useRef(new Animated.Value(1)).current;
@@ -61,8 +67,17 @@ export default function RegisterScreen({ navigation }) {
     }).start();
   };
 
+  const focusInput = inputRef => {
+    if (inputRef.current && !isLoading) {
+      inputRef.current.focus();
+    }
+  };
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   const handleRegister = async () => {
-    // Chặn spam - nếu đang loading thì không làm gì
     if (isLoading) return;
 
     if (!name || !email || !password) {
@@ -81,7 +96,7 @@ export default function RegisterScreen({ navigation }) {
 
     try {
       setIsLoading(true);
-      Keyboard.dismiss(); // Đóng bàn phím khi bắt đầu đăng ký
+      Keyboard.dismiss();
 
       await register({ name, email, password });
       Alert.alert('Đăng ký thành công', 'Vui lòng kiểm tra email để xác nhận');
@@ -90,19 +105,17 @@ export default function RegisterScreen({ navigation }) {
       console.log('Register error:', err?.response?.data);
       Alert.alert('Lỗi', err.response?.data?.message || 'Đã có lỗi xảy ra');
     } finally {
-      setIsLoading(false); // Luôn tắt loading dù thành công hay thất bại
+      setIsLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Background gradient */}
       <LinearGradient
         colors={['#F0F7FF', '#E6FCFF']}
         style={styles.background}
       />
 
-      {/* Decorative circles */}
       <Animated.View
         style={[
           styles.circle1,
@@ -121,7 +134,7 @@ export default function RegisterScreen({ navigation }) {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
-          disabled={isLoading} // Vô hiệu hóa khi loading
+          disabled={isLoading}
         >
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
@@ -139,12 +152,17 @@ export default function RegisterScreen({ navigation }) {
 
       <ScrollView
         contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled" // Cho phép tap bên ngoài input
+        keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.screenTitle}>Tạo tài khoản mới</Text>
 
         <View style={styles.inputGroup}>
-          <View style={styles.inputContainer}>
+          {/* Name Input */}
+          <TouchableOpacity
+            style={styles.inputContainer}
+            onPress={() => focusInput(nameInputRef)}
+            activeOpacity={1}
+          >
             <Icon
               name="person"
               size={20}
@@ -152,16 +170,24 @@ export default function RegisterScreen({ navigation }) {
               style={styles.inputIcon}
             />
             <TextInput
+              ref={nameInputRef}
               style={styles.input}
               placeholder="Họ và tên"
               placeholderTextColor="#888"
               value={name}
               onChangeText={setName}
-              editable={!isLoading} // Không cho edit khi loading
+              editable={!isLoading}
+              cursorColor="#5E72EB"
+              selectionColor="rgba(94, 114, 235, 0.2)"
+              underlineColorAndroid="transparent"
             />
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.inputContainer}>
+          <TouchableOpacity
+            style={styles.inputContainer}
+            onPress={() => focusInput(emailInputRef)}
+            activeOpacity={1}
+          >
             <Icon
               name="email"
               size={20}
@@ -169,18 +195,26 @@ export default function RegisterScreen({ navigation }) {
               style={styles.inputIcon}
             />
             <TextInput
+              ref={emailInputRef}
               style={styles.input}
               placeholder="Email"
               placeholderTextColor="#888"
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
-              caretHidden={false} // Fix cursor nhấp nháy
-              editable={!isLoading} // Không cho edit khi loading
+              editable={!isLoading}
+              cursorColor="#5E72EB"
+              selectionColor="rgba(94, 114, 235, 0.2)"
+              underlineColorAndroid="transparent"
+              autoCapitalize="none"
             />
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.inputContainer}>
+          <TouchableOpacity
+            style={styles.inputContainer}
+            onPress={() => focusInput(passwordInputRef)}
+            activeOpacity={1}
+          >
             <Icon
               name="lock"
               size={20}
@@ -188,15 +222,30 @@ export default function RegisterScreen({ navigation }) {
               style={styles.inputIcon}
             />
             <TextInput
+              ref={passwordInputRef}
               style={styles.input}
               placeholder="Mật khẩu"
               placeholderTextColor="#888"
-              secureTextEntry
+              secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
-              editable={!isLoading} // Không cho edit khi loading
+              editable={!isLoading}
+              cursorColor="#5E72EB"
+              selectionColor="rgba(94, 114, 235, 0.2)"
+              underlineColorAndroid="transparent"
             />
-          </View>
+            <TouchableOpacity
+              onPress={toggleShowPassword}
+              style={styles.eyeIcon}
+              disabled={isLoading}
+            >
+              <Icon
+                name={showPassword ? 'visibility' : 'visibility-off'}
+                size={20}
+                color="#6C757D"
+              />
+            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
 
         <Animated.View style={{ transform: [{ scale: registerButtonScale }] }}>
@@ -207,9 +256,9 @@ export default function RegisterScreen({ navigation }) {
             style={[
               styles.actionButton,
               styles.registerButton,
-              isLoading && styles.buttonDisabled, // Style khi disabled
+              isLoading && styles.buttonDisabled,
             ]}
-            disabled={isLoading} // Vô hiệu hóa khi loading
+            disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color="#FFF" />
@@ -238,11 +287,8 @@ export default function RegisterScreen({ navigation }) {
             onPressIn={() => handlePressIn(loginButtonScale)}
             onPressOut={() => handlePressOut(loginButtonScale)}
             onPress={() => !isLoading && navigation.navigate('Login')}
-            style={[
-              styles.loginButton,
-              isLoading && styles.buttonDisabled, // Style khi disabled
-            ]}
-            disabled={isLoading} // Vô hiệu hóa khi loading
+            style={[styles.loginButton, isLoading && styles.buttonDisabled]}
+            disabled={isLoading}
           >
             <Icon
               name="login"
@@ -359,6 +405,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     marginBottom: 20,
+    overflow: 'hidden',
   },
   inputIcon: {
     marginRight: 12,
@@ -368,6 +415,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     fontSize: 16,
     color: '#343A40',
+    backgroundColor: 'transparent',
+  },
+  eyeIcon: {
+    padding: 8,
+    marginLeft: 8,
   },
   actionButton: {
     flexDirection: 'row',
