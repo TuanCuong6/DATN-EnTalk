@@ -1,4 +1,4 @@
-//frontend/src/screens/VerifyEmailScreen.js
+// frontend/src/screens/VerifyEmailScreen.js
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -9,8 +9,10 @@ import {
   Alert,
   ScrollView,
   Animated,
+  ActivityIndicator,
+  Keyboard,
 } from 'react-native';
-import { verifyEmail } from '../api/auth';
+import { verifyEmail, resendVerificationCode } from '../api/auth';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -20,7 +22,12 @@ export default function VerifyEmailScreen({ route }) {
   const navigation = useNavigation();
   const { name, email, password } = route.params;
   const [code, setCode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
   const buttonScale = useRef(new Animated.Value(1)).current;
+  const resendButtonScale = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -35,7 +42,16 @@ export default function VerifyEmailScreen({ route }) {
     ).start();
   }, []);
 
-  const handlePressIn = () => {
+  // Countdown timer
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  const handlePressIn = buttonScale => {
     Animated.spring(buttonScale, {
       toValue: 0.95,
       friction: 3,
@@ -43,7 +59,7 @@ export default function VerifyEmailScreen({ route }) {
     }).start();
   };
 
-  const handlePressOut = () => {
+  const handlePressOut = buttonScale => {
     Animated.spring(buttonScale, {
       toValue: 1,
       friction: 6,
@@ -59,13 +75,54 @@ export default function VerifyEmailScreen({ route }) {
   });
 
   const handleVerify = async () => {
+    // Chặn spam
+    if (isVerifying) return;
+
+    if (!code || code.length !== 6) {
+      Alert.alert('Lỗi', 'Vui lòng nhập mã xác nhận 6 chữ số');
+      return;
+    }
+
     try {
+      setIsVerifying(true);
+      Keyboard.dismiss();
+
       await verifyEmail({ email, code, name, password });
       Alert.alert('Thành công', 'Tài khoản đã được xác minh!');
       navigation.navigate('Login');
     } catch (err) {
       Alert.alert('Lỗi', err.response?.data?.message || 'Xác minh thất bại');
+    } finally {
+      setIsVerifying(false);
     }
+  };
+
+  const handleResendCode = async () => {
+    // Chặn spam và đảm bảo countdown đã hết
+    if (isResending || countdown > 0) return;
+
+    try {
+      setIsResending(true);
+
+      await resendVerificationCode({ email });
+      Alert.alert(
+        'Thành công',
+        'Mã xác nhận mới đã được gửi đến email của bạn',
+      );
+
+      // Set countdown 60 giây
+      setCountdown(60);
+    } catch (err) {
+      Alert.alert('Lỗi', err.response?.data?.message || 'Gửi lại mã thất bại');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const formatCountdown = seconds => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   return (
@@ -95,6 +152,7 @@ export default function VerifyEmailScreen({ route }) {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          disabled={isVerifying}
         >
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
@@ -104,7 +162,10 @@ export default function VerifyEmailScreen({ route }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <Icon
           name="mark-email-read"
           size={80}
@@ -127,29 +188,79 @@ export default function VerifyEmailScreen({ route }) {
             style={styles.input}
             keyboardType="number-pad"
             maxLength={6}
+            editable={!isVerifying}
+            caretHidden={false}
           />
         </View>
 
         <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
           <TouchableOpacity
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+            onPressIn={() => !isVerifying && handlePressIn(buttonScale)}
+            onPressOut={() => !isVerifying && handlePressOut(buttonScale)}
             onPress={handleVerify}
-            style={[styles.actionButton, styles.verifyButton]}
+            style={[
+              styles.actionButton,
+              styles.verifyButton,
+              isVerifying && styles.buttonDisabled,
+            ]}
+            disabled={isVerifying}
           >
-            <Icon
-              name="verified"
-              size={24}
-              color="#FFF"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.buttonText}>Xác Minh Tài Khoản</Text>
+            {isVerifying ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <Icon
+                  name="verified"
+                  size={24}
+                  color="#FFF"
+                  style={styles.buttonIcon}
+                />
+                <Text style={styles.buttonText}>Xác Minh Tài Khoản</Text>
+              </>
+            )}
           </TouchableOpacity>
         </Animated.View>
 
-        <TouchableOpacity style={styles.resendLink}>
-          <Text style={styles.resendText}>Không nhận được mã? Gửi lại</Text>
-        </TouchableOpacity>
+        <View style={styles.resendContainer}>
+          <Text style={styles.resendDescription}>Không nhận được mã?</Text>
+
+          <Animated.View style={{ transform: [{ scale: resendButtonScale }] }}>
+            <TouchableOpacity
+              onPressIn={() =>
+                !isResending &&
+                countdown === 0 &&
+                handlePressIn(resendButtonScale)
+              }
+              onPressOut={() =>
+                !isResending &&
+                countdown === 0 &&
+                handlePressOut(resendButtonScale)
+              }
+              onPress={handleResendCode}
+              style={[
+                styles.resendButton,
+                (isResending || countdown > 0) && styles.resendButtonDisabled,
+              ]}
+              disabled={isResending || countdown > 0}
+            >
+              {isResending ? (
+                <ActivityIndicator size="small" color="#5E72EB" />
+              ) : (
+                <Text style={styles.resendButtonText}>
+                  {countdown > 0
+                    ? `Gửi lại sau ${formatCountdown(countdown)}`
+                    : 'Gửi lại mã'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+
+        {countdown > 0 && (
+          <Text style={styles.countdownNote}>
+            Vui lòng đợi hết thời gian trước khi gửi lại mã mới
+          </Text>
+        )}
       </ScrollView>
     </View>
   );
@@ -277,6 +388,9 @@ const styles = StyleSheet.create({
   verifyButton: {
     backgroundColor: '#4CAF50',
   },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   buttonIcon: {
     marginRight: 12,
   },
@@ -285,13 +399,37 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFF',
   },
-  resendLink: {
-    alignSelf: 'center',
+  resendContainer: {
+    alignItems: 'center',
     marginTop: 20,
   },
-  resendText: {
+  resendDescription: {
+    fontSize: 14,
+    color: '#6C757D',
+    marginBottom: 10,
+  },
+  resendButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#5E72EB',
+    backgroundColor: 'rgba(94, 114, 235, 0.1)',
+  },
+  resendButtonDisabled: {
+    opacity: 0.5,
+    borderColor: '#6C757D',
+  },
+  resendButtonText: {
     color: '#5E72EB',
     fontWeight: '600',
-    textDecorationLine: 'underline',
+    fontSize: 14,
+  },
+  countdownNote: {
+    fontSize: 12,
+    color: '#6C757D',
+    textAlign: 'center',
+    marginTop: 10,
+    fontStyle: 'italic',
   },
 });

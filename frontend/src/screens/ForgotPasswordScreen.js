@@ -1,4 +1,4 @@
-//frontend/src/screens/ForgotPasswordScreen.js
+// frontend/src/screens/ForgotPasswordScreen.js
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -9,6 +9,8 @@ import {
   Alert,
   ScrollView,
   Animated,
+  ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { forgotPassword } from '../api/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -19,8 +21,12 @@ import { Easing } from 'react-native';
 export default function ForgotPasswordScreen() {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const buttonScale = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Ref cho TextInput
+  const emailInputRef = useRef(null);
 
   useEffect(() => {
     // Rotate animation for circles
@@ -57,16 +63,47 @@ export default function ForgotPasswordScreen() {
     outputRange: ['0deg', '360deg'],
   });
 
+  // Hàm focus input
+  const focusEmailInput = () => {
+    if (emailInputRef.current && !isLoading) {
+      emailInputRef.current.focus();
+    }
+  };
+
   const handleReset = async () => {
+    // Chặn spam - nếu đang loading thì không làm gì
+    if (isLoading) return;
+
+    if (!email) {
+      Alert.alert('Lỗi', 'Vui lòng nhập email của bạn');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Email không hợp lệ', 'Vui lòng nhập địa chỉ email hợp lệ.');
+      return;
+    }
+
     try {
+      setIsLoading(true);
+      Keyboard.dismiss(); // Đóng bàn phím khi bắt đầu gửi
+
       await forgotPassword({ email });
       Alert.alert(
         'Email đã được gửi',
         'Vui lòng kiểm tra email để lấy lại mật khẩu',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ],
       );
-      navigation.navigate('Login');
     } catch (err) {
       Alert.alert('Lỗi', err.response?.data?.message || 'Lỗi xảy ra');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -97,6 +134,7 @@ export default function ForgotPasswordScreen() {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          disabled={isLoading}
         >
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
@@ -106,7 +144,11 @@ export default function ForgotPasswordScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Icon name="lock-reset" size={80} color="#5E72EB" style={styles.icon} />
         <Text style={styles.screenTitle}>Quên Mật Khẩu</Text>
         <Text style={styles.description}>
           Nhập email của bạn để nhận liên kết đặt lại mật khẩu
@@ -114,33 +156,63 @@ export default function ForgotPasswordScreen() {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>📧 Email đăng ký</Text>
-          <TextInput
-            placeholder="Nhập email của bạn"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <TouchableOpacity
+            style={styles.inputContainer}
+            onPress={focusEmailInput}
+            activeOpacity={1}
+          >
+            <TextInput
+              ref={emailInputRef}
+              placeholder="Nhập email của bạn"
+              placeholderTextColor="#888"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!isLoading}
+              cursorColor="#5E72EB"
+              selectionColor="rgba(94, 114, 235, 0.2)"
+              underlineColorAndroid="transparent"
+            />
+          </TouchableOpacity>
         </View>
 
         <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
           <TouchableOpacity
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+            onPressIn={() => !isLoading && handlePressIn()}
+            onPressOut={() => !isLoading && handlePressOut()}
             onPress={handleReset}
-            style={[styles.actionButton, styles.resetButton]}
+            style={[
+              styles.actionButton,
+              styles.resetButton,
+              isLoading && styles.buttonDisabled,
+            ]}
+            disabled={isLoading}
           >
-            <Icon
-              name="send"
-              size={24}
-              color="#FFF"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.buttonText}>Gửi Liên Kết</Text>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <Icon
+                  name="send"
+                  size={24}
+                  color="#FFF"
+                  style={styles.buttonIcon}
+                />
+                <Text style={styles.buttonText}>Gửi Liên Kết</Text>
+              </>
+            )}
           </TouchableOpacity>
         </Animated.View>
+
+        <TouchableOpacity
+          onPress={() => !isLoading && navigation.navigate('Login')}
+          style={[styles.backToLoginButton, isLoading && styles.buttonDisabled]}
+          disabled={isLoading}
+        >
+          <Text style={styles.backToLoginText}>← Quay lại đăng nhập</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -209,6 +281,10 @@ const styles = StyleSheet.create({
     color: '#3D50EB',
     letterSpacing: 0.5,
   },
+  icon: {
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
   screenTitle: {
     fontSize: 24,
     fontWeight: '800',
@@ -232,14 +308,19 @@ const styles = StyleSheet.create({
     color: '#495057',
     marginBottom: 10,
   },
-  input: {
+  inputContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderColor: 'rgba(94, 114, 235, 0.3)',
     borderWidth: 1,
     borderRadius: 16,
-    padding: 16,
+    paddingHorizontal: 16,
+    overflow: 'hidden',
+  },
+  input: {
+    paddingVertical: 16,
     fontSize: 16,
     color: '#343A40',
+    backgroundColor: 'transparent',
   },
   actionButton: {
     flexDirection: 'row',
@@ -253,9 +334,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
+    marginBottom: 20,
   },
   resetButton: {
     backgroundColor: '#6A5ACD',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonIcon: {
     marginRight: 12,
@@ -264,5 +349,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#FFF',
+  },
+  backToLoginButton: {
+    alignSelf: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  backToLoginText: {
+    color: '#5E72EB',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });

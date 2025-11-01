@@ -115,16 +115,50 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// 1. Lấy thông tin người dùng
-// exports.getProfile = async (req, res) => {
-//   const [rows] = await db.execute(
-//     "SELECT id, name, email, avatar_url FROM users WHERE id = ?",
-//     [req.user.id]
-//   );
-//   res.json(rows[0]);
-// };
+// gửi lại mã xác nhận
+exports.resendVerificationCode = async (req, res) => {
+  const { email } = req.body;
 
-// 1. Lấy thông tin người dùng
+  if (!email) {
+    return res.status(400).json({ message: "Email là bắt buộc" });
+  }
+
+  try {
+    // Kiểm tra xem email đã được verify chưa
+    const [existingUser] = await db.execute(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+    if (existingUser.length > 0 && existingUser[0].is_verified) {
+      return res.status(400).json({ message: "Email đã được xác minh" });
+    }
+
+    // Xoá mã cũ
+    await db.execute("DELETE FROM email_verifications WHERE email = ?", [
+      email,
+    ]);
+
+    // Tạo mã mới
+    const code = generateRandomCode();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 phút
+
+    // Lưu mã mới
+    await db.execute(
+      "INSERT INTO email_verifications (email, verification_code, expires_at) VALUES (?, ?, ?)",
+      [email, code, expiresAt]
+    );
+
+    // Gửi email
+    await sendVerificationCode(email, code);
+
+    res.status(200).json({ message: "Mã xác nhận mới đã được gửi" });
+  } catch (err) {
+    console.error("Resend code error:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
+// Lấy thông tin người dùng
 exports.getProfile = async (req, res) => {
   const [rows] = await db.execute(
     "SELECT id, name, email, avatar_url, created_at FROM users WHERE id = ?",

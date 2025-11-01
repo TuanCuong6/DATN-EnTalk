@@ -9,6 +9,7 @@ router.post("/register", authController.register);
 router.post("/verify", authController.verifyEmail);
 router.post("/login", authController.login);
 router.post("/forgot-password", authController.forgotPassword);
+router.post("/resend-code", authController.resendVerificationCode);
 
 // Account APIs
 router.get("/me", verifyToken, authController.getProfile);

@@ -1,4 +1,3 @@
-//frontend/src/screens/ChangePasswordScreen.js
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -10,6 +9,8 @@ import {
   ScrollView,
   Animated,
   Image,
+  ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { changePassword } from '../api/account';
 import { useNavigation } from '@react-navigation/native';
@@ -24,8 +25,18 @@ export default function ChangePasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const buttonScale = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Refs cho TextInput
+  const oldPasswordRef = useRef(null);
+  const newPasswordRef = useRef(null);
+  const confirmPasswordRef = useRef(null);
 
   useEffect(() => {
     getProfile().then(res => setProfile(res.data));
@@ -64,13 +75,60 @@ export default function ChangePasswordScreen() {
     outputRange: ['0deg', '360deg'],
   });
 
+  // Hàm focus input
+  const focusInput = inputRef => {
+    if (inputRef.current && !isLoading) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Hàm toggle hiển thị mật khẩu
+  const toggleShowPassword = type => {
+    switch (type) {
+      case 'old':
+        setShowOldPassword(!showOldPassword);
+        break;
+      case 'new':
+        setShowNewPassword(!showNewPassword);
+        break;
+      case 'confirm':
+        setShowConfirmPassword(!showConfirmPassword);
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleChange = async () => {
+    // Chặn spam - nếu đang loading thì không làm gì
+    if (isLoading) return;
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ tất cả các trường mật khẩu.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Lỗi', 'Mật khẩu mới và xác nhận mật khẩu không khớp.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert('Lỗi', 'Mật khẩu mới phải có ít nhất 6 ký tự.');
+      return;
+    }
+
     try {
+      setIsLoading(true);
+      Keyboard.dismiss(); // Đóng bàn phím khi bắt đầu đổi mật khẩu
+
       await changePassword({ oldPassword, newPassword, confirmPassword });
       Alert.alert('Thành công', 'Đổi mật khẩu thành công');
       navigation.goBack();
     } catch (err) {
       Alert.alert('Lỗi', err.response?.data?.message || 'Lỗi server');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -101,6 +159,7 @@ export default function ChangePasswordScreen() {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          disabled={isLoading}
         >
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
@@ -125,59 +184,139 @@ export default function ChangePasswordScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.screenTitle}>Đổi Mật Khẩu</Text>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>🔒 Mật khẩu hiện tại</Text>
-          <TextInput
-            placeholder="Nhập mật khẩu hiện tại"
-            placeholderTextColor="#888"
-            secureTextEntry
-            value={oldPassword}
-            onChangeText={setOldPassword}
-            style={styles.input}
-          />
+          <TouchableOpacity
+            style={styles.inputContainer}
+            onPress={() => focusInput(oldPasswordRef)}
+            activeOpacity={1}
+          >
+            <TextInput
+              ref={oldPasswordRef}
+              placeholder="Nhập mật khẩu hiện tại"
+              placeholderTextColor="#888"
+              secureTextEntry={!showOldPassword}
+              value={oldPassword}
+              onChangeText={setOldPassword}
+              style={styles.input}
+              editable={!isLoading}
+              cursorColor="#5E72EB"
+              selectionColor="rgba(94, 114, 235, 0.2)"
+              underlineColorAndroid="transparent"
+            />
+            <TouchableOpacity
+              onPress={() => toggleShowPassword('old')}
+              style={styles.eyeIcon}
+              disabled={isLoading}
+            >
+              <Icon
+                name={showOldPassword ? 'visibility' : 'visibility-off'}
+                size={20}
+                color="#6C757D"
+              />
+            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>🔑 Mật khẩu mới</Text>
-          <TextInput
-            placeholder="Nhập mật khẩu mới"
-            placeholderTextColor="#888"
-            secureTextEntry
-            value={newPassword}
-            onChangeText={setNewPassword}
-            style={styles.input}
-          />
+          <TouchableOpacity
+            style={styles.inputContainer}
+            onPress={() => focusInput(newPasswordRef)}
+            activeOpacity={1}
+          >
+            <TextInput
+              ref={newPasswordRef}
+              placeholder="Nhập mật khẩu mới"
+              placeholderTextColor="#888"
+              secureTextEntry={!showNewPassword}
+              value={newPassword}
+              onChangeText={setNewPassword}
+              style={styles.input}
+              editable={!isLoading}
+              cursorColor="#5E72EB"
+              selectionColor="rgba(94, 114, 235, 0.2)"
+              underlineColorAndroid="transparent"
+            />
+            <TouchableOpacity
+              onPress={() => toggleShowPassword('new')}
+              style={styles.eyeIcon}
+              disabled={isLoading}
+            >
+              <Icon
+                name={showNewPassword ? 'visibility' : 'visibility-off'}
+                size={20}
+                color="#6C757D"
+              />
+            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>✅ Xác nhận mật khẩu</Text>
-          <TextInput
-            placeholder="Nhập lại mật khẩu mới"
-            placeholderTextColor="#888"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            style={styles.input}
-          />
+          <TouchableOpacity
+            style={styles.inputContainer}
+            onPress={() => focusInput(confirmPasswordRef)}
+            activeOpacity={1}
+          >
+            <TextInput
+              ref={confirmPasswordRef}
+              placeholder="Nhập lại mật khẩu mới"
+              placeholderTextColor="#888"
+              secureTextEntry={!showConfirmPassword}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              style={styles.input}
+              editable={!isLoading}
+              cursorColor="#5E72EB"
+              selectionColor="rgba(94, 114, 235, 0.2)"
+              underlineColorAndroid="transparent"
+            />
+            <TouchableOpacity
+              onPress={() => toggleShowPassword('confirm')}
+              style={styles.eyeIcon}
+              disabled={isLoading}
+            >
+              <Icon
+                name={showConfirmPassword ? 'visibility' : 'visibility-off'}
+                size={20}
+                color="#6C757D"
+              />
+            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
 
         <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
           <TouchableOpacity
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+            onPressIn={() => !isLoading && handlePressIn()}
+            onPressOut={() => !isLoading && handlePressOut()}
             onPress={handleChange}
-            style={[styles.actionButton, styles.saveButton]}
+            style={[
+              styles.actionButton,
+              styles.saveButton,
+              isLoading && styles.buttonDisabled,
+            ]}
+            disabled={isLoading}
           >
-            <Icon
-              name="lock-reset"
-              size={24}
-              color="#FFF"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.buttonText}>Đổi Mật Khẩu</Text>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <Icon
+                  name="lock-reset"
+                  size={24}
+                  color="#FFF"
+                  style={styles.buttonIcon}
+                />
+                <Text style={styles.buttonText}>Đổi Mật Khẩu</Text>
+              </>
+            )}
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
@@ -288,14 +427,26 @@ const styles = StyleSheet.create({
     color: '#495057',
     marginBottom: 10,
   },
-  input: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderColor: 'rgba(94, 114, 235, 0.3)',
     borderWidth: 1,
     borderRadius: 16,
-    padding: 16,
+    paddingHorizontal: 16,
+    overflow: 'hidden',
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 16,
     fontSize: 16,
     color: '#343A40',
+    backgroundColor: 'transparent',
+  },
+  eyeIcon: {
+    padding: 8,
+    marginLeft: 8,
   },
   actionButton: {
     flexDirection: 'row',
@@ -313,6 +464,9 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: '#5E72EB',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonIcon: {
     marginRight: 12,

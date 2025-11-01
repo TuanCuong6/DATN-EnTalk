@@ -30,7 +30,7 @@ exports.sendNewPasswordEmail = async (to, newPassword) => {
   await transporter.sendMail(mailOptions);
 };
 
-// Hàm gửi email feedback đến admin (CÂN BẰNG - ĐẸP NHƯNG KHÔNG LÒE LOẸT)
+// Hàm gửi email feedback đến admin
 exports.sendFeedbackEmail = async ({
   fromUser,
   userId,
@@ -119,7 +119,7 @@ exports.sendFeedbackEmail = async ({
   await transporter.sendMail(mailOptions);
 };
 
-// Hàm gửi email reply đến user (CÂN BẰNG - ĐẸP NHƯNG KHÔNG LÒE LOẸT)
+// Hàm gửi email reply đến user
 exports.sendReplyEmail = async ({
   to,
   user_name,
