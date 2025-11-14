@@ -16,7 +16,7 @@ const suggestionStrategies = [
        AND custom_text NOT IN (
          SELECT custom_text FROM notifications
          WHERE user_id = ? AND custom_text IS NOT NULL
-         GROUP BY custom_text HAVING COUNT(*) >= 2
+         GROUP BY custom_text HAVING COUNT(*) >= 5 -- SỬA 2 -> 5
        )
        GROUP BY custom_text
        HAVING MIN(score_overall) < 6 AND MAX(score_overall) < 7.5
@@ -44,11 +44,13 @@ const suggestionStrategies = [
       `SELECT r.reading_id, r.id AS record_id, rd.content
        FROM records r
        JOIN readings rd ON r.reading_id = rd.id
-       WHERE r.user_id = ? AND r.score_overall < 7.5
+       WHERE r.user_id = ? 
+       AND r.score_overall < 6.5 -- SỬA 7.5 -> 6.5 (làm rõ "điểm thấp")
+       AND rd.created_by IS NULL -- SỬA: Chỉ lấy bài của hệ thống
        AND r.reading_id NOT IN (
          SELECT reading_id FROM notifications
          WHERE user_id = ? AND reading_id IS NOT NULL
-         GROUP BY reading_id HAVING COUNT(*) >= 2
+         GROUP BY reading_id HAVING COUNT(*) >= 5 -- SỬA 2 -> 5
        )
        ORDER BY r.created_at ASC LIMIT 1`,
       [userId, userId]
@@ -69,15 +71,16 @@ const suggestionStrategies = [
     return null;
   },
 
-  // 3. Bài chưa từng luyện
+  // 3. Bài hệ thống chưa từng luyện
   async (userId) => {
     const [unread] = await db.execute(
       `SELECT id, content FROM readings
-       WHERE id NOT IN (SELECT reading_id FROM records WHERE user_id = ?)
+       WHERE created_by IS NULL -- SỬA: Chỉ lấy bài của hệ thống
+       AND id NOT IN (SELECT reading_id FROM records WHERE user_id = ?)
        AND id NOT IN (
          SELECT reading_id FROM notifications
          WHERE user_id = ? AND reading_id IS NOT NULL
-         GROUP BY reading_id HAVING COUNT(*) >= 2
+         GROUP BY reading_id HAVING COUNT(*) >= 5 -- SỬA 2 -> 5
        )
        ORDER BY created_at DESC LIMIT 1`,
       [userId, userId]
@@ -97,26 +100,31 @@ const suggestionStrategies = [
     return null;
   },
 
-  // 4. Chủ đề ít luyện
+  // 4. Chủ đề ít luyện (bài hệ thống)
   async (userId) => {
+    // Tìm chủ đề ít luyện nhất
     const [topics] = await db.execute(
       `SELECT t.id AS topic_id FROM topics t
        LEFT JOIN readings r ON r.topic_id = t.id
        LEFT JOIN records rec ON rec.reading_id = r.id AND rec.user_id = ?
+       WHERE r.created_by IS NULL -- SỬA: Chỉ tính bài hệ thống
        GROUP BY t.id ORDER BY COUNT(rec.id) ASC LIMIT 1`,
       [userId]
     );
 
     if (topics.length > 0) {
       const topicId = topics[0].topic_id;
+      // Tìm 1 bài chưa đọc trong chủ đề đó
       const [reading] = await db.execute(
         `SELECT id, content FROM readings
-         WHERE topic_id = ? AND id NOT IN (
+         WHERE topic_id = ? 
+         AND created_by IS NULL -- SỬA: Chỉ lấy bài của hệ thống
+         AND id NOT IN (
            SELECT reading_id FROM records WHERE user_id = ?
          ) AND id NOT IN (
            SELECT reading_id FROM notifications
            WHERE user_id = ? AND reading_id IS NOT NULL
-           GROUP BY reading_id HAVING COUNT(*) >= 2
+           GROUP BY reading_id HAVING COUNT(*) >= 5 -- SỬA 2 -> 5
          )
          LIMIT 1`,
         [topicId, userId, userId]
@@ -158,7 +166,8 @@ const suggestionStrategies = [
         [userId, suggestionText]
       );
 
-      if (exist[0].total >= 2) return null;
+      // SỬA 2 -> 5
+      if (exist[0].total >= 5) return null;
 
       return {
         title: "🎯 Gợi ý từ AI",
