@@ -12,15 +12,21 @@ Tôi sẽ cung cấp cho bạn lịch sử đọc gần đây của một ngư�
 
 Hãy phân tích điểm mạnh và điểm yếu, sau đó đề xuất:
 - Một kỹ năng cần cải thiện (chỉ chọn 1 trong các kỹ năng: phát âm, ngữ điệu, lưu loát, tốc độ)
-- Một chủ đề tiếng Anh nên luyện thêm (ví dụ: Du lịch, Khoa học, Tin tức, Thám hiểm…)
-- Một đoạn văn mẫu phù hợp để luyện thêm (viết bằng tiếng Anh, độ dài khoảng 1-2 câu)
+- Một chủ đề tiếng Anh nên luyện thêm (ví dụ: Du lịch, Khoa học, Tin tức, Thám hiểm, Sức khỏe, Gia đình, Công nghệ, Thể thao, Ẩm thực, Môi trường…)
+- Một đoạn văn mẫu HOÀN TOÀN MỚI để luyện thêm (viết bằng tiếng Anh, độ dài khoảng 2-3 câu, nội dung phải khác hoàn toàn với các bài đã đọc trước đó)
+
+QUAN TRỌNG: 
+- Đoạn văn phải SÁNG TẠO, KHÁC BIỆT mỗi lần gọi
+- KHÔNG lặp lại nội dung từ lịch sử đọc
+- Tạo câu chuyện, tình huống, hoặc thông tin mới lạ
+- Đa dạng về chủ đề và từ vựng
 
 Chỉ trả về kết quả đúng định dạng JSON, không markdown, không giải thích:
 
 {
   "focus": "ngữ điệu",
   "topic": "Khoa học",
-  "suggestion": "Climate change is one of the biggest challenges facing our planet today."
+  "suggestion": "Scientists recently discovered a new species of butterfly in the Amazon rainforest. This colorful insect has unique patterns on its wings that help it blend with flowers."
 }
 
 Dưới đây là lịch sử luyện tập (tối đa 3 bản ghi gần nhất):
