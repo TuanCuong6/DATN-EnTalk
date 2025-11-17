@@ -13,8 +13,8 @@ cron.schedule("0 8,14,20 * * *", async () => {
 //   await recommendOnce();
 // });
 
-// cron.schedule("*/5 * * * *", async () => {
-//   console.log("🧪 Test gửi notification mỗi 5 phút");
+// cron.schedule("*/2 * * * *", async () => {
+//   console.log("🧪 Test gửi notification mỗi 2 phút");
 //   await recommendOnce();
 // });
 
