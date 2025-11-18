@@ -16,6 +16,7 @@ const feedbackRoutes = require("./routes/feedback");
 
 // Thêm vào backend/server.js
 const adminRoutes = require("./routes/admin");
+const ttsRoutes = require("./routes/tts");
 
 app.use(cors());
 app.use(express.json());
@@ -33,6 +34,7 @@ app.use("/api/feedback", feedbackRoutes);
 
 // Thêm sau các route khác
 app.use("/api/admin", adminRoutes);
+app.use("/api/tts", ttsRoutes);
 
 app.listen(3000, () => {
   console.log("✅ Server is running on port 3000");

@@ -17,3 +17,8 @@ npx react-native log-android (xem log react native)
 -- terminal 5:
 cd admin
 npm start
+
+--terminal 6:
+cd piper
+source piper_env/Scripts/activate
+python piper_server.py

@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Easing } from 'react-native';
 import AudioRecorder from '../components/AudioRecorder';
 import { submitRecording, getReadingById } from '../api/reading';
+import TextToSpeechPlayer from '../components/TextToSpeechPlayer';
 
 export default function ReadingPracticeScreen({ route, navigation }) {
   const { readingId, reading: readingFromParams } = route.params || {};
@@ -173,6 +174,7 @@ export default function ReadingPracticeScreen({ route, navigation }) {
         <View style={styles.card}>
           <Text style={styles.title}>{reading.title || 'Bài đọc'}</Text>
           <Text style={styles.contentText}>{reading.content}</Text>
+          <TextToSpeechPlayer text={reading.content} style={styles.ttsPlayer} />
         </View>
 
         <View style={styles.recorderContainer}>
