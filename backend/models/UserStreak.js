@@ -97,20 +97,6 @@ class UserStreak {
     );
     return { current_streak: 1, is_new: true, reset: true };
   }
-
-  // Lấy danh sách user có streak >= 2 và chưa luyện hôm nay
-  static async getUsersNeedReminder(vnDate) {
-    const [rows] = await db.execute(
-      `SELECT us.user_id, us.current_streak, u.fcm_token, u.name
-       FROM user_streaks us
-       JOIN users u ON us.user_id = u.id
-       WHERE us.current_streak >= 2 
-       AND (us.last_practice_date IS NULL OR us.last_practice_date < ?)
-       AND u.fcm_token IS NOT NULL`,
-      [vnDate]
-    );
-    return rows;
-  }
 }
 
 module.exports = UserStreak;

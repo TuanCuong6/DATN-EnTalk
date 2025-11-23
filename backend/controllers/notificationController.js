@@ -20,12 +20,18 @@ exports.saveFcmToken = async (req, res) => {
 // Lấy danh sách thông báo
 exports.getNotifications = async (req, res) => {
   try {
+    console.log(`📋 API getNotifications - user_id: ${req.user.id}`);
+    
     const [rows] = await db.execute(
       `SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC`,
       [req.user.id]
     );
+    
+    console.log(`📊 Found ${rows.length} notifications for user ${req.user.id}`);
+    
     res.json(rows);
   } catch (err) {
+    console.error(`❌ Error getNotifications:`, err);
     res
       .status(500)
       .json({ message: "Lỗi khi lấy thông báo", error: err.message });

@@ -84,8 +84,8 @@ export default function RecordDetailScreen({ route }) {
         readingId: detail.reading_id,
       });
     } else {
-      // Bài đọc bị xóa/sửa -> CustomReadingScreen với nội dung cũ
-      navigation.navigate('CustomReadingScreen', {
+      // Bài đọc bị xóa/sửa -> PracticeCustomReadingScreen với nội dung cũ
+      navigation.navigate('PracticeCustomReadingScreen', {
         customText: detail.original_content || detail.reading_content,
       });
     }

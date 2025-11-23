@@ -40,7 +40,7 @@ export default function ScanTextScreen() {
         Alert.alert('Không nhận diện được chữ trong ảnh');
         return;
       }
-      navigation.navigate('CustomReadingScreen', { customText: text });
+      navigation.navigate('PracticeCustomReadingScreen', { customText: text });
     } catch (err) {
       console.error('❌ OCR error:', err);
       Alert.alert('Lỗi khi quét văn bản');

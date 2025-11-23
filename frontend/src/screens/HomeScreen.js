@@ -198,7 +198,9 @@ export default function HomeScreen() {
                 <TouchableOpacity 
                   style={[
                     styles.streakButton,
-                    !streakData.practiced_today && streakData.current_streak >= 2 && styles.streakButtonWarning
+                    !streakData.practiced_today && 
+                    (streakData.current_streak >= 2 || (streakData.current_streak === 1 && streakData.last_practice_date)) && 
+                    styles.streakButtonWarning
                   ]}
                   onPress={() => setShowStreakModal(true)}
                 >
@@ -277,7 +279,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             onPressIn={() => handlePressIn(button2Scale)}
             onPressOut={() => handlePressOut(button2Scale)}
-            onPress={() => navigation.navigate('CustomReadingScreen')}
+            onPress={() => navigation.navigate('CustomContentChoiceScreen')}
           >
             <View style={[styles.button, styles.button2]}>
               <Icon
@@ -287,7 +289,7 @@ export default function HomeScreen() {
                 style={styles.buttonIcon}
               />
               <View>
-                <Text style={styles.buttonTitle}>Nhập nội dung tùy chỉnh</Text>
+                <Text style={styles.buttonTitle}>Nội dung tùy chỉnh</Text>
                 <Text style={styles.buttonSubtitle}>
                   Luyện tập với nội dung của bạn
                 </Text>

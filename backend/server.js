@@ -18,6 +18,7 @@ const feedbackRoutes = require("./routes/feedback");
 const adminRoutes = require("./routes/admin");
 const ttsRoutes = require("./routes/tts");
 const streakRoutes = require("./routes/streak");
+const aiReadingRoutes = require("./routes/aiReading");
 
 app.use(cors());
 app.use(express.json());
@@ -37,9 +38,9 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/tts", ttsRoutes);
 app.use("/api/streak", streakRoutes);
+app.use("/api/ai-reading", aiReadingRoutes);
 
 app.listen(3000, () => {
   console.log("✅ Server is running on port 3000");
 });
 require("./cron/dailyRecommendation");
-require("./cron/streakReminder");

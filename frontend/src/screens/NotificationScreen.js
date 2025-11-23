@@ -31,9 +31,20 @@ export default function NotificationScreen() {
   const fetchNotifications = async () => {
     try {
       const res = await getNotificationList();
+      console.log('📋 Notifications response:', JSON.stringify(res.data, null, 2));
+      console.log('📊 Total notifications:', res.data?.length || 0);
+      
+      // Log từng notification
+      if (res.data && res.data.length > 0) {
+        res.data.forEach((notif, index) => {
+          console.log(`  [${index}] ID: ${notif.id}, Title: ${notif.title}, User: ${notif.user_id}`);
+        });
+      }
+      
       setNotifications(res.data);
     } catch (err) {
       console.log('❌ Lỗi lấy danh sách thông báo:', err.message);
+      console.log('❌ Error details:', err.response?.data);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -83,43 +94,45 @@ export default function NotificationScreen() {
     } else if (item.reading_id) {
       navigate('ReadingPractice', { readingId: item.reading_id });
     } else if (item.custom_text) {
-      navigate('CustomReadingScreen', { customText: item.custom_text });
+      navigate('PracticeCustomReadingScreen', { customText: item.custom_text });
     }
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={[
-        styles.item,
-        {
-          backgroundColor: item.is_read ? '#f8f9ff' : '#fffbe6',
-          borderColor: item.is_read ? 'rgba(94, 114, 235, 0.2)' : '#FFD700',
-        },
-      ]}
-      onPress={() => handlePress(item)}
-    >
-      <View style={styles.itemHeader}>
-        <Icon
-          name={getIconForType(item)}
-          size={24}
-          color="#5E72EB"
-          style={styles.itemIcon}
-        />
-        <Text style={styles.title}>{item.title}</Text>
-      </View>
-      <Text style={styles.body}>{item.body}</Text>
-      <View style={styles.itemFooter}>
-        <Text style={styles.date}>
-          {new Date(item.created_at).toLocaleString()}
-        </Text>
-        {!item.is_read && (
-          <View style={styles.unreadBadge}>
-            <Text style={styles.unreadText}>Mới</Text>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    return (
+      <TouchableOpacity
+        style={[
+          styles.item,
+          {
+            backgroundColor: item.is_read ? '#f8f9ff' : '#fffbe6',
+            borderColor: item.is_read ? 'rgba(94, 114, 235, 0.2)' : '#FFD700',
+          },
+        ]}
+        onPress={() => handlePress(item)}
+      >
+        <View style={styles.itemHeader}>
+          <Icon
+            name={getIconForType(item)}
+            size={24}
+            color="#5E72EB"
+            style={styles.itemIcon}
+          />
+          <Text style={styles.title}>{item.title}</Text>
+        </View>
+        <Text style={styles.body}>{item.body}</Text>
+        <View style={styles.itemFooter}>
+          <Text style={styles.date}>
+            {new Date(item.created_at).toLocaleString()}
+          </Text>
+          {!item.is_read && (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadText}>Mới</Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const getIconForType = item => {
     if (item.record_id) return 'mic';
