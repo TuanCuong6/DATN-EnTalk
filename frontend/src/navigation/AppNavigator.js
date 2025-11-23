@@ -4,6 +4,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AppTabs from './AppTabs';
 import ReadingPracticeScreen from '../screens/ReadingPracticeScreen';
 import CustomReadingScreen from '../screens/CustomReadingScreen';
+import CustomContentChoiceScreen from '../screens/CustomContentChoiceScreen';
+import AIGenerateReadingScreen from '../screens/AIGenerateReadingScreen';
+import PracticeCustomReadingScreen from '../screens/PracticeCustomReadingScreen';
 import TopicListScreen from '../screens/TopicListScreen';
 import TopicReadingsScreen from '../screens/TopicReadingScreen';
 import RecordsByDateScreen from '../screens/RecordsByDateScreen';
@@ -21,9 +24,24 @@ export default function AppNavigator() {
       <Stack.Screen name="Tabs" component={AppTabs} />
       <Stack.Screen name="ReadingPractice" component={ReadingPracticeScreen} />
       <Stack.Screen
+        name="CustomContentChoiceScreen"
+        component={CustomContentChoiceScreen}
+        options={{ title: 'Nội dung tùy chỉnh' }}
+      />
+      <Stack.Screen
         name="CustomReadingScreen"
         component={CustomReadingScreen}
-        options={{ title: 'Luyện đọc tùy chọn' }}
+        options={{ title: 'Nhập nội dung tùy chỉnh' }}
+      />
+      <Stack.Screen
+        name="AIGenerateReadingScreen"
+        component={AIGenerateReadingScreen}
+        options={{ title: 'AI Tạo Bài Đọc' }}
+      />
+      <Stack.Screen
+        name="PracticeCustomReadingScreen"
+        component={PracticeCustomReadingScreen}
+        options={{ title: 'Luyện Đọc' }}
       />
       <Stack.Screen name="TopicList" component={TopicListScreen} />
       <Stack.Screen name="TopicReadings" component={TopicReadingsScreen} />

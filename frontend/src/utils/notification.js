@@ -63,11 +63,15 @@ export async function setupFCM() {
 }
 
 function handleNotificationClick(data) {
-  if (data.readingId) {
+  if (data.type === 'streak') {
+    // Thông báo streak -> mở TopicList
+    navigate('TopicList');
+  } else if (data.readingId) {
     navigate('ReadingPractice', { readingId: parseInt(data.readingId) });
   } else if (data.customText) {
-    navigate('CustomReadingScreen', { customText: data.customText });
+    navigate('PracticeCustomReadingScreen', { customText: data.customText });
   } else {
-    console.log('⚠️ Không có dữ liệu phù hợp để điều hướng');
+    // Mặc định mở TopicList nếu không có data cụ thể
+    navigate('TopicList');
   }
 }

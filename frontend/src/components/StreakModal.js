@@ -14,22 +14,56 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 const { width } = Dimensions.get('window');
 
 const STREAK_LEVELS = [
-  { min: 1, max: 10, icon: 'local-fire-department', name: 'Beginner Flame', color: '#FF6B6B' },
-  { min: 10, max: 50, icon: 'flash-on', name: 'Intermediate Master', color: '#FFD93D' },
-  { min: 50, max: 100, icon: 'diamond', name: 'Advanced Speaker', color: '#6BCB77' },
-  { min: 100, max: 200, icon: 'emoji-events', name: 'Proficient Legend', color: '#4D96FF' },
-  { min: 200, max: Infinity, icon: 'stars', name: 'Native Immortal', color: '#9D4EDD' },
+  {
+    min: 1,
+    max: 10,
+    icon: 'local-fire-department',
+    name: 'Beginner Flame',
+    color: '#FF6B6B',
+  },
+  {
+    min: 10,
+    max: 50,
+    icon: 'flash-on',
+    name: 'Intermediate Master',
+    color: '#FFD93D',
+  },
+  {
+    min: 50,
+    max: 100,
+    icon: 'diamond',
+    name: 'Advanced Speaker',
+    color: '#6BCB77',
+  },
+  {
+    min: 100,
+    max: 200,
+    icon: 'emoji-events',
+    name: 'Proficient Legend',
+    color: '#4D96FF',
+  },
+  {
+    min: 200,
+    max: Infinity,
+    icon: 'stars',
+    name: 'Native Immortal',
+    color: '#9D4EDD',
+  },
 ];
 
-const getStreakLevel = (streak) => {
-  return STREAK_LEVELS.find(level => streak >= level.min && streak < level.max) || STREAK_LEVELS[0];
+const getStreakLevel = streak => {
+  return (
+    STREAK_LEVELS.find(level => streak >= level.min && streak < level.max) ||
+    STREAK_LEVELS[0]
+  );
 };
 
 export default function StreakModal({ visible, onClose, streakData }) {
   if (!streakData) return null;
 
   const currentLevel = getStreakLevel(streakData.current_streak);
-  const { practiced_today, time_left, current_streak, streak_freeze_count } = streakData;
+  const { practiced_today, time_left, current_streak, streak_freeze_count } =
+    streakData;
 
   const getStatusMessage = () => {
     // Trường hợp 1: Đã luyện hôm nay
@@ -40,19 +74,29 @@ export default function StreakModal({ visible, onClose, streakData }) {
         color: '#6BCB77',
       };
     }
-    
-    // Trường hợp 2: Streak = 1 và chưa luyện (mới bắt đầu hoặc bị reset)
+
+    // Trường hợp 2: Streak = 1 và chưa luyện
     if (current_streak === 1) {
+      // Nếu chưa có last_practice_date = chưa luyện lần nào
+      const { last_practice_date } = streakData;
+      if (!last_practice_date) {
+        return {
+          text: 'Luyện đọc hôm nay để bắt đầu streak nào!',
+          icon: 'play-circle-outline',
+          color: '#5E72EB',
+        };
+      }
+      // Nếu đã có last_practice_date = đã luyện rồi nhưng chưa luyện hôm nay
       return {
-        text: 'Luyện đọc hôm nay để bắt đầu streak nào!',
-        icon: 'play-circle-outline',
-        color: '#5E72EB',
+        text: `Còn ${time_left.hours} giờ ${time_left.minutes} phút nữa là mất streak 1 ngày của bạn đấy!`,
+        icon: 'timer',
+        color: '#FF6B6B',
       };
     }
-    
+
     // Trường hợp 3: Streak >= 2 và chưa luyện (cảnh báo mất streak)
     return {
-      text: `Còn ${time_left.hours}h${time_left.minutes}' nữa là mất streak ${current_streak} ngày của bạn đấy!`,
+      text: `Còn ${time_left.hours} giờ ${time_left.minutes} phút nữa là mất streak ${current_streak} ngày của bạn đấy!`,
       icon: 'timer',
       color: '#FF6B6B',
     };
@@ -67,9 +111,9 @@ export default function StreakModal({ visible, onClose, streakData }) {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <TouchableOpacity 
-        style={styles.overlay} 
-        activeOpacity={1} 
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
         onPress={onClose}
       >
         <View style={styles.modalContainer}>
@@ -87,28 +131,34 @@ export default function StreakModal({ visible, onClose, streakData }) {
               <View style={styles.streakHeader}>
                 <Text style={styles.streakLabel}>Streak hiện tại</Text>
                 <View style={styles.streakBadge}>
-                  <Icon 
-                    name={currentLevel.icon} 
-                    size={40} 
+                  <Icon
+                    name={currentLevel.icon}
+                    size={40}
                     color={practiced_today ? currentLevel.color : '#BDBDBD'}
                   />
-                  <Text style={[
-                    styles.streakNumber,
-                    !practiced_today && styles.streakNumberGray
-                  ]}>
+                  <Text
+                    style={[
+                      styles.streakNumber,
+                      !practiced_today && styles.streakNumberGray,
+                    ]}
+                  >
                     {current_streak}
                   </Text>
                 </View>
-                <Text style={[
-                  styles.levelName, 
-                  { color: practiced_today ? currentLevel.color : '#BDBDBD' }
-                ]}>
+                <Text
+                  style={[
+                    styles.levelName,
+                    { color: practiced_today ? currentLevel.color : '#BDBDBD' },
+                  ]}
+                >
                   {currentLevel.name}
                 </Text>
               </View>
 
               {/* Status message */}
-              <View style={[styles.statusCard, { borderLeftColor: status.color }]}>
+              <View
+                style={[styles.statusCard, { borderLeftColor: status.color }]}
+              >
                 <Icon name={status.icon} size={24} color={status.color} />
                 <Text style={styles.statusText}>{status.text}</Text>
               </View>
@@ -126,28 +176,42 @@ export default function StreakModal({ visible, onClose, streakData }) {
               {/* Divider */}
               <View style={styles.divider} />
 
+              {/* Info tip */}
+              <View style={styles.infoTip}>
+                <Icon name="info-outline" size={20} color="#5E72EB" />
+                <Text style={styles.infoText}>
+                  Luyện đọc hàng ngày để duy trì Streak
+                </Text>
+              </View>
+
               {/* Streak levels */}
               <Text style={styles.levelsTitle}>Các cấp độ Streak</Text>
               {STREAK_LEVELS.map((level, index) => (
-                <View 
-                  key={index} 
+                <View
+                  key={index}
                   style={[
                     styles.levelItem,
-                    current_streak >= level.min && current_streak < level.max && styles.levelItemActive
+                    current_streak >= level.min &&
+                      current_streak < level.max &&
+                      styles.levelItemActive,
                   ]}
                 >
                   <Icon name={level.icon} size={28} color={level.color} />
                   <View style={styles.levelInfo}>
                     <Text style={styles.levelRange}>
-                      {level.min}–{level.max === Infinity ? '∞' : level.max} ngày
+                      {level.min}–{level.max === Infinity ? '∞' : level.max}{' '}
+                      ngày
                     </Text>
-                    <Text style={[styles.levelNameSmall, { color: level.color }]}>
+                    <Text
+                      style={[styles.levelNameSmall, { color: level.color }]}
+                    >
                       {level.name}
                     </Text>
                   </View>
-                  {current_streak >= level.min && current_streak < level.max && (
-                    <Icon name="check-circle" size={20} color={level.color} />
-                  )}
+                  {current_streak >= level.min &&
+                    current_streak < level.max && (
+                      <Icon name="check-circle" size={20} color={level.color} />
+                    )}
                 </View>
               ))}
             </LinearGradient>
@@ -257,6 +321,23 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E0E0E0',
     marginVertical: 20,
+  },
+  infoTip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F7FF',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 15,
+    borderLeftWidth: 3,
+    borderLeftColor: '#5E72EB',
+  },
+  infoText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#5E72EB',
+    fontWeight: '500',
+    flex: 1,
   },
   levelsTitle: {
     fontSize: 16,
