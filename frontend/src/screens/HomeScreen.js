@@ -11,15 +11,31 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getProfile } from '../api/account';
+import { getStreak } from '../api/streak';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { BlurView } from '@react-native-community/blur';
+import StreakModal from '../components/StreakModal';
 
 const chatbotImage = require('../assets/chatbot.png');
+
+const STREAK_LEVELS = [
+  { min: 1, max: 10, icon: 'local-fire-department', color: '#FF6B6B', name: 'Beginner Flame' },
+  { min: 10, max: 50, icon: 'flash-on', color: '#FFD93D', name: 'Intermediate Master' },
+  { min: 50, max: 100, icon: 'diamond', color: '#6BCB77', name: 'Advanced Speaker' },
+  { min: 100, max: 200, icon: 'emoji-events', color: '#4D96FF', name: 'Proficient Legend' },
+  { min: 200, max: Infinity, icon: 'stars', color: '#9D4EDD', name: 'Native Immortal' },
+];
+
+const getStreakLevel = (streak) => {
+  return STREAK_LEVELS.find(level => streak >= level.min && streak < level.max) || STREAK_LEVELS[0];
+};
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [profile, setProfile] = useState(null);
+  const [streakData, setStreakData] = useState(null);
+  const [showStreakModal, setShowStreakModal] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -27,9 +43,19 @@ export default function HomeScreen() {
   const button2Scale = useRef(new Animated.Value(1)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const streakPulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     getProfile().then(res => setProfile(res.data));
+    getStreak()
+      .then(data => {
+        console.log('✅ Streak data:', data);
+        setStreakData(data);
+      })
+      .catch(err => {
+        console.log('❌ Streak error:', err);
+        console.log('❌ Error details:', err.response?.data);
+      });
 
     // Fade in animation
     Animated.timing(fadeAnim, {
@@ -37,6 +63,24 @@ export default function HomeScreen() {
       duration: 800,
       useNativeDriver: true,
     }).start();
+
+    // Pulse animation for streak
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(streakPulse, {
+          toValue: 1.1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(streakPulse, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
 
     // Floating animation for chatbot
     Animated.loop(
@@ -69,6 +113,14 @@ export default function HomeScreen() {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       getProfile().then(res => setProfile(res.data));
+      getStreak()
+        .then(data => {
+          console.log('✅ Streak data (focus):', data);
+          setStreakData(data);
+        })
+        .catch(err => {
+          console.log('❌ Streak error (focus):', err);
+        });
     });
     return unsubscribe;
   }, [navigation]);
@@ -139,21 +191,48 @@ export default function HomeScreen() {
             />
           </View>
 
-          {profile && (
-            <View style={styles.userInfo}>
-              {profile.avatar_url ? (
-                <Image
-                  source={{ uri: profile.avatar_url }}
-                  style={styles.avatar}
-                />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Icon name="person" size={20} color="#5E72EB" />
-                </View>
-              )}
-              <Text style={styles.name}>{profile.name}</Text>
-            </View>
-          )}
+          <View style={styles.headerRight}>
+            {/* Streak button */}
+            {streakData && (
+              <Animated.View style={{ transform: [{ scale: streakPulse }] }}>
+                <TouchableOpacity 
+                  style={[
+                    styles.streakButton,
+                    !streakData.practiced_today && streakData.current_streak >= 2 && styles.streakButtonWarning
+                  ]}
+                  onPress={() => setShowStreakModal(true)}
+                >
+                  <Icon 
+                    name={getStreakLevel(streakData.current_streak).icon} 
+                    size={24} 
+                    color={streakData.practiced_today ? getStreakLevel(streakData.current_streak).color : '#BDBDBD'}
+                  />
+                  <Text style={[
+                    styles.streakText,
+                    !streakData.practiced_today && styles.streakTextGray
+                  ]}>
+                    {streakData.current_streak}
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
+            )}
+
+            {profile && (
+              <View style={styles.userInfo}>
+                {profile.avatar_url ? (
+                  <Image
+                    source={{ uri: profile.avatar_url }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Icon name="person" size={20} color="#5E72EB" />
+                  </View>
+                )}
+                <Text style={styles.name}>{profile.name}</Text>
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Lời chào */}
@@ -246,6 +325,13 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </Animated.View>
       </Animated.View>
+
+      {/* Streak Modal */}
+      <StreakModal 
+        visible={showStreakModal}
+        onClose={() => setShowStreakModal(false)}
+        streakData={streakData}
+      />
     </View>
   );
 }
@@ -290,6 +376,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
     marginTop: 15,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  streakButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(94, 114, 235, 0.3)',
+    shadowColor: '#5E72EB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  streakButtonWarning: {
+    borderColor: 'rgba(255, 107, 107, 0.5)',
+    shadowColor: '#FF6B6B',
+  },
+  streakText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 5,
+  },
+  streakTextGray: {
+    color: '#BDBDBD',
   },
   logoContainer: {
     flexDirection: 'row',

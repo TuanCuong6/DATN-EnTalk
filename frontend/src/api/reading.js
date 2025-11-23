@@ -41,9 +41,19 @@ export const submitRecording = async (
 
   return { data: res.json() };
 };
-export const fetchReadingsByTopic = topicId =>
-  API_READING.get(`/topic/${topicId}`);
-export const fetchAllTopics = () => API_TOPIC.get('/');
+export const fetchReadingsByTopic = async topicId => {
+  const token = await AsyncStorage.getItem('token');
+  return API_READING.get(`/topic/${topicId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const fetchAllTopics = async () => {
+  const token = await AsyncStorage.getItem('token');
+  return API_TOPIC.get('/', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
 
 export const getReadingById = async id => {
   const token = await AsyncStorage.getItem('token');

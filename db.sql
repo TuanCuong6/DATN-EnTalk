@@ -236,3 +236,46 @@ CREATE TABLE admins (
 -- Thêm admin mặc định (password: password)
 INSERT INTO admins (username, email, password_hash) 
 VALUES ('admin', 'admin@entalk.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+
+
+-- Bảng theo dõi tiến độ đọc của từng user
+CREATE TABLE IF NOT EXISTS reading_progress (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    reading_id INT NOT NULL,
+    is_completed BOOLEAN DEFAULT FALSE,           -- Đã hoàn thành bài đọc chưa (điểm >= 5)
+    best_score FLOAT DEFAULT NULL,                -- Điểm cao nhất đạt được
+    completed_at DATETIME,                        -- Thời điểm hoàn thành lần đầu
+    last_practiced_at DATETIME,                   -- Lần luyện gần nhất
+    practice_count INT DEFAULT 0,                 -- Số lần đã luyện
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (reading_id) REFERENCES readings(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_reading (user_id, reading_id)
+);
+
+-- Index để tăng tốc truy vấn
+CREATE INDEX idx_user_progress ON reading_progress(user_id, is_completed);
+CREATE INDEX idx_reading_progress ON reading_progress(reading_id, is_completed);
+
+
+-- Bảng streak theo dõi chuỗi đọc hàng ngày
+CREATE TABLE IF NOT EXISTS user_streaks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    current_streak INT DEFAULT 1,                  -- Số ngày streak hiện tại
+    longest_streak INT DEFAULT 0,                  -- Streak dài nhất từng đạt được
+    last_practice_date DATE,                       -- Ngày luyện gần nhất (theo giờ VN)
+    streak_freeze_count INT DEFAULT 3,             -- Số lần phục hồi còn lại trong tháng (reset đầu tháng)
+    last_freeze_reset_month INT DEFAULT 1,         -- Tháng reset lần cuối (1-12)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_streak (user_id)
+);
+
+-- Index để tăng tốc truy vấn
+CREATE INDEX idx_user_streak ON user_streaks(user_id);
+CREATE INDEX idx_last_practice ON user_streaks(last_practice_date);
+

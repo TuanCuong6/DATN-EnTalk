@@ -18,14 +18,37 @@ exports.getAllReadings = async (req, res) => {
   }
 };
 
-// GET /api/reading/topic/:id
+// GET /api/reading/topic/:id - Có thêm thông tin điểm cao nhất
 exports.getReadingsByTopic = async (req, res) => {
   const topicId = req.params.id;
+  const userId = req.user?.id;
+
   try {
     const [rows] = await require("../config/db").execute(
       "SELECT id, content, level, created_by, topic_id, is_community_post, created_at FROM readings WHERE topic_id = ?",
       [topicId]
     );
+
+    // Nếu có userId, thêm thông tin điểm cao nhất và trạng thái
+    if (userId) {
+      const readingsWithProgress = await Promise.all(
+        rows.map(async (reading) => {
+          const progress =
+            await require("../models/ReadingProgress").getProgressByReading(
+              userId,
+              reading.id
+            );
+          return {
+            ...reading,
+            best_score: progress?.best_score || null,
+            is_completed: progress?.is_completed || false,
+            practice_count: progress?.practice_count || 0,
+          };
+        })
+      );
+      return res.json(readingsWithProgress);
+    }
+
     res.json(rows);
   } catch (err) {
     console.error("❌ Lỗi khi lấy bài đọc theo topic:", err);

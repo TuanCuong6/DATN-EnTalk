@@ -60,7 +60,8 @@ def synthesize():
         
         audio_bytes = b"".join(audio_chunks)
         
-        wav_header = create_wav_header(len(audio_bytes))
+        # Giảm sample rate xuống 19000 để làm chậm tốc độ đọc (từ 22050)
+        wav_header = create_wav_header(len(audio_bytes), sample_rate=19000)
         wav_file = wav_header + audio_bytes
         
         elapsed_time = time.time() - start_time
