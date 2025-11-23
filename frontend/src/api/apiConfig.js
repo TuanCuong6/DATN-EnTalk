@@ -23,3 +23,14 @@ API_HISTORY.interceptors.request.use(async config => {
   }
   return config;
 });
+
+export const API_STREAK = axios.create({
+  baseURL: `${BASE_URL}/streak`,
+});
+API_STREAK.interceptors.request.use(async config => {
+  const token = await AsyncStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});

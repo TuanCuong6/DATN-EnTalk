@@ -125,6 +125,23 @@ export default function TopicListScreen() {
                   resizeMode="contain"
                 />
                 <Text style={styles.topicName}>{item.name}</Text>
+                
+                {/* Hiển thị tiến độ hoàn thành */}
+                {item.total_readings > 0 && (
+                  <View style={styles.progressContainer}>
+                    <Text style={styles.progressText}>
+                      {item.completed_readings}/{item.total_readings} ({item.completion_percentage}%)
+                    </Text>
+                    <View style={styles.progressBar}>
+                      <View 
+                        style={[
+                          styles.progressFill, 
+                          { width: `${item.completion_percentage}%` }
+                        ]} 
+                      />
+                    </View>
+                  </View>
+                )}
               </View>
             </TouchableOpacity>
           )}
@@ -223,6 +240,29 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#343A40',
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  progressContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  progressText: {
+    fontSize: 13,
+    color: '#5E72EB',
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  progressBar: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#E9ECEF',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#5E72EB',
+    borderRadius: 3,
   },
   center: {
     flex: 1,

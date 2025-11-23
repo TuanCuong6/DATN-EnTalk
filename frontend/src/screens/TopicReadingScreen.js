@@ -130,9 +130,31 @@ export default function TopicReadingsScreen() {
             color="#5E72EB"
             style={styles.itemIcon}
           />
-          <Text style={styles.itemText} numberOfLines={2}>
-            {item.title || item.content.slice(0, 100) + '...'}
-          </Text>
+          <View style={styles.itemTextContainer}>
+            <Text style={styles.itemText} numberOfLines={2}>
+              {item.title || item.content.slice(0, 100) + '...'}
+            </Text>
+            {/* Hiển thị điểm cao nhất và trạng thái */}
+            {item.best_score !== null && (
+              <View style={styles.scoreContainer}>
+                <Icon name="star" size={14} color="#FFB800" />
+                <Text style={styles.scoreText}>
+                  Điểm cao nhất: {item.best_score.toFixed(1)}/10
+                </Text>
+                {item.is_completed && (
+                  <View style={styles.completedBadge}>
+                    <Icon name="check-circle" size={14} color="#28A745" />
+                    <Text style={styles.completedText}>Hoàn thành</Text>
+                  </View>
+                )}
+              </View>
+            )}
+            {item.practice_count > 0 && (
+              <Text style={styles.practiceCount}>
+                Đã luyện {item.practice_count} lần
+              </Text>
+            )}
+          </View>
           <Icon name="chevron-right" size={24} color="#888" />
         </View>
       </TouchableOpacity>
@@ -341,11 +363,47 @@ const styles = StyleSheet.create({
   itemIcon: {
     marginRight: 15,
   },
-  itemText: {
+  itemTextContainer: {
     flex: 1,
+  },
+  itemText: {
     fontSize: 16,
     color: '#343A40',
     fontWeight: '500',
+    marginBottom: 4,
+  },
+  scoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    flexWrap: 'wrap',
+  },
+  scoreText: {
+    fontSize: 13,
+    color: '#6C757D',
+    marginLeft: 4,
+    fontWeight: '500',
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10,
+    backgroundColor: '#D4EDDA',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  completedText: {
+    fontSize: 11,
+    color: '#28A745',
+    marginLeft: 3,
+    fontWeight: '600',
+  },
+  practiceCount: {
+    fontSize: 12,
+    color: '#ADB5BD',
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   emptyContainer: {
     justifyContent: 'center',

@@ -8,6 +8,8 @@ const FormData = require("form-data");
 
 const { scoreWithGemini } = require("../services/gemini");
 const verifyToken = require("../middleware/verifyTokenMiddleware");
+const ReadingProgress = require("../models/ReadingProgress");
+const { updateStreakOnPractice } = require("../controllers/streakController");
 
 const db = require("../models");
 const dbConnection = require("../config/db");
@@ -84,6 +86,28 @@ router.post(
           customText || null, // custom_text
         ]
       );
+
+      // 🆕 Cập nhật reading progress (chỉ với bài đọc có sẵn, không phải custom)
+      if (readingId && geminiRes.scores.overall) {
+        try {
+          await ReadingProgress.updateProgress(
+            userId,
+            readingIdToUse,
+            geminiRes.scores.overall
+          );
+          console.log("✅ Đã cập nhật reading progress");
+        } catch (progressErr) {
+          console.error("⚠️ Lỗi cập nhật progress (không ảnh hưởng):", progressErr);
+        }
+      }
+
+      // 🔥 Cập nhật streak khi user luyện đọc
+      try {
+        const streakResult = await updateStreakOnPractice(userId);
+        console.log("🔥 Đã cập nhật streak:", streakResult);
+      } catch (streakErr) {
+        console.error("⚠️ Lỗi cập nhật streak (không ảnh hưởng):", streakErr);
+      }
 
       fs.unlinkSync(filePath);
 
