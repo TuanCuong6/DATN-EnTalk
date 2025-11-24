@@ -19,6 +19,7 @@ const adminRoutes = require("./routes/admin");
 const ttsRoutes = require("./routes/tts");
 const streakRoutes = require("./routes/streak");
 const aiReadingRoutes = require("./routes/aiReading");
+const youtubeReadingRoutes = require("./routes/youtubeReading");
 
 app.use(cors());
 app.use(express.json());
@@ -39,8 +40,10 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/tts", ttsRoutes);
 app.use("/api/streak", streakRoutes);
 app.use("/api/ai-reading", aiReadingRoutes);
+app.use("/api/youtube-reading", youtubeReadingRoutes);
 
 app.listen(3000, () => {
   console.log("✅ Server is running on port 3000");
+  console.log("✅ YouTube reading routes loaded at /api/youtube-reading");
 });
 require("./cron/dailyRecommendation");
