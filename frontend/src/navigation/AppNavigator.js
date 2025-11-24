@@ -16,6 +16,7 @@ import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import ChatbotScreen from '../screens/ChatbotScreen';
 import ScanTextScreen from '../screens/ScanTextScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
+import YoutubeReadingScreen from '../screens/YoutubeReadingScreen';
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -58,6 +59,11 @@ export default function AppNavigator() {
         name="Feedback"
         component={FeedbackScreen}
         options={{ title: 'Góp ý / Báo lỗi' }}
+      />
+      <Stack.Screen
+        name="YoutubeReadingScreen"
+        component={YoutubeReadingScreen}
+        options={{ title: 'Bài đọc từ YouTube' }}
       />
     </Stack.Navigator>
   );

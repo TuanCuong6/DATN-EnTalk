@@ -41,6 +41,7 @@ export default function HomeScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const button1Scale = useRef(new Animated.Value(1)).current;
   const button2Scale = useRef(new Animated.Value(1)).current;
+  const button3Scale = useRef(new Animated.Value(1)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const streakPulse = useRef(new Animated.Value(1)).current;
@@ -245,64 +246,53 @@ export default function HomeScreen() {
           <View style={styles.divider} />
         </View>
 
-        {/* Nút chức năng */}
-        <Animated.View style={{ transform: [{ scale: button1Scale }] }}>
-          <TouchableOpacity
-            onPressIn={() => handlePressIn(button1Scale)}
-            onPressOut={() => handlePressOut(button1Scale)}
-            onPress={() => navigation.navigate('TopicList')}
-          >
-            <View style={[styles.button, styles.button1]}>
-              <Icon
-                name="folder"
-                size={28}
-                color="#5E72EB"
-                style={styles.buttonIcon}
-              />
-              <View>
-                <Text style={styles.buttonTitle}>Bài đọc theo chủ đề</Text>
-                <Text style={styles.buttonSubtitle}>
-                  Khám phá các chủ đề thú vị
-                </Text>
+        {/* Nút chức năng - Grid 3 nút */}
+        <View style={styles.buttonGrid}>
+          <Animated.View style={[styles.gridItem, { transform: [{ scale: button1Scale }] }]}>
+            <TouchableOpacity
+              onPressIn={() => handlePressIn(button1Scale)}
+              onPressOut={() => handlePressOut(button1Scale)}
+              onPress={() => navigation.navigate('TopicList')}
+              style={styles.gridButton}
+            >
+              <View style={[styles.gridButtonContent, styles.button1]}>
+                <Icon name="folder" size={40} color="#5E72EB" />
+                <Text style={styles.gridButtonTitle}>Bài đọc theo chủ đề</Text>
+                <Text style={styles.gridButtonSubtitle}>Khám phá chủ đề</Text>
               </View>
-              <Icon
-                name="arrow-forward"
-                size={24}
-                color="#5E72EB"
-                style={styles.arrowIcon}
-              />
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
+            </TouchableOpacity>
+          </Animated.View>
 
-        <Animated.View style={{ transform: [{ scale: button2Scale }] }}>
-          <TouchableOpacity
-            onPressIn={() => handlePressIn(button2Scale)}
-            onPressOut={() => handlePressOut(button2Scale)}
-            onPress={() => navigation.navigate('CustomContentChoiceScreen')}
-          >
-            <View style={[styles.button, styles.button2]}>
-              <Icon
-                name="edit"
-                size={28}
-                color="#FF6B6B"
-                style={styles.buttonIcon}
-              />
-              <View>
-                <Text style={styles.buttonTitle}>Nội dung tùy chỉnh</Text>
-                <Text style={styles.buttonSubtitle}>
-                  Luyện tập với nội dung của bạn
-                </Text>
+          <Animated.View style={[styles.gridItem, { transform: [{ scale: button2Scale }] }]}>
+            <TouchableOpacity
+              onPressIn={() => handlePressIn(button2Scale)}
+              onPressOut={() => handlePressOut(button2Scale)}
+              onPress={() => navigation.navigate('CustomContentChoiceScreen')}
+              style={styles.gridButton}
+            >
+              <View style={[styles.gridButtonContent, styles.button2]}>
+                <Icon name="edit" size={40} color="#FF6B6B" />
+                <Text style={styles.gridButtonTitle}>Nội dung tùy chỉnh</Text>
+                <Text style={styles.gridButtonSubtitle}>Nội dung của bạn</Text>
               </View>
-              <Icon
-                name="arrow-forward"
-                size={24}
-                color="#FF6B6B"
-                style={styles.arrowIcon}
-              />
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Animated.View style={[styles.gridItem, styles.gridItemFull, { transform: [{ scale: button3Scale }] }]}>
+            <TouchableOpacity
+              onPressIn={() => handlePressIn(button3Scale)}
+              onPressOut={() => handlePressOut(button3Scale)}
+              onPress={() => navigation.navigate('YoutubeReadingScreen')}
+              style={styles.gridButton}
+            >
+              <View style={[styles.gridButtonContent, styles.button3]}>
+                <Icon name="play-circle-outline" size={40} color="#9D4EDD" />
+                <Text style={styles.gridButtonTitle}>Bài đọc từ YouTube</Text>
+                <Text style={styles.gridButtonSubtitle}>Học từ video yêu thích</Text>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
 
         {/* Chatbot với hiệu ứng nổi */}
         <Animated.View
@@ -502,48 +492,62 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     opacity: 0.5,
   },
-  button: {
-    padding: 20,
-    borderRadius: 20,
-    marginBottom: 20,
+  buttonGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  gridItem: {
+    width: '48%',
+    marginBottom: 15,
+  },
+  gridItemFull: {
+    width: '100%',
+  },
+  gridButton: {
+    width: '100%',
+  },
+  gridButtonContent: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 140,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.05)',
-    shadowColor: '#5E72EB',
-    shadowOffset: { width: 0, height: 8 },
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowRadius: 8,
+    elevation: 4,
   },
   button1: {
-    borderLeftWidth: 5,
-    borderLeftColor: '#5E72EB',
+    borderTopWidth: 4,
+    borderTopColor: '#5E72EB',
   },
   button2: {
-    borderLeftWidth: 5,
-    borderLeftColor: '#FF6B6B',
+    borderTopWidth: 4,
+    borderTopColor: '#FF6B6B',
   },
-  buttonIcon: {
-    marginRight: 15,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    padding: 10,
-    borderRadius: 12,
+  button3: {
+    borderTopWidth: 4,
+    borderTopColor: '#9D4EDD',
   },
-  buttonTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  gridButtonTitle: {
+    fontSize: 16,
+    fontWeight: '700',
     color: '#343A40',
-    marginBottom: 3,
+    marginTop: 12,
+    textAlign: 'center',
   },
-  buttonSubtitle: {
-    fontSize: 14,
-    color: '#495057',
+  gridButtonSubtitle: {
+    fontSize: 13,
+    color: '#6C757D',
+    marginTop: 4,
+    textAlign: 'center',
     fontWeight: '500',
-  },
-  arrowIcon: {
-    marginLeft: 'auto',
   },
   chatbotContainer: {
     position: 'absolute',
