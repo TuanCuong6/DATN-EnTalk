@@ -35,9 +35,14 @@ exports.sendFeedbackEmail = async ({
   fromUser,
   userId,
   content,
+  rating,
   screenshot_url,
   hasImage,
 }) => {
+  // Tạo rating stars
+  const stars = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+  const ratingColor = ['', '#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997'][rating];
+
   let imageSection = "";
   if (hasImage && screenshot_url) {
     imageSection = `
@@ -69,6 +74,11 @@ exports.sendFeedbackEmail = async ({
 
         <!-- Content Container -->
         <div style="padding: 30px; background: white; border-radius: 0 0 8px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <!-- Rating Card -->
+          <div style="background: linear-gradient(135deg, #fff9e6 0%, #ffeaa7 100%); padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 25px; border: 2px solid ${ratingColor};">
+            <div style="font-size: 48px;">${stars}</div>
+          </div>
+
           <!-- User Info Card -->
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #5E72EB; margin-bottom: 25px;">
             <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #2c3e50; font-weight: 600;">👤 Thông tin người gửi</h3>

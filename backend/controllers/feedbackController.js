@@ -3,7 +3,7 @@ const db = require("../config/db");
 const { sendFeedbackEmail, sendReplyEmail } = require("../services/mailer");
 
 exports.sendFeedback = async (req, res) => {
-  const { content } = req.body;
+  const { content, rating } = req.body;
   const user = req.user;
   const file = req.file;
 
@@ -11,22 +11,28 @@ exports.sendFeedback = async (req, res) => {
     return res.status(400).json({ message: "Nội dung góp ý quá ngắn" });
   }
 
+  if (!rating || rating < 1 || rating > 5) {
+    return res.status(400).json({ message: "Vui lòng đánh giá từ 1-5 sao" });
+  }
+
   try {
     // Lưu vào database - file.path đã là Cloudinary URL
     const screenshot_url = file ? file.path : null;
 
     console.log("📸 Screenshot URL:", screenshot_url);
+    console.log("⭐ Rating:", rating);
 
     await db.execute(
-      "INSERT INTO feedbacks (user_id, user_email, content, screenshot_url) VALUES (?, ?, ?, ?)",
-      [user.id, user.email, content, screenshot_url]
+      "INSERT INTO feedbacks (user_id, user_email, content, rating, screenshot_url) VALUES (?, ?, ?, ?, ?)",
+      [user.id, user.email, content, parseInt(rating), screenshot_url]
     );
 
-    // Gửi email thông báo với ảnh
+    // Gửi email thông báo với ảnh và rating
     await sendFeedbackEmail({
       fromUser: user.email,
       userId: user.id,
       content,
+      rating: parseInt(rating),
       screenshot_url,
       hasImage: !!screenshot_url,
     });

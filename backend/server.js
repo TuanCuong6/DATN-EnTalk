@@ -44,6 +44,5 @@ app.use("/api/youtube-reading", youtubeReadingRoutes);
 
 app.listen(3000, () => {
   console.log("✅ Server is running on port 3000");
-  console.log("✅ YouTube reading routes loaded at /api/youtube-reading");
 });
 require("./cron/dailyRecommendation");

@@ -148,6 +148,7 @@ CREATE TABLE feedbacks (
     user_id INT NOT NULL,
     user_email VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
+    rating INT DEFAULT NULL, -- Đánh giá sao từ 1-5
     screenshot_url TEXT,
     status ENUM('pending', 'replied') DEFAULT 'pending',
     admin_reply TEXT,
@@ -278,3 +279,4 @@ CREATE TABLE IF NOT EXISTS user_streaks (
 -- Index để tăng tốc truy vấn
 CREATE INDEX idx_user_streak ON user_streaks(user_id);
 CREATE INDEX idx_last_practice ON user_streaks(last_practice_date);
+

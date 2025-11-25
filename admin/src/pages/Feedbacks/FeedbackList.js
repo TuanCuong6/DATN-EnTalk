@@ -66,6 +66,21 @@ const FeedbackList = () => {
     );
   };
 
+  const getRatingColor = (rating) => {
+    const colors = ['', '#ffebee', '#fff3e0', '#fff9c4', '#e8f5e9', '#e0f2f1'];
+    return colors[rating] || '#f8f9fa';
+  };
+
+  const getRatingBorderColor = (rating) => {
+    const colors = ['', '#ef5350', '#ff9800', '#ffc107', '#66bb6a', '#26a69a'];
+    return colors[rating] || '#ddd';
+  };
+
+  const getRatingTextColor = (rating) => {
+    const colors = ['', '#c62828', '#e65100', '#f57c00', '#2e7d32', '#00695c'];
+    return colors[rating] || '#495057';
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -110,6 +125,14 @@ const FeedbackList = () => {
                   </div>
                   {getStatusBadge(feedback.status)}
                 </div>
+
+                {/* Rating Stars */}
+                {feedback.rating && (
+                  <div style={{ marginBottom: "8px", fontSize: "18px" }}>
+                    {'⭐'.repeat(feedback.rating)}
+                    {'☆'.repeat(5 - feedback.rating)}
+                  </div>
+                )}
 
                 <p style={{ margin: "10px 0", color: "#495057" }}>
                   {feedback.content.length > 100
@@ -157,6 +180,27 @@ const FeedbackList = () => {
                   {getStatusBadge(selectedFeedback.status)}
                 </p>
               </div>
+
+              {/* Rating Section */}
+              {selectedFeedback.rating && (
+                <div style={{ marginBottom: "20px" }}>
+                  <h4>⭐ Đánh giá</h4>
+                  <div
+                    style={{
+                      background: getRatingColor(selectedFeedback.rating),
+                      padding: "15px",
+                      borderRadius: "8px",
+                      textAlign: "center",
+                      border: `2px solid ${getRatingBorderColor(selectedFeedback.rating)}`,
+                    }}
+                  >
+                    <div style={{ fontSize: "48px" }}>
+                      {'⭐'.repeat(selectedFeedback.rating)}
+                      {'☆'.repeat(5 - selectedFeedback.rating)}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div style={{ marginBottom: "20px" }}>
                 <h4>Nội dung phản hồi</h4>
