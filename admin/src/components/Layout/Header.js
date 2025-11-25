@@ -6,20 +6,14 @@ const Header = () => {
   const { admin, logout } = useAuth();
 
   return (
-    <header
-      style={{
-        background: "white",
-        padding: "15px 20px",
-        borderBottom: "1px solid #ddd",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <h1>Admin Panel</h1>
-      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+    <header className="fixed top-0 right-0 left-64 bg-white px-5 py-4 border-b border-gray-300 flex justify-between items-center z-10">
+      <h1 className="text-xl font-bold">Admin Panel</h1>
+      <div className="flex items-center gap-4">
         <span>Xin chào, {admin?.username}</span>
-        <button onClick={logout} style={{ padding: "5px 10px" }}>
+        <button 
+          onClick={logout} 
+          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
           Đăng xuất
         </button>
       </div>

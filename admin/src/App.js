@@ -23,16 +23,13 @@ import TopicAdd from "./pages/Topics/TopicAdd";
 import TopicEdit from "./pages/Topics/TopicEdit";
 import RecordList from "./pages/Records/RecordList";
 import FeedbackList from "./pages/Feedbacks/FeedbackList";
+import FeedbackDetail from "./pages/Feedbacks/FeedbackDetail";
+import EmailMarketing from "./pages/EmailMarketing/EmailMarketing";
+import CampaignHistory from "./pages/EmailMarketing/CampaignHistory";
+
 // Loading Component
 const LoadingSpinner = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "100vh",
-    }}
-  >
+  <div className="flex justify-center items-center h-screen">
     <div>Loading...</div>
   </div>
 );
@@ -165,13 +162,42 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        // Thêm route mới
         <Route
           path="/feedbacks"
           element={
             <ProtectedRoute>
               <Layout>
                 <FeedbackList />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/feedbacks/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <FeedbackDetail />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/email-marketing"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <EmailMarketing />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/email-marketing/history"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CampaignHistory />
               </Layout>
             </ProtectedRoute>
           }

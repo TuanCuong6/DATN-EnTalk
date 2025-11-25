@@ -47,28 +47,26 @@ const UserEdit = () => {
     setLoading(false);
   };
 
-  if (fetchLoading) return <div>Loading...</div>;
+  if (fetchLoading) return <div className="p-5">Loading...</div>;
 
   return (
     <div>
-      <h1>Sửa User</h1>
+      <h1 className="text-2xl font-bold mb-5">Sửa User</h1>
 
-      <form onSubmit={handleSubmit} style={{ maxWidth: "500px" }}>
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>Tên *</label>
+      <form onSubmit={handleSubmit} className="max-w-lg bg-white p-6 rounded shadow">
+        <div className="mb-4">
+          <label className="block mb-2 font-medium">Tên *</label>
           <input
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
-            style={{ width: "100%", padding: "8px", border: "1px solid #ddd" }}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Email *
-          </label>
+        <div className="mb-4">
+          <label className="block mb-2 font-medium">Email *</label>
           <input
             type="email"
             value={formData.email}
@@ -76,18 +74,18 @@ const UserEdit = () => {
               setFormData({ ...formData, email: e.target.value })
             }
             required
-            style={{ width: "100%", padding: "8px", border: "1px solid #ddd" }}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>Level</label>
+        <div className="mb-4">
+          <label className="block mb-2 font-medium">Level</label>
           <select
             value={formData.level}
             onChange={(e) =>
               setFormData({ ...formData, level: e.target.value })
             }
-            style={{ width: "100%", padding: "8px", border: "1px solid #ddd" }}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           >
             <option value="A1">A1</option>
             <option value="A2">A2</option>
@@ -98,28 +96,18 @@ const UserEdit = () => {
           </select>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="flex gap-3">
           <button
             type="submit"
             disabled={loading}
-            style={{
-              padding: "10px 20px",
-              background: "#007bff",
-              color: "white",
-              border: "none",
-            }}
+            className="px-5 py-2 bg-blue-500 text-white border-none rounded hover:bg-blue-600 disabled:opacity-50"
           >
             {loading ? "Đang cập nhật..." : "Cập nhật"}
           </button>
           <button
             type="button"
             onClick={() => navigate("/users")}
-            style={{
-              padding: "10px 20px",
-              background: "#6c757d",
-              color: "white",
-              border: "none",
-            }}
+            className="px-5 py-2 bg-gray-500 text-white border-none rounded hover:bg-gray-600"
           >
             Hủy
           </button>

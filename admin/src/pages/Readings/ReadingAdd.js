@@ -51,17 +51,15 @@ const ReadingAdd = () => {
 
   return (
     <div>
-      <h1>Thêm Bài đọc mới</h1>
+      <h1 className="text-2xl font-bold mb-5">Thêm Bài đọc mới</h1>
 
       {error && (
-        <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
+        <div className="text-red-500 mb-3 p-2 bg-red-50 rounded">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ maxWidth: "600px" }}>
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Nội dung *
-          </label>
+      <form onSubmit={handleSubmit} className="max-w-2xl bg-white p-6 rounded shadow">
+        <div className="mb-4">
+          <label className="block mb-2 font-medium">Nội dung *</label>
           <textarea
             value={formData.content}
             onChange={(e) =>
@@ -69,20 +67,18 @@ const ReadingAdd = () => {
             }
             required
             rows="6"
-            style={{ width: "100%", padding: "8px", border: "1px solid #ddd" }}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Level *
-          </label>
+        <div className="mb-4">
+          <label className="block mb-2 font-medium">Level *</label>
           <select
             value={formData.level}
             onChange={(e) =>
               setFormData({ ...formData, level: e.target.value })
             }
-            style={{ width: "100%", padding: "8px", border: "1px solid #ddd" }}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           >
             <option value="A1">A1</option>
             <option value="A2">A2</option>
@@ -93,16 +89,14 @@ const ReadingAdd = () => {
           </select>
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Chủ đề *
-          </label>
+        <div className="mb-4">
+          <label className="block mb-2 font-medium">Chủ đề *</label>
           <select
             value={formData.topic_id}
             onChange={(e) =>
               setFormData({ ...formData, topic_id: e.target.value })
             }
-            style={{ width: "100%", padding: "8px", border: "1px solid #ddd" }}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           >
             {topics.map((topic) => (
               <option key={topic.id} value={topic.id}>
@@ -112,28 +106,18 @@ const ReadingAdd = () => {
           </select>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="flex gap-3">
           <button
             type="submit"
             disabled={loading}
-            style={{
-              padding: "10px 20px",
-              background: "#007bff",
-              color: "white",
-              border: "none",
-            }}
+            className="px-5 py-2 bg-blue-500 text-white border-none rounded hover:bg-blue-600 disabled:opacity-50"
           >
             {loading ? "Đang tạo..." : "Tạo bài đọc"}
           </button>
           <button
             type="button"
             onClick={() => navigate("/readings")}
-            style={{
-              padding: "10px 20px",
-              background: "#6c757d",
-              color: "white",
-              border: "none",
-            }}
+            className="px-5 py-2 bg-gray-500 text-white border-none rounded hover:bg-gray-600"
           >
             Hủy
           </button>

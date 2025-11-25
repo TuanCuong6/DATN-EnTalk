@@ -5,11 +5,11 @@ import Header from "./Header";
 
 const Layout = ({ children }) => {
   return (
-    <div style={{ display: "flex" }}>
+    <div className="flex">
       <Sidebar />
-      <div style={{ flex: 1 }}>
+      <div className="flex-1 ml-64">
         <Header />
-        <main style={{ padding: "20px" }}>{children}</main>
+        <main className="mt-16 p-5 bg-gray-50 min-h-screen">{children}</main>
       </div>
     </div>
   );

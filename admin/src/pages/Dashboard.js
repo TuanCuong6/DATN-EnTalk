@@ -23,20 +23,13 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="p-5">Loading...</div>;
 
   if (error) {
     return (
       <div>
-        <h1>Dashboard</h1>
-        <div
-          style={{
-            color: "red",
-            padding: "20px",
-            background: "#ffeaea",
-            borderRadius: "5px",
-          }}
-        >
+        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+        <div className="text-red-500 p-5 bg-red-50 rounded">
           {error}
         </div>
       </div>
@@ -45,68 +38,33 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1>Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "20px",
-          marginBottom: "30px",
-        }}
-      >
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "5px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h3>Tổng Users</h3>
-          <p style={{ fontSize: "24px", fontWeight: "bold" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div className="bg-white p-5 rounded shadow">
+          <h3 className="text-lg mb-2">Tổng Users</h3>
+          <p className="text-3xl font-bold">
             {stats?.totalUsers ?? 0}
           </p>
         </div>
 
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "5px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h3>Tổng Bài đọc</h3>
-          <p style={{ fontSize: "24px", fontWeight: "bold" }}>
+        <div className="bg-white p-5 rounded shadow">
+          <h3 className="text-lg mb-2">Tổng Bài đọc</h3>
+          <p className="text-3xl font-bold">
             {stats?.totalReadings ?? 0}
           </p>
         </div>
 
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "5px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h3>Tổng Luyện tập</h3>
-          <p style={{ fontSize: "24px", fontWeight: "bold" }}>
+        <div className="bg-white p-5 rounded shadow">
+          <h3 className="text-lg mb-2">Tổng Luyện tập</h3>
+          <p className="text-3xl font-bold">
             {stats?.totalRecords ?? 0}
           </p>
         </div>
 
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "5px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h3>Điểm TB</h3>
-          <p style={{ fontSize: "24px", fontWeight: "bold" }}>
+        <div className="bg-white p-5 rounded shadow">
+          <h3 className="text-lg mb-2">Điểm TB</h3>
+          <p className="text-3xl font-bold">
             {stats?.avgScore ?? 0}
           </p>
         </div>

@@ -1,12 +1,13 @@
+// admin/src/pages/Feedbacks/FeedbackList.js
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { feedbacksAPI } from "../../services/api";
+import { Star } from "lucide-react";
 
 const FeedbackList = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFeedback, setSelectedFeedback] = useState(null);
-  const [replyContent, setReplyContent] = useState("");
-  const [replying, setReplying] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchFeedbacks();
@@ -18,319 +19,85 @@ const FeedbackList = () => {
       setFeedbacks(response.data);
     } catch (error) {
       console.error("Error fetching feedbacks:", error);
+      setError("Lỗi khi tải danh sách phản hồi");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReply = async (feedbackId) => {
-    if (!replyContent.trim()) {
-      alert("Vui lòng nhập nội dung phản hồi");
-      return;
+  const getStatusText = (status) => {
+    if (status === "replied") {
+      return <span className="text-green-600">Đã phản hồi</span>;
     }
-
-    setReplying(true);
-    try {
-      await feedbacksAPI.reply(feedbackId, { reply_content: replyContent });
-      alert("Đã gửi phản hồi thành công!");
-      setSelectedFeedback(null);
-      setReplyContent("");
-      fetchFeedbacks(); // Refresh list
-    } catch (error) {
-      console.error("Error replying to feedback:", error);
-      alert("Lỗi khi gửi phản hồi");
-    } finally {
-      setReplying(false);
-    }
+    return <span className="text-yellow-600">Chờ xử lý</span>;
   };
 
-  const getStatusBadge = (status) => {
-    const styles = {
-      pending: { background: "#ffc107", color: "#000" },
-      replied: { background: "#28a745", color: "#fff" },
-    };
-    const style = styles[status] || styles.pending;
-
+  const renderStars = (rating) => {
     return (
-      <span
-        style={{
-          padding: "4px 8px",
-          borderRadius: "12px",
-          fontSize: "12px",
-          fontWeight: "bold",
-          ...style,
-        }}
-      >
-        {status === "pending" ? "Chờ xử lý" : "Đã phản hồi"}
-      </span>
+      <div className="flex gap-0.5">
+        {Array.from({ length: rating || 0 }).map((_, i) => (
+          <Star key={i} size={16} fill="#fbbf24" color="#fbbf24" />
+        ))}
+      </div>
     );
   };
 
-  const getRatingColor = (rating) => {
-    const colors = ['', '#ffebee', '#fff3e0', '#fff9c4', '#e8f5e9', '#e0f2f1'];
-    return colors[rating] || '#f8f9fa';
-  };
-
-  const getRatingBorderColor = (rating) => {
-    const colors = ['', '#ef5350', '#ff9800', '#ffc107', '#66bb6a', '#26a69a'];
-    return colors[rating] || '#ddd';
-  };
-
-  const getRatingTextColor = (rating) => {
-    const colors = ['', '#c62828', '#e65100', '#f57c00', '#2e7d32', '#00695c'];
-    return colors[rating] || '#495057';
-  };
-
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="p-5">Loading...</div>;
 
   return (
     <div>
-      <h1>Quản lý Phản hồi</h1>
+      <h1 className="text-2xl font-bold mb-5">Quản lý Phản hồi ({feedbacks.length})</h1>
 
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
-      >
-        {/* Feedback List */}
-        <div>
-          <h3>Danh sách phản hồi ({feedbacks.length})</h3>
+      {error && (
+        <div className="text-red-500 mb-3 p-2 bg-red-50 rounded">{error}</div>
+      )}
 
-          <div style={{ maxHeight: "600px", overflowY: "auto" }}>
+      <div className="bg-white rounded shadow overflow-hidden">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-3 border border-gray-300 text-left">ID</th>
+              <th className="p-3 border border-gray-300 text-left">User</th>
+              <th className="p-3 border border-gray-300 text-left">Email</th>
+              <th className="p-3 border border-gray-300 text-left">Ngày tạo</th>
+              <th className="p-3 border border-gray-300 text-left">Trạng thái</th>
+              <th className="p-3 border border-gray-300 text-left">Đánh giá</th>
+              <th className="p-3 border border-gray-300 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
             {feedbacks.map((feedback) => (
-              <div
-                key={feedback.id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  padding: "15px",
-                  marginBottom: "10px",
-                  background:
-                    feedback.id === selectedFeedback?.id ? "#f8f9fa" : "white",
-                  cursor: "pointer",
-                }}
-                onClick={() => setSelectedFeedback(feedback)}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "start",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <div>
-                    <strong>{feedback.user_name || feedback.user_email}</strong>
-                    <div style={{ fontSize: "12px", color: "#6c757d" }}>
-                      {new Date(feedback.created_at).toLocaleString()}
-                    </div>
-                  </div>
-                  {getStatusBadge(feedback.status)}
-                </div>
-
-                {/* Rating Stars */}
-                {feedback.rating && (
-                  <div style={{ marginBottom: "8px", fontSize: "18px" }}>
-                    {'⭐'.repeat(feedback.rating)}
-                    {'☆'.repeat(5 - feedback.rating)}
-                  </div>
-                )}
-
-                <p style={{ margin: "10px 0", color: "#495057" }}>
-                  {feedback.content.length > 100
-                    ? `${feedback.content.substring(0, 100)}...`
-                    : feedback.content}
-                </p>
-
-                {feedback.screenshot_url && (
-                  <div style={{ fontSize: "12px", color: "#007bff" }}>
-                    📎 Có đính kèm ảnh
-                  </div>
-                )}
-              </div>
+              <tr key={feedback.id} className="hover:bg-gray-50">
+                <td className="p-3 border border-gray-300">{feedback.id}</td>
+                <td className="p-3 border border-gray-300">{feedback.user_name}</td>
+                <td className="p-3 border border-gray-300">{feedback.user_email}</td>
+                <td className="p-3 border border-gray-300">
+                  {new Date(feedback.created_at).toLocaleString("vi-VN")}
+                </td>
+                <td className="p-3 border border-gray-300">
+                  {getStatusText(feedback.status)}
+                </td>
+                <td className="p-3 border border-gray-300">
+                  {renderStars(feedback.rating)}
+                </td>
+                <td className="p-3 border border-gray-300">
+                  <Link
+                    to={`/feedbacks/${feedback.id}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Xem chi tiết
+                  </Link>
+                </td>
+              </tr>
             ))}
+          </tbody>
+        </table>
+
+        {feedbacks.length === 0 && !error && (
+          <div className="p-10 text-center text-gray-500">
+            <p>Chưa có phản hồi nào</p>
           </div>
-        </div>
-
-        {/* Feedback Detail & Reply */}
-        <div>
-          <h3>Chi tiết & Phản hồi</h3>
-
-          {selectedFeedback ? (
-            <div
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "20px",
-              }}
-            >
-              <div style={{ marginBottom: "20px" }}>
-                <h4>Thông tin người gửi</h4>
-                <p>
-                  <strong>Tên:</strong>{" "}
-                  {selectedFeedback.user_name || "Không có"}
-                </p>
-                <p>
-                  <strong>Email:</strong> {selectedFeedback.user_email}
-                </p>
-                <p>
-                  <strong>Ngày gửi:</strong>{" "}
-                  {new Date(selectedFeedback.created_at).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Trạng thái:</strong>{" "}
-                  {getStatusBadge(selectedFeedback.status)}
-                </p>
-              </div>
-
-              {/* Rating Section */}
-              {selectedFeedback.rating && (
-                <div style={{ marginBottom: "20px" }}>
-                  <h4>⭐ Đánh giá</h4>
-                  <div
-                    style={{
-                      background: getRatingColor(selectedFeedback.rating),
-                      padding: "15px",
-                      borderRadius: "8px",
-                      textAlign: "center",
-                      border: `2px solid ${getRatingBorderColor(selectedFeedback.rating)}`,
-                    }}
-                  >
-                    <div style={{ fontSize: "48px" }}>
-                      {'⭐'.repeat(selectedFeedback.rating)}
-                      {'☆'.repeat(5 - selectedFeedback.rating)}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div style={{ marginBottom: "20px" }}>
-                <h4>Nội dung phản hồi</h4>
-                <div
-                  style={{
-                    background: "#f8f9fa",
-                    padding: "15px",
-                    borderRadius: "5px",
-                    borderLeft: "4px solid #007bff",
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {selectedFeedback.content}
-                </div>
-              </div>
-
-              {/* PHẦN HIỂN THỊ ẢNH ĐÃ SỬA */}
-              {selectedFeedback.screenshot_url && (
-                <div style={{ marginBottom: "20px" }}>
-                  <h4>📷 Ảnh đính kèm</h4>
-                  <div style={{ textAlign: "center" }}>
-                    <img
-                      src={selectedFeedback.screenshot_url}
-                      alt="Screenshot from user"
-                      style={{
-                        maxWidth: "100%",
-                        maxHeight: "400px",
-                        border: "1px solid #ddd",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() =>
-                        window.open(selectedFeedback.screenshot_url, "_blank")
-                      }
-                    />
-                    <div style={{ marginTop: "10px" }}>
-                      <a
-                        href={selectedFeedback.screenshot_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: "#007bff",
-                          textDecoration: "none",
-                          fontSize: "14px",
-                        }}
-                      >
-                        🔍 Xem ảnh gốc
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {selectedFeedback.admin_reply && (
-                <div style={{ marginBottom: "20px" }}>
-                  <h4>Phản hồi của bạn</h4>
-                  <div
-                    style={{
-                      background: "#e7f3ff",
-                      padding: "15px",
-                      borderRadius: "5px",
-                      borderLeft: "4px solid #28a745",
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {selectedFeedback.admin_reply}
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#6c757d",
-                        marginTop: "10px",
-                      }}
-                    >
-                      Đã gửi lúc:{" "}
-                      {new Date(selectedFeedback.replied_at).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {selectedFeedback.status === "pending" && (
-                <div>
-                  <h4>Phản hồi lại</h4>
-                  <textarea
-                    value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                    placeholder="Nhập nội dung phản hồi..."
-                    rows="5"
-                    style={{
-                      width: "100%",
-                      padding: "10px",
-                      border: "1px solid #ddd",
-                      borderRadius: "5px",
-                      marginBottom: "10px",
-                      resize: "vertical",
-                    }}
-                  />
-                  <button
-                    onClick={() => handleReply(selectedFeedback.id)}
-                    disabled={replying}
-                    style={{
-                      padding: "10px 20px",
-                      background: "#28a745",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {replying ? "Đang gửi..." : "Gửi phản hồi"}
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div
-              style={{
-                border: "1px dashed #ddd",
-                borderRadius: "8px",
-                padding: "40px",
-                textAlign: "center",
-                color: "#6c757d",
-              }}
-            >
-              Chọn một phản hồi để xem chi tiết và phản hồi
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 // admin/src/pages/Users/UserList.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { usersAPI } from "../../services/api";
+import { usersAPI, adminAPI } from "../../services/api";
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -22,78 +22,93 @@ const UserList = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  const handleToggleActive = async (userId, currentStatus) => {
+    const action = currentStatus ? "vô hiệu hóa" : "kích hoạt";
+    if (!window.confirm(`Bạn có chắc muốn ${action} tài khoản này?`)) {
+      return;
+    }
+
+    try {
+      await adminAPI.put(`/users/${userId}/toggle-active`);
+      fetchUsers(); // Refresh list
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      alert("Lỗi khi cập nhật trạng thái");
+    }
+  };
+
+  const getStatusText = (isActive) => {
+    if (isActive) {
+      return <span className="text-green-600">Hoạt động</span>;
+    }
+    return <span className="text-red-600">Vô hiệu hóa</span>;
+  };
+
+  if (loading) return <div className="p-5">Loading...</div>;
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <h1>Quản lý Users</h1>
+      <div className="flex justify-between items-center mb-5">
+        <h1 className="text-2xl font-bold">Quản lý Users ({users.length})</h1>
         <Link
           to="/users/add"
-          style={{
-            padding: "10px 15px",
-            background: "#007bff",
-            color: "white",
-            textDecoration: "none",
-          }}
+          className="px-4 py-2 bg-blue-500 text-white no-underline rounded hover:bg-blue-600"
         >
           Thêm User
         </Link>
       </div>
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#f8f9fa" }}>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>ID</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Tên</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Email</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Level</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Ngày tạo
-            </th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {user.id}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {user.name}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {user.email}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {user.level}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {new Date(user.created_at).toLocaleDateString()}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                <Link
-                  to={`/users/edit/${user.id}`}
-                  style={{ marginRight: "10px" }}
-                >
-                  Sửa
-                </Link>
-                <button>Xóa</button>
-              </td>
+      <div className="bg-white rounded shadow overflow-hidden">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-3 border border-gray-300 text-left">ID</th>
+              <th className="p-3 border border-gray-300 text-left">Tên</th>
+              <th className="p-3 border border-gray-300 text-left">Email</th>
+              <th className="p-3 border border-gray-300 text-left">Trạng thái</th>
+              <th className="p-3 border border-gray-300 text-left">Streak</th>
+              <th className="p-3 border border-gray-300 text-left">Ngày tạo</th>
+              <th className="p-3 border border-gray-300 text-left">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id} className="hover:bg-gray-50">
+                <td className="p-3 border border-gray-300">{user.id}</td>
+                <td className="p-3 border border-gray-300">{user.name}</td>
+                <td className="p-3 border border-gray-300">{user.email}</td>
+                <td className="p-3 border border-gray-300">
+                  {getStatusText(user.is_active)}
+                </td>
+                <td className="p-3 border border-gray-300">
+                  {user.current_streak || 0}
+                </td>
+                <td className="p-3 border border-gray-300">
+                  {new Date(user.created_at).toLocaleDateString()}
+                </td>
+                <td className="p-3 border border-gray-300">
+                  <Link
+                    to={`/users/edit/${user.id}`}
+                    className="text-blue-500 hover:underline mr-3"
+                  >
+                    Sửa
+                  </Link>
+                  <button
+                    onClick={() => handleToggleActive(user.id, user.is_active)}
+                    className={`${
+                      user.is_active
+                        ? "text-red-500 hover:underline"
+                        : "text-green-500 hover:underline"
+                    }`}
+                  >
+                    {user.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

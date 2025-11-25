@@ -21,76 +21,48 @@ const RecordList = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="p-5">Loading...</div>;
 
   return (
     <div>
-      <h1>Lịch sử Luyện tập</h1>
+      <h1 className="text-2xl font-bold mb-5">Lịch sử Luyện tập ({records.length})</h1>
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#f8f9fa" }}>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>ID</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>User</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Bài đọc
-            </th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Điểm tổng
-            </th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Phát âm
-            </th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Lưu loát
-            </th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Ngữ điệu
-            </th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Ngày tạo
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {records.map((record) => (
-            <tr key={record.id}>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {record.id}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {record.user_name}
-              </td>
-              <td
-                style={{
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  maxWidth: "200px",
-                }}
-              >
-                {record.reading_content
-                  ? record.reading_content.substring(0, 50) + "..."
-                  : "Custom Text"}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {record.score_overall}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {record.score_pronunciation}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {record.score_fluency}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {record.score_intonation}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {new Date(record.created_at).toLocaleDateString()}
-              </td>
+      <div className="bg-white rounded shadow overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-3 border border-gray-300 text-left">ID</th>
+              <th className="p-3 border border-gray-300 text-left">User</th>
+              <th className="p-3 border border-gray-300 text-left">Bài đọc</th>
+              <th className="p-3 border border-gray-300 text-left">Điểm tổng</th>
+              <th className="p-3 border border-gray-300 text-left">Phát âm</th>
+              <th className="p-3 border border-gray-300 text-left">Lưu loát</th>
+              <th className="p-3 border border-gray-300 text-left">Ngữ điệu</th>
+              <th className="p-3 border border-gray-300 text-left">Ngày tạo</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {records.map((record) => (
+              <tr key={record.id} className="hover:bg-gray-50">
+                <td className="p-3 border border-gray-300">{record.id}</td>
+                <td className="p-3 border border-gray-300">{record.user_name}</td>
+                <td className="p-3 border border-gray-300 max-w-xs">
+                  {record.reading_content
+                    ? record.reading_content.substring(0, 50) + "..."
+                    : "Custom Text"}
+                </td>
+                <td className="p-3 border border-gray-300">{record.score_overall}</td>
+                <td className="p-3 border border-gray-300">{record.score_pronunciation}</td>
+                <td className="p-3 border border-gray-300">{record.score_fluency}</td>
+                <td className="p-3 border border-gray-300">{record.score_intonation}</td>
+                <td className="p-3 border border-gray-300">
+                  {new Date(record.created_at).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

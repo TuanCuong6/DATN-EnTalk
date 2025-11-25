@@ -27,120 +27,78 @@ const TopicList = () => {
     if (window.confirm(`Bạn có chắc muốn xóa chủ đề "${name}"?`)) {
       try {
         await topicsAPI.delete(id);
-        fetchTopics(); // Refresh list
+        fetchTopics();
       } catch (error) {
         alert(error.response?.data?.message || "Lỗi khi xóa chủ đề");
       }
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="p-5">Loading...</div>;
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <h1>Quản lý Chủ đề</h1>
+      <div className="flex justify-between items-center mb-5">
+        <h1 className="text-2xl font-bold">Quản lý Chủ đề ({topics.length})</h1>
         <Link
           to="/topics/add"
-          style={{
-            padding: "10px 15px",
-            background: "#007bff",
-            color: "white",
-            textDecoration: "none",
-          }}
+          className="px-4 py-2 bg-blue-500 text-white no-underline rounded hover:bg-blue-600"
         >
           Thêm Chủ đề
         </Link>
       </div>
 
       {error && (
-        <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
+        <div className="text-red-500 mb-3 p-2 bg-red-50 rounded">{error}</div>
       )}
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#f8f9fa" }}>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>ID</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Tên chủ đề
-            </th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Ảnh</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Mô tả</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {topics.map((topic) => (
-            <tr key={topic.id}>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {topic.id}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {topic.name}
-              </td>
-              <td
-                style={{
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  textAlign: "center",
-                }}
-              >
-                {topic.image_url ? (
-                  <img
-                    src={topic.image_url}
-                    alt={topic.name}
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      objectFit: "cover",
-                      borderRadius: "5px",
-                    }}
-                  />
-                ) : (
-                  <span style={{ color: "#888" }}>—</span>
-                )}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                {topic.description}
-              </td>
-              <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                <Link
-                  to={`/topics/edit/${topic.id}`}
-                  style={{
-                    marginRight: "10px",
-                    color: "#007bff",
-                    textDecoration: "none",
-                  }}
-                >
-                  Sửa
-                </Link>
-                <button
-                  onClick={() => handleDelete(topic.id, topic.name)}
-                  style={{
-                    background: "#dc3545",
-                    color: "white",
-                    border: "none",
-                    padding: "5px 10px",
-                    borderRadius: "3px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Xóa
-                </button>
-              </td>
+      <div className="bg-white rounded shadow overflow-hidden">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-3 border border-gray-300 text-left">ID</th>
+              <th className="p-3 border border-gray-300 text-left">Tên chủ đề</th>
+              <th className="p-3 border border-gray-300 text-left">Ảnh</th>
+              <th className="p-3 border border-gray-300 text-left">Mô tả</th>
+              <th className="p-3 border border-gray-300 text-left">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {topics.map((topic) => (
+              <tr key={topic.id} className="hover:bg-gray-50">
+                <td className="p-3 border border-gray-300">{topic.id}</td>
+                <td className="p-3 border border-gray-300">{topic.name}</td>
+                <td className="p-3 border border-gray-300 text-center">
+                  {topic.image_url ? (
+                    <img
+                      src={topic.image_url}
+                      alt={topic.name}
+                      className="w-16 h-16 object-cover rounded inline-block"
+                    />
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+                <td className="p-3 border border-gray-300">{topic.description}</td>
+                <td className="p-3 border border-gray-300">
+                  <Link
+                    to={`/topics/edit/${topic.id}`}
+                    className="text-blue-500 hover:underline mr-3"
+                  >
+                    Sửa
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(topic.id, topic.name)}
+                    className="text-red-500 hover:underline"
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
