@@ -10,10 +10,11 @@ import {
   StyleSheet,
   Image,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { fetchAllTopics } from '../api/reading';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -41,21 +42,34 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function TopicListScreen() {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const loadTopics = async () => {
-      try {
-        const res = await fetchAllTopics();
-        setTopics(res.data);
-      } catch (err) {
-        Alert.alert('Lỗi', 'Không thể tải danh sách chủ đề');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadTopics();
-  }, []);
+  const loadTopics = async (isRefreshing = false) => {
+    try {
+      if (!isRefreshing) setLoading(true);
+      const res = await fetchAllTopics();
+      setTopics(res.data);
+    } catch (err) {
+      Alert.alert('Lỗi', 'Không thể tải danh sách chủ đề');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Auto refresh khi quay lại màn hình
+  useFocusEffect(
+    React.useCallback(() => {
+      loadTopics();
+    }, [])
+  );
+
+  // Pull to refresh
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadTopics(true);
+  };
 
   // const getImageForTopic = topic => {
   //   const key = removeVietnameseTones(topic.name);
@@ -110,6 +124,14 @@ export default function TopicListScreen() {
           keyExtractor={item => item.id.toString()}
           numColumns={2}
           columnWrapperStyle={styles.row}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#5E72EB']}
+              tintColor="#5E72EB"
+            />
+          }
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}

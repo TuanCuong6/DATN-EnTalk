@@ -31,6 +31,32 @@ export default function ScanTextScreen() {
     handleScanText(uri);
   };
 
+  const cleanText = (text) => {
+    if (!text) return '';
+    
+    let cleaned = text;
+    
+    // 1. Xóa các ký tự đặc biệt không cần thiết, giữ lại dấu câu cơ bản
+    cleaned = cleaned.replace(/[^\w\s.,!?'-]/g, ' ');
+    
+    // 2. Thay thế nhiều khoảng trắng liên tiếp thành 1 khoảng trắng
+    cleaned = cleaned.replace(/\s+/g, ' ');
+    
+    // 3. Xóa khoảng trắng trước dấu câu
+    cleaned = cleaned.replace(/\s+([.,!?])/g, '$1');
+    
+    // 4. Thêm khoảng trắng sau dấu câu nếu chưa có
+    cleaned = cleaned.replace(/([.,!?])([^\s])/g, '$1 $2');
+    
+    // 5. Xóa khoảng trắng đầu/cuối
+    cleaned = cleaned.trim();
+    
+    // 6. Viết hoa chữ cái đầu câu
+    cleaned = cleaned.replace(/(^\w|[.!?]\s+\w)/g, (match) => match.toUpperCase());
+    
+    return cleaned;
+  };
+
   const handleScanText = async uri => {
     try {
       setScanning(true);
@@ -40,7 +66,10 @@ export default function ScanTextScreen() {
         Alert.alert('Không nhận diện được chữ trong ảnh');
         return;
       }
-      navigation.navigate('PracticeCustomReadingScreen', { customText: text });
+      
+      // Clean text trước khi navigate
+      const cleanedText = cleanText(text);
+      navigation.navigate('PracticeCustomReadingScreen', { customText: cleanedText });
     } catch (err) {
       console.error('❌ OCR error:', err);
       Alert.alert('Lỗi khi quét văn bản');

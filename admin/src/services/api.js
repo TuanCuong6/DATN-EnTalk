@@ -73,3 +73,25 @@ export const feedbacksAPI = {
   getAll: () => adminAPI.get("/feedbacks"),
   reply: (id, data) => adminAPI.post(`/feedbacks/${id}/reply`, data),
 };
+
+// Email Marketing APIs
+export const emailMarketingAPI = {
+  generate: (data) =>
+    axios.post("http://localhost:3000/api/email-marketing/generate", data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    }),
+  send: (data) =>
+    axios.post("http://localhost:3000/api/email-marketing/send", data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    }),
+  getCampaigns: () =>
+    axios.get("http://localhost:3000/api/email-marketing/campaigns", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    }),
+};

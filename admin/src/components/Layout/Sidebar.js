@@ -1,51 +1,59 @@
 // admin/src/components/Layout/Sidebar.js
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  Tags,
+  Target,
+  MessageSquare,
+  Mail,
+} from "lucide-react";
 
 const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { path: "/", label: "Dashboard", icon: "📊" },
-    { path: "/users", label: "Quản lý Users", icon: "👥" },
-    { path: "/readings", label: "Quản lý Bài đọc", icon: "📖" },
-    { path: "/topics", label: "Quản lý Chủ đề", icon: "🏷️" },
-    { path: "/records", label: "Lịch sử Luyện tập", icon: "🎯" },
-    // THÊM MENU PHẢN HỒI Ở ĐÂY
-    { path: "/feedbacks", label: "Quản lý Phản hồi", icon: "💬" },
+    { path: "/", label: "Dashboard", Icon: LayoutDashboard },
+    { path: "/users", label: "Quản lý Users", Icon: Users },
+    { path: "/readings", label: "Quản lý Bài đọc", Icon: BookOpen },
+    { path: "/topics", label: "Quản lý Chủ đề", Icon: Tags },
+    { path: "/records", label: "Lịch sử Luyện tập", Icon: Target },
+    { path: "/feedbacks", label: "Quản lý Phản hồi", Icon: MessageSquare },
+    { path: "/email-marketing", label: "Email Marketing", Icon: Mail },
   ];
 
+  const isActive = (path) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname.startsWith(path);
+  };
+
   return (
-    <div
-      style={{
-        width: "250px",
-        background: "#f8f9fa",
-        height: "100vh",
-        padding: "20px",
-      }}
-    >
-      <h2>EnTalk Admin</h2>
+    <div className="fixed left-0 top-0 w-64 bg-gray-100 h-screen p-5 overflow-y-auto">
+      <h2 className="text-xl font-bold mb-6">EnTalk Admin</h2>
       <nav>
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {menuItems.map((item) => (
-            <li key={item.path} style={{ marginBottom: "10px" }}>
-              <Link
-                to={item.path}
-                style={{
-                  display: "block",
-                  padding: "10px",
-                  background:
-                    location.pathname === item.path ? "#007bff" : "transparent",
-                  color: location.pathname === item.path ? "white" : "black",
-                  textDecoration: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                <span style={{ marginRight: "10px" }}>{item.icon}</span>
-                {item.label}
-              </Link>
-            </li>
-          ))}
+        <ul className="list-none p-0">
+          {menuItems.map((item) => {
+            const Icon = item.Icon;
+            return (
+              <li key={item.path} className="mb-2">
+                <Link
+                  to={item.path}
+                  className={`flex items-center p-2.5 rounded no-underline ${
+                    isActive(item.path)
+                      ? "bg-blue-500 text-white"
+                      : "bg-transparent text-black hover:bg-gray-200"
+                  }`}
+                >
+                  <Icon size={18} className="mr-2" />
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </div>

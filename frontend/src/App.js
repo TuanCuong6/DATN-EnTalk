@@ -10,6 +10,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import { PaperProvider } from 'react-native-paper';
 import { ThemeProvider, ThemeContext } from './context/ThemeContext';
 LogBox.ignoreAllLogs();
+
 export default function App() {
   return (
     <ThemeProvider>

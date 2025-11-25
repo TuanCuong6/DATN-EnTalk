@@ -240,7 +240,6 @@ export default function HomeScreen() {
 
         {/* Lời chào */}
         <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>Chào mừng bạn đến với</Text>
           <Text style={styles.appName}>EnTalk</Text>
           <Text style={styles.subtitle}>Luyện đọc tiếng Anh hiệu quả</Text>
           <View style={styles.divider} />
@@ -287,7 +286,7 @@ export default function HomeScreen() {
             >
               <View style={[styles.gridButtonContent, styles.button3]}>
                 <Icon name="play-circle-outline" size={40} color="#9D4EDD" />
-                <Text style={styles.gridButtonTitle}>Bài đọc từ YouTube</Text>
+                <Text style={styles.gridButtonTitle}>Tạo bài đọc từ video YouTube</Text>
                 <Text style={styles.gridButtonSubtitle}>Học từ video yêu thích</Text>
               </View>
             </TouchableOpacity>

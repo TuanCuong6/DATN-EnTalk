@@ -11,8 +11,9 @@ import {
   Animated,
   Image,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { fetchReadingsByTopic } from '../api/reading';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -49,6 +50,7 @@ import { Easing } from 'react-native';
 export default function TopicReadingsScreen() {
   const [readings, setReadings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
   const { topic } = route.params;
@@ -65,19 +67,33 @@ export default function TopicReadingsScreen() {
         useNativeDriver: true,
       }),
     ).start();
+  }, []);
 
-    const load = async () => {
-      try {
-        const res = await fetchReadingsByTopic(topic.id);
-        setReadings(res.data);
-      } catch (err) {
-        Alert.alert('Lỗi', 'Không thể tải bài đọc');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [topic]);
+  const loadReadings = async (isRefreshing = false) => {
+    try {
+      if (!isRefreshing) setLoading(true);
+      const res = await fetchReadingsByTopic(topic.id);
+      setReadings(res.data);
+    } catch (err) {
+      Alert.alert('Lỗi', 'Không thể tải bài đọc');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Auto refresh khi quay lại màn hình
+  useFocusEffect(
+    React.useCallback(() => {
+      loadReadings();
+    }, [topic.id])
+  );
+
+  // Pull to refresh
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadReadings(true);
+  };
 
   const rotateInterpolation = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -198,7 +214,17 @@ export default function TopicReadingsScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView 
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#5E72EB']}
+            tintColor="#5E72EB"
+          />
+        }
+      >
         <View style={styles.topicHeader}>
           <View style={styles.topicImageContainer}>
             {/* <Image

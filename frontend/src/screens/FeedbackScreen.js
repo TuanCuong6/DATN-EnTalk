@@ -23,6 +23,7 @@ export default function FeedbackScreen({ navigation }) {
   const [content, setContent] = useState('');
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [rating, setRating] = useState(0);
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -71,8 +72,14 @@ export default function FeedbackScreen({ navigation }) {
       return;
     }
 
+    if (rating === 0) {
+      Alert.alert('Vui lòng đánh giá sao');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('content', content);
+    formData.append('rating', rating.toString());
 
     if (image) {
       formData.append('screenshot', {
@@ -85,9 +92,10 @@ export default function FeedbackScreen({ navigation }) {
     setLoading(true);
     try {
       await sendFeedback(formData);
-      Alert.alert('🎉 Gửi góp ý thành công!');
+      Alert.alert('🎉 Gửi góp ý thành công!', 'Cảm ơn bạn đã đánh giá.');
       setContent('');
       setImage(null);
+      setRating(0);
       navigation.goBack();
     } catch (err) {
       console.error('❌ Lỗi gửi góp ý:', err);
@@ -135,6 +143,27 @@ export default function FeedbackScreen({ navigation }) {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.screenTitle}>💬 Góp ý / Báo lỗi</Text>
+
+        {/* Rating Stars */}
+        <View style={styles.ratingContainer}>
+          <Text style={styles.label}>Đánh giá của bạn:</Text>
+          <View style={styles.starsContainer}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <TouchableOpacity
+                key={star}
+                onPress={() => setRating(star)}
+                style={styles.starButton}
+              >
+                <Icon
+                  name={star <= rating ? 'star' : 'star-border'}
+                  size={40}
+                  color={star <= rating ? '#FFD700' : '#CCC'}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+
+        </View>
 
         <Text style={styles.label}>Nội dung góp ý:</Text>
         <TextInput
@@ -316,5 +345,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFF',
     marginLeft: 10,
+  },
+  ratingContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(94, 114, 235, 0.3)',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  starButton: {
+    padding: 5,
   },
 });

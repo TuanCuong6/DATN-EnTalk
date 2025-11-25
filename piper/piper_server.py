@@ -8,11 +8,21 @@ from piper import PiperVoice
 app = Flask(__name__)
 CORS(app)
 
-# Load Piper model
-model_path = "models/en_US-lessac-medium.onnx"
-print("🔄 Đang tải Piper model...")
-voice = PiperVoice.load(model_path)
-print("✅ Piper model loaded!")
+# Load Piper models
+model_path_en = "models/en_US-lessac-medium.onnx"
+print("🔄 Đang tải Piper model tiếng Anh...")
+voice_en = PiperVoice.load(model_path_en)
+print("✅ Piper model tiếng Anh loaded!")
+
+# Load model tiếng Việt (nếu có)
+voice_vi = None
+model_path_vi = "models/vi_VN-vivos-x_low.onnx"
+if os.path.exists(model_path_vi):
+    print("🔄 Đang tải Piper model tiếng Việt...")
+    voice_vi = PiperVoice.load(model_path_vi)
+    print("✅ Piper model tiếng Việt loaded!")
+else:
+    print("⚠️ Không tìm thấy model tiếng Việt, sẽ dùng tiếng Anh thay thế")
 
 def create_wav_header(data_size, sample_rate=22050, channels=1, bits_per_sample=16):
     """Tạo WAV header cho raw PCM data"""
@@ -45,12 +55,21 @@ def synthesize():
     try:
         data = request.json
         text = data.get("text", "")
+        language = data.get("language", "en")  # "en" hoặc "vi"
         
         if not text:
             return jsonify({"error": "No text provided"}), 400
 
         text_length = len(text)
-        print(f"🎯 Đang tạo audio cho: {text[:50]}... (độ dài: {text_length} ký tự)")
+        print(f"🎯 Đang tạo audio ({language}) cho: {text[:50]}... (độ dài: {text_length} ký tự)")
+
+        # Chọn voice phù hợp
+        if language == "vi" and voice_vi is not None:
+            voice = voice_vi
+        else:
+            voice = voice_en
+            if language == "vi":
+                print("⚠️ Dùng voice tiếng Anh thay thế cho tiếng Việt")
 
         audio_chunks = []
         chunk_count = 0
@@ -65,7 +84,7 @@ def synthesize():
         wav_file = wav_header + audio_bytes
         
         elapsed_time = time.time() - start_time
-        print(f"✅ Đã tạo audio: {len(wav_file)} bytes ({chunk_count} chunks) trong {elapsed_time:.2f}s")
+        print(f"✅ Đã tạo audio ({language}): {len(wav_file)} bytes ({chunk_count} chunks) trong {elapsed_time:.2f}s")
         
         return send_file(
             io.BytesIO(wav_file),
