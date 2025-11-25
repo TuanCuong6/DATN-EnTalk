@@ -13,4 +13,7 @@ router.post("/send", verifyAdminToken, emailMarketingController.sendMarketingEma
 // Get campaigns history
 router.get("/campaigns", verifyAdminToken, emailMarketingController.getCampaigns);
 
+// Get campaign detail (including HTML content)
+router.get("/campaigns/:campaignId", verifyAdminToken, emailMarketingController.getCampaignDetail);
+
 module.exports = router;

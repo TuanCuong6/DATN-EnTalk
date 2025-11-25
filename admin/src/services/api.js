@@ -94,4 +94,10 @@ export const emailMarketingAPI = {
         Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
       },
     }),
+  getCampaignDetail: (campaignId) =>
+    axios.get(`http://localhost:3000/api/email-marketing/campaigns/${campaignId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    }),
 };
