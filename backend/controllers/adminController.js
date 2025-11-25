@@ -71,11 +71,46 @@ exports.getDashboardStats = async (req, res) => {
 exports.getUsers = async (req, res) => {
   try {
     const [users] = await db.execute(`
-      SELECT id, name, email, level, avatar_url, created_at, is_verified 
-      FROM users 
-      ORDER BY created_at DESC
+      SELECT 
+        u.id, 
+        u.name, 
+        u.email, 
+        u.level, 
+        u.avatar_url, 
+        u.created_at, 
+        u.is_verified,
+        u.is_active,
+        COALESCE(us.current_streak, 0) as current_streak
+      FROM users u
+      LEFT JOIN user_streaks us ON u.id = us.user_id
+      ORDER BY u.created_at DESC
     `);
     res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
+// Toggle User Active Status
+exports.toggleUserActive = async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Lấy trạng thái hiện tại
+    const [users] = await db.execute("SELECT is_active FROM users WHERE id = ?", [id]);
+    if (users.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+    
+    const currentStatus = users[0].is_active;
+    const newStatus = !currentStatus;
+    
+    // Cập nhật trạng thái
+    await db.execute("UPDATE users SET is_active = ? WHERE id = ?", [newStatus, id]);
+    
+    res.json({ 
+      message: newStatus ? "Đã kích hoạt tài khoản" : "Đã vô hiệu hóa tài khoản",
+      is_active: newStatus
+    });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }

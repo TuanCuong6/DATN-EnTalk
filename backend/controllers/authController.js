@@ -76,6 +76,12 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Email không tồn tại" });
 
     const user = rows[0];
+    
+    // Kiểm tra tài khoản có bị vô hiệu hóa không
+    if (user.is_active === false || user.is_active === 0) {
+      return res.status(403).json({ message: "Tài khoản của bạn đã bị vô hiệu hóa" });
+    }
+    
     if (!user.is_verified)
       return res.status(403).json({ message: "Tài khoản chưa xác minh" });
 

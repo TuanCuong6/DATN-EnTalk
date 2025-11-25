@@ -60,6 +60,47 @@ exports.getFeedbacks = async (req, res) => {
   }
 };
 
+// ADMIN: Lấy chi tiết một phản hồi
+exports.getFeedbackById = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const [feedbacks] = await db.execute(`
+      SELECT f.*, u.name as user_name, u.email as user_email
+      FROM feedbacks f 
+      LEFT JOIN users u ON f.user_id = u.id 
+      WHERE f.id = ?
+    `, [id]);
+
+    if (feedbacks.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy phản hồi" });
+    }
+
+    res.json(feedbacks[0]);
+  } catch (err) {
+    console.error("❌ Lỗi lấy chi tiết feedback:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
+// ADMIN: Cập nhật trạng thái và ghi chú
+exports.updateFeedback = async (req, res) => {
+  const { id } = req.params;
+  const { status, admin_note } = req.body;
+
+  try {
+    await db.execute(
+      "UPDATE feedbacks SET status = ?, admin_note = ? WHERE id = ?",
+      [status, admin_note, id]
+    );
+
+    res.json({ message: "Cập nhật thành công" });
+  } catch (err) {
+    console.error("❌ Lỗi cập nhật feedback:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
 // ADMIN: Reply phản hồi
 exports.replyFeedback = async (req, res) => {
   const { id } = req.params;

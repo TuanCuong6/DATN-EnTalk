@@ -12,6 +12,7 @@ router.post("/login", adminController.adminLogin);
 // Protected routes
 router.get("/dashboard", adminAuth, adminController.getDashboardStats);
 router.get("/users", adminAuth, adminController.getUsers);
+router.put("/users/:id/toggle-active", adminAuth, adminController.toggleUserActive);
 
 // Topics management
 router.get("/topics", adminAuth, adminController.getTopics);
@@ -37,8 +38,11 @@ router.delete("/readings/:id", adminAuth, adminController.deleteReading);
 
 // Records management
 router.get("/records", adminAuth, adminController.getRecords);
-// THÊM: Feedback management
+
+// Feedback management
 router.get("/feedbacks", adminAuth, feedbackController.getFeedbacks);
+router.get("/feedbacks/:id", adminAuth, feedbackController.getFeedbackById);
+router.put("/feedbacks/:id", adminAuth, feedbackController.updateFeedback);
 router.post(
   "/feedbacks/:id/reply",
   adminAuth,
