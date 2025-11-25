@@ -280,3 +280,23 @@ CREATE TABLE IF NOT EXISTS user_streaks (
 CREATE INDEX idx_user_streak ON user_streaks(user_id);
 CREATE INDEX idx_last_practice ON user_streaks(last_practice_date);
 
+
+-- Bảng lưu lịch sử email marketing campaigns
+CREATE TABLE IF NOT EXISTS marketing_campaigns (
+  campaign_id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255) NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  html_content LONGTEXT NOT NULL,
+  total_recipients INT DEFAULT 0,
+  sent_count INT DEFAULT 0,
+  failed_count INT DEFAULT 0,
+  status ENUM('sending', 'completed', 'failed') DEFAULT 'sending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  completed_at TIMESTAMP NULL,
+  INDEX idx_status (status),
+  INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE users 
+ADD COLUMN is_active BOOLEAN DEFAULT TRUE COMMENT 'Trạng thái tài khoản: TRUE = hoạt động, FALSE = vô hiệu hóa';

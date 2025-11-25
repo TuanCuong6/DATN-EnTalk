@@ -202,3 +202,15 @@ exports.sendReplyEmail = async ({
 
   await transporter.sendMail(mailOptions);
 };
+
+// Hàm gửi email marketing
+exports.sendMarketingEmail = async ({ to, subject, htmlContent, userName }) => {
+  const mailOptions = {
+    from: `"EnTalk" <${process.env.MAIL_USER}>`,
+    to,
+    subject,
+    html: htmlContent,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
