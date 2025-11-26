@@ -174,7 +174,7 @@ export default function ReadingPracticeScreen({ route, navigation }) {
         <View style={styles.card}>
           <Text style={styles.title}>{reading.title || 'Bài đọc'}</Text>
           <Text style={styles.contentText}>{reading.content}</Text>
-          <TextToSpeechPlayer text={reading.content} style={styles.ttsPlayer} />
+          <TextToSpeechPlayer text={reading.content} readingId={reading.id} style={styles.ttsPlayer} />
         </View>
 
         <View style={styles.recorderContainer}>

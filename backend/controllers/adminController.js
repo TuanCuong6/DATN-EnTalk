@@ -3,6 +3,7 @@ const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const upload = require("../middleware/uploadTopicImage");
+const { generateAudioForReading } = require("../services/audioGenerationService");
 
 // Admin Login
 exports.adminLogin = async (req, res) => {
@@ -217,11 +218,24 @@ exports.getReadings = async (req, res) => {
 exports.createReading = async (req, res) => {
   const { content, level, topic_id } = req.body;
   try {
-    await db.execute(
+    // Tạo bài đọc
+    const [result] = await db.execute(
       "INSERT INTO readings (content, level, topic_id) VALUES (?, ?, ?)",
       [content, level, topic_id]
     );
-    res.status(201).json({ message: "Tạo bài đọc thành công" });
+    
+    const readingId = result.insertId;
+    console.log(`✅ Đã tạo bài đọc #${readingId}`);
+
+    // Tự động generate audio (chạy background, không chờ)
+    generateAudioForReading(readingId)
+      .then(() => console.log(`✅ Audio cho bài đọc #${readingId} đã sẵn sàng`))
+      .catch((err) => console.error(`❌ Lỗi generate audio cho bài #${readingId}:`, err.message));
+
+    res.status(201).json({ 
+      message: "Tạo bài đọc thành công. Audio đang được tạo...",
+      readingId 
+    });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
@@ -232,10 +246,26 @@ exports.updateReading = async (req, res) => {
   const { id } = req.params;
   const { content, level, topic_id } = req.body;
   try {
+    // Lấy nội dung cũ để so sánh
+    const [oldReading] = await db.execute(
+      "SELECT content FROM readings WHERE id = ?",
+      [id]
+    );
+
+    // Update bài đọc
     await db.execute(
       "UPDATE readings SET content = ?, level = ?, topic_id = ? WHERE id = ?",
       [content, level, topic_id, id]
     );
+
+    // Nếu nội dung thay đổi, regenerate audio
+    if (oldReading.length > 0 && oldReading[0].content !== content) {
+      console.log(`🔄 Nội dung bài đọc #${id} đã thay đổi, regenerate audio...`);
+      generateAudioForReading(id)
+        .then(() => console.log(`✅ Audio mới cho bài đọc #${id} đã sẵn sàng`))
+        .catch((err) => console.error(`❌ Lỗi regenerate audio cho bài #${id}:`, err.message));
+    }
+
     res.json({ message: "Cập nhật bài đọc thành công" });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });

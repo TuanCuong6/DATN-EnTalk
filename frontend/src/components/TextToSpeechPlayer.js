@@ -15,7 +15,7 @@ import { BASE_URL } from '../api/baseURL';
 
 const API_URL = `${BASE_URL}/tts`;
 
-export default function TextToSpeechPlayer({ text, style }) {
+export default function TextToSpeechPlayer({ text, readingId, style }) {
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [sound, setSound] = useState(null);
@@ -58,7 +58,7 @@ export default function TextToSpeechPlayer({ text, style }) {
         {
           'Content-Type': 'application/json',
         },
-        JSON.stringify({ text }),
+        JSON.stringify({ text, readingId }),
       );
 
       const status = response.info().status;

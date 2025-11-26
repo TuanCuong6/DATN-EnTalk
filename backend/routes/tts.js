@@ -6,6 +6,7 @@ const ffmpeg = require("fluent-ffmpeg");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const db = require("../config/db");
 
 const PIPER_SERVER_URL = process.env.PIPER_SERVER_URL || "http://localhost:5001";
 
@@ -25,16 +26,48 @@ router.get("/health", async (req, res) => {
   }
 });
 
-// Text-to-Speech endpoint
+// Text-to-Speech endpoint với pre-generated audio support
 router.post("/synthesize", async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, readingId } = req.body;
 
     if (!text || !text.trim()) {
       return res.status(400).json({ message: "Không có nội dung để chuyển đổi" });
     }
 
-    console.log(`🎯 Đang tạo audio cho: "${text.substring(0, 50)}..."`);
+    // Nếu có readingId, check xem đã có audio sẵn chưa
+    if (readingId) {
+      try {
+        const [rows] = await db.execute(
+          "SELECT audio_file FROM readings WHERE id = ?",
+          [readingId]
+        );
+
+        if (rows.length > 0 && rows[0].audio_file) {
+          const audioPath = path.join(__dirname, "..", rows[0].audio_file);
+          
+          if (fs.existsSync(audioPath)) {
+            console.log(`✅ Sử dụng audio có sẵn: ${rows[0].audio_file}`);
+            const audioBuffer = fs.readFileSync(audioPath);
+            
+            res.set({
+              "Content-Type": "audio/mpeg",
+              "Content-Length": audioBuffer.length,
+              "X-Audio-Source": "pre-generated", // Header để debug
+            });
+            return res.send(audioBuffer);
+          } else {
+            console.warn(`⚠️  File audio không tồn tại: ${audioPath}`);
+          }
+        }
+      } catch (dbError) {
+        console.error("❌ Lỗi check audio DB:", dbError.message);
+        // Continue to generate realtime nếu có lỗi
+      }
+    }
+
+    // Fallback: Generate audio realtime (như cũ)
+    console.log(`🎯 Đang tạo audio realtime cho: "${text.substring(0, 50)}..."`);
 
     // Gọi Piper server
     const response = await axios.post(
@@ -42,7 +75,7 @@ router.post("/synthesize", async (req, res) => {
       { text },
       {
         responseType: "arraybuffer",
-        timeout: 60000, // 60 seconds - tăng timeout cho văn bản dài
+        timeout: 60000,
         headers: {
           "Content-Type": "application/json",
         },
@@ -92,6 +125,7 @@ router.post("/synthesize", async (req, res) => {
       res.set({
         "Content-Type": "audio/mpeg",
         "Content-Length": mp3Buffer.length,
+        "X-Audio-Source": "realtime", // Header để debug
       });
       res.send(mp3Buffer);
 

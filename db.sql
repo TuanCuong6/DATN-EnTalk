@@ -300,3 +300,14 @@ CREATE TABLE IF NOT EXISTS marketing_campaigns (
 
 ALTER TABLE users 
 ADD COLUMN is_active BOOLEAN DEFAULT TRUE COMMENT 'Trạng thái tài khoản: TRUE = hoạt động, FALSE = vô hiệu hóa';
+
+
+ALTER TABLE readings 
+ADD COLUMN audio_file VARCHAR(255) DEFAULT NULL COMMENT 'Đường dẫn file audio đã generate',
+ADD COLUMN audio_generated_at DATETIME DEFAULT NULL COMMENT 'Thời điểm tạo audio';
+
+-- Tạo index để tăng tốc query
+CREATE INDEX idx_audio_file ON readings(audio_file);
+
+
+
