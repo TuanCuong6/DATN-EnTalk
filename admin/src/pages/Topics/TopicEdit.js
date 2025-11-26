@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { topicsAPI } from "../../services/api";
+import { showToast } from "../../utils/toast";
 
 const TopicEdit = () => {
   const [formData, setFormData] = useState({
@@ -46,6 +47,8 @@ const TopicEdit = () => {
     setLoading(true);
     setError("");
 
+    const loadingToast = showToast.loading('Đang cập nhật...');
+
     try {
       const data = new FormData();
       data.append("name", formData.name);
@@ -56,9 +59,14 @@ const TopicEdit = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      showToast.dismiss(loadingToast);
+      showToast.success('Cập nhật chủ đề thành công!');
       navigate("/topics");
     } catch (error) {
-      setError(error.response?.data?.message || "Lỗi khi cập nhật chủ đề");
+      showToast.dismiss(loadingToast);
+      const errorMsg = error.response?.data?.message || "Lỗi khi cập nhật chủ đề";
+      setError(errorMsg);
+      showToast.error(errorMsg);
     } finally {
       setLoading(false);
     }

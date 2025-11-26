@@ -3,6 +3,7 @@ const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const upload = require("../middleware/uploadTopicImage");
+const { generateAudioForReading } = require("../services/audioGenerationService");
 
 // Admin Login
 exports.adminLogin = async (req, res) => {
@@ -42,8 +43,9 @@ exports.getDashboardStats = async (req, res) => {
     const [[{ totalUsers }]] = await db.execute(
       "SELECT COUNT(*) as totalUsers FROM users"
     );
+    // CHỈ ĐẾM BÀI ĐỌC HỆ THỐNG (có topic_id)
     const [[{ totalReadings }]] = await db.execute(
-      "SELECT COUNT(*) as totalReadings FROM readings"
+      "SELECT COUNT(*) as totalReadings FROM readings WHERE topic_id IS NOT NULL"
     );
     const [[{ totalRecords }]] = await db.execute(
       "SELECT COUNT(*) as totalRecords FROM records"
@@ -198,13 +200,14 @@ exports.deleteTopic = async (req, res) => {
   }
 };
 
-// Get All Readings với thông tin topic
+// Get All Readings với thông tin topic - CHỈ BÀI ĐỌC HỆ THỐNG
 exports.getReadings = async (req, res) => {
   try {
     const [readings] = await db.execute(`
       SELECT r.*, t.name as topic_name 
       FROM readings r 
-      LEFT JOIN topics t ON r.topic_id = t.id 
+      INNER JOIN topics t ON r.topic_id = t.id 
+      WHERE r.topic_id IS NOT NULL
       ORDER BY r.created_at DESC
     `);
     res.json(readings);
@@ -217,11 +220,24 @@ exports.getReadings = async (req, res) => {
 exports.createReading = async (req, res) => {
   const { content, level, topic_id } = req.body;
   try {
-    await db.execute(
+    // Tạo bài đọc
+    const [result] = await db.execute(
       "INSERT INTO readings (content, level, topic_id) VALUES (?, ?, ?)",
       [content, level, topic_id]
     );
-    res.status(201).json({ message: "Tạo bài đọc thành công" });
+    
+    const readingId = result.insertId;
+    console.log(`✅ Đã tạo bài đọc #${readingId}`);
+
+    // Tự động generate audio (chạy background, không chờ)
+    generateAudioForReading(readingId)
+      .then(() => console.log(`✅ Audio cho bài đọc #${readingId} đã sẵn sàng`))
+      .catch((err) => console.error(`❌ Lỗi generate audio cho bài #${readingId}:`, err.message));
+
+    res.status(201).json({ 
+      message: "Tạo bài đọc thành công. Audio đang được tạo...",
+      readingId 
+    });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
@@ -232,10 +248,26 @@ exports.updateReading = async (req, res) => {
   const { id } = req.params;
   const { content, level, topic_id } = req.body;
   try {
+    // Lấy nội dung cũ để so sánh
+    const [oldReading] = await db.execute(
+      "SELECT content FROM readings WHERE id = ?",
+      [id]
+    );
+
+    // Update bài đọc
     await db.execute(
       "UPDATE readings SET content = ?, level = ?, topic_id = ? WHERE id = ?",
       [content, level, topic_id, id]
     );
+
+    // Nếu nội dung thay đổi, regenerate audio
+    if (oldReading.length > 0 && oldReading[0].content !== content) {
+      console.log(`🔄 Nội dung bài đọc #${id} đã thay đổi, regenerate audio...`);
+      generateAudioForReading(id)
+        .then(() => console.log(`✅ Audio mới cho bài đọc #${id} đã sẵn sàng`))
+        .catch((err) => console.error(`❌ Lỗi regenerate audio cho bài #${id}:`, err.message));
+    }
+
     res.json({ message: "Cập nhật bài đọc thành công" });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
@@ -274,6 +306,66 @@ exports.getRecords = async (req, res) => {
       ORDER BY rec.created_at DESC
     `);
     res.json(records);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
+// Create User
+exports.createUser = async (req, res) => {
+  const { name, email, password } = req.body;
+  const avatarUrl = req.file ? req.file.path : null;
+
+  try {
+    // Kiểm tra email đã tồn tại
+    const [existing] = await db.execute("SELECT id FROM users WHERE email = ?", [email]);
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "Email đã được sử dụng" });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Tạo user với level mặc định A1
+    await db.execute(
+      "INSERT INTO users (name, email, password_hash, level, avatar_url, is_verified) VALUES (?, ?, ?, 'A1', ?, TRUE)",
+      [name, email, hashedPassword, avatarUrl]
+    );
+
+    res.status(201).json({ message: "Tạo người dùng thành công" });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
+// Update User
+exports.updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, removeAvatar } = req.body;
+  const avatarUrl = req.file ? req.file.path : null;
+
+  try {
+    if (removeAvatar === 'true') {
+      // Xóa avatar
+      await db.execute(
+        "UPDATE users SET name = ?, avatar_url = NULL WHERE id = ?",
+        [name, id]
+      );
+    } else if (avatarUrl) {
+      // Cập nhật avatar mới
+      await db.execute(
+        "UPDATE users SET name = ?, avatar_url = ? WHERE id = ?",
+        [name, avatarUrl, id]
+      );
+    } else {
+      // Chỉ cập nhật tên
+      await db.execute(
+        "UPDATE users SET name = ? WHERE id = ?",
+        [name, id]
+      );
+    }
+
+    res.json({ message: "Cập nhật người dùng thành công" });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }

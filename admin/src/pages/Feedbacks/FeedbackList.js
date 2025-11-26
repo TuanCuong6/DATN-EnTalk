@@ -62,7 +62,7 @@ const FeedbackList = () => {
               <th className="p-3 border border-gray-300 text-left">Ngày tạo</th>
               <th className="p-3 border border-gray-300 text-left">Trạng thái</th>
               <th className="p-3 border border-gray-300 text-left">Đánh giá</th>
-              <th className="p-3 border border-gray-300 text-left">Actions</th>
+              <th className="p-3 border border-gray-300 text-left">Thao tác</th>
             </tr>
           </thead>
           <tbody>

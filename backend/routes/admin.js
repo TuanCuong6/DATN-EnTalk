@@ -4,6 +4,7 @@ const router = express.Router();
 const adminController = require("../controllers/adminController");
 const adminAuth = require("../middleware/adminAuth");
 const uploadTopicImage = require("../middleware/uploadTopicImage");
+const uploadUserAvatar = require("../middleware/uploadUserAvatar");
 const feedbackController = require("../controllers/feedbackController");
 
 // Public routes
@@ -12,6 +13,8 @@ router.post("/login", adminController.adminLogin);
 // Protected routes
 router.get("/dashboard", adminAuth, adminController.getDashboardStats);
 router.get("/users", adminAuth, adminController.getUsers);
+router.post("/users", adminAuth, uploadUserAvatar.single("avatar"), adminController.createUser);
+router.put("/users/:id", adminAuth, uploadUserAvatar.single("avatar"), adminController.updateUser);
 router.put("/users/:id/toggle-active", adminAuth, adminController.toggleUserActive);
 
 // Topics management

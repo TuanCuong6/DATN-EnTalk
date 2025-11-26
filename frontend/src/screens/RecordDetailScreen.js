@@ -202,26 +202,32 @@ export default function RecordDetailScreen({ route }) {
             <View style={styles.scoreItem}>
               <Text style={styles.scoreLabel}>Tổng thể:</Text>
               <Text style={styles.scoreValue}>
-                {detail.score_overall?.toFixed(2)}
+                {detail.score_overall?.toFixed(1)}
               </Text>
             </View>
             <View style={styles.scoreItem}>
               <Text style={styles.scoreLabel}>Phát âm:</Text>
               <Text style={styles.scoreValue}>
-                {detail.score_pronunciation}
+                {parseFloat(detail.score_pronunciation).toFixed(1)}
               </Text>
             </View>
             <View style={styles.scoreItem}>
               <Text style={styles.scoreLabel}>Trôi chảy:</Text>
-              <Text style={styles.scoreValue}>{detail.score_fluency}</Text>
+              <Text style={styles.scoreValue}>
+                {parseFloat(detail.score_fluency).toFixed(1)}
+              </Text>
             </View>
             <View style={styles.scoreItem}>
               <Text style={styles.scoreLabel}>Ngữ điệu:</Text>
-              <Text style={styles.scoreValue}>{detail.score_intonation}</Text>
+              <Text style={styles.scoreValue}>
+                {parseFloat(detail.score_intonation).toFixed(1)}
+              </Text>
             </View>
             <View style={styles.scoreItem}>
               <Text style={styles.scoreLabel}>Tốc độ:</Text>
-              <Text style={styles.scoreValue}>{detail.score_speed}</Text>
+              <Text style={styles.scoreValue}>
+                {parseFloat(detail.score_speed).toFixed(1)}
+              </Text>
             </View>
           </View>
         </View>

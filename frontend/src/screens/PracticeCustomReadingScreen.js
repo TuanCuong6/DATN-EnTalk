@@ -19,6 +19,8 @@ import { useNavigation } from '@react-navigation/native';
 import { getProfile } from '../api/account';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import TextToSpeechPlayer from '../components/TextToSpeechPlayer';
+import WordAnalysisDisplay from '../components/WordAnalysisDisplay';
 
 export default function PracticeCustomReadingScreen({ route }) {
   const navigation = useNavigation();
@@ -102,6 +104,7 @@ export default function PracticeCustomReadingScreen({ route }) {
         <View style={styles.contentCard}>
           <Text style={styles.contentLabel}>📖 Nội dung bạn sẽ đọc:</Text>
           <Text style={styles.contentText}>{customText}</Text>
+          <TextToSpeechPlayer text={customText} style={styles.ttsPlayer} />
         </View>
 
         {/* Audio Recorder */}
@@ -132,42 +135,53 @@ export default function PracticeCustomReadingScreen({ route }) {
             </LinearGradient>
 
             {scoreResult && (
-              <View style={styles.scoreContainer}>
-                <View style={styles.overallScore}>
-                  <Text style={styles.overallLabel}>Tổng điểm</Text>
-                  <Text style={styles.overallValue}>
-                    {scoreResult.scores.overall}
-                    <Text style={styles.overallTotal}>/10</Text>
-                  </Text>
+              <ScrollView style={styles.scoreScrollView}>
+                <View style={styles.scoreContainer}>
+                  <View style={styles.overallScore}>
+                    <Text style={styles.overallLabel}>Tổng điểm</Text>
+                    <Text style={styles.overallValue}>
+                      {scoreResult.scores.overall}
+                      <Text style={styles.overallTotal}>/10</Text>
+                    </Text>
+                  </View>
+
+                  <View style={styles.scoreGrid}>
+                    <View style={styles.scoreItem}>
+                      <Text style={[styles.scoreLabel, styles.pronunciation]}>Phát âm</Text>
+                      <Text style={styles.scoreValue}>{scoreResult.scores.pronunciation}/10</Text>
+                    </View>
+
+                    <View style={styles.scoreItem}>
+                      <Text style={[styles.scoreLabel, styles.intonation]}>Ngữ điệu</Text>
+                      <Text style={styles.scoreValue}>{scoreResult.scores.intonation}/10</Text>
+                    </View>
+
+                    <View style={styles.scoreItem}>
+                      <Text style={[styles.scoreLabel, styles.fluency]}>Lưu loát</Text>
+                      <Text style={styles.scoreValue}>{scoreResult.scores.fluency}/10</Text>
+                    </View>
+
+                    <View style={styles.scoreItem}>
+                      <Text style={[styles.scoreLabel, styles.speed]}>Tốc độ</Text>
+                      <Text style={styles.scoreValue}>{scoreResult.scores.speed}/10</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.commentContainer}>
+                    <Text style={styles.commentLabel}>Nhận xét</Text>
+                    <Text style={styles.commentText}>{scoreResult.comment}</Text>
+                  </View>
+
+                  {/* Word Analysis */}
+                  {scoreResult.wordAnalysis && scoreResult.wordAnalysis.length > 0 && (
+                    <WordAnalysisDisplay 
+                      wordAnalysis={scoreResult.wordAnalysis}
+                      originalText={customText}
+                      transcript={scoreResult.transcript}
+                    />
+                  )}
                 </View>
-
-                <View style={styles.scoreGrid}>
-                  <View style={styles.scoreItem}>
-                    <Text style={[styles.scoreLabel, styles.pronunciation]}>Phát âm</Text>
-                    <Text style={styles.scoreValue}>{scoreResult.scores.pronunciation}/10</Text>
-                  </View>
-
-                  <View style={styles.scoreItem}>
-                    <Text style={[styles.scoreLabel, styles.intonation]}>Ngữ điệu</Text>
-                    <Text style={styles.scoreValue}>{scoreResult.scores.intonation}/10</Text>
-                  </View>
-
-                  <View style={styles.scoreItem}>
-                    <Text style={[styles.scoreLabel, styles.fluency]}>Lưu loát</Text>
-                    <Text style={styles.scoreValue}>{scoreResult.scores.fluency}/10</Text>
-                  </View>
-
-                  <View style={styles.scoreItem}>
-                    <Text style={[styles.scoreLabel, styles.speed]}>Tốc độ</Text>
-                    <Text style={styles.scoreValue}>{scoreResult.scores.speed}/10</Text>
-                  </View>
-                </View>
-
-                <View style={styles.commentContainer}>
-                  <Text style={styles.commentLabel}>Nhận xét</Text>
-                  <Text style={styles.commentText}>{scoreResult.comment}</Text>
-                </View>
-              </View>
+              </ScrollView>
             )}
 
             <TouchableOpacity style={styles.closeButton} onPress={() => setShowScoreModal(false)}>
@@ -275,6 +289,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 26,
     color: '#343A40',
+    marginBottom: 10,
+  },
+  ttsPlayer: {
+    marginTop: 10,
   },
   recorderCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -298,6 +316,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
+    maxHeight: '85%',
     backgroundColor: '#fff',
     borderRadius: 20,
     overflow: 'hidden',
@@ -305,6 +324,9 @@ const styles = StyleSheet.create({
   },
   modalHeader: { padding: 20, alignItems: 'center' },
   modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#fff' },
+  scoreScrollView: {
+    maxHeight: 500,
+  },
   scoreContainer: { padding: 20 },
   overallScore: { alignItems: 'center', marginBottom: 20 },
   overallLabel: { fontSize: 16, color: '#6c757d', marginBottom: 5 },

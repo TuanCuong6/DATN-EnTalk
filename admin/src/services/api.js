@@ -48,6 +48,8 @@ export const dashboardAPI = {
 
 export const usersAPI = {
   getAll: () => adminAPI.get("/users"),
+  create: (data) => adminAPI.post("/users", data),
+  update: (id, data) => adminAPI.put(`/users/${id}`, data),
 };
 
 export const topicsAPI = {
@@ -90,6 +92,12 @@ export const emailMarketingAPI = {
     }),
   getCampaigns: () =>
     axios.get("http://localhost:3000/api/email-marketing/campaigns", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    }),
+  getCampaignDetail: (campaignId) =>
+    axios.get(`http://localhost:3000/api/email-marketing/campaigns/${campaignId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
       },

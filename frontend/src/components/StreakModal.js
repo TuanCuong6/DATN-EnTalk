@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const STREAK_LEVELS = [
   {
@@ -116,7 +117,7 @@ export default function StreakModal({ visible, onClose, streakData }) {
         activeOpacity={1}
         onPress={onClose}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.modalContainer} pointerEvents="box-none">
           <TouchableOpacity activeOpacity={1}>
             <LinearGradient
               colors={['#FFFFFF', '#F8F9FF']}
@@ -124,96 +125,96 @@ export default function StreakModal({ visible, onClose, streakData }) {
             >
               {/* Close button */}
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <Icon name="close" size={24} color="#666" />
+                <Icon name="close" size={22} color="#666" />
               </TouchableOpacity>
 
-              {/* Streak display */}
-              <View style={styles.streakHeader}>
-                <Text style={styles.streakLabel}>Streak hiện tại</Text>
-                <View style={styles.streakBadge}>
-                  <Icon
-                    name={currentLevel.icon}
-                    size={40}
-                    color={practiced_today ? currentLevel.color : '#BDBDBD'}
-                  />
-                  <Text
-                    style={[
-                      styles.streakNumber,
-                      !practiced_today && styles.streakNumberGray,
-                    ]}
-                  >
-                    {current_streak}
-                  </Text>
-                </View>
-                <Text
-                  style={[
-                    styles.levelName,
-                    { color: practiced_today ? currentLevel.color : '#BDBDBD' },
-                  ]}
-                >
-                  {currentLevel.name}
-                </Text>
-              </View>
-
-              {/* Status message */}
-              <View
-                style={[styles.statusCard, { borderLeftColor: status.color }]}
-              >
-                <Icon name={status.icon} size={24} color={status.color} />
-                <Text style={styles.statusText}>{status.text}</Text>
-              </View>
-
-              {/* Freeze count */}
-              {current_streak >= 2 && (
-                <View style={styles.freezeInfo}>
-                  <Icon name="ac-unit" size={20} color="#4D96FF" />
-                  <Text style={styles.freezeText}>
-                    Còn {streak_freeze_count}/3 lần phục hồi trong tháng
-                  </Text>
-                </View>
-              )}
-
-              {/* Divider */}
-              <View style={styles.divider} />
-
-              {/* Info tip */}
-              <View style={styles.infoTip}>
-                <Icon name="info-outline" size={20} color="#5E72EB" />
-                <Text style={styles.infoText}>
-                  Luyện đọc hàng ngày để duy trì Streak
-                </Text>
-              </View>
-
-              {/* Streak levels */}
-              <Text style={styles.levelsTitle}>Các cấp độ Streak</Text>
-              {STREAK_LEVELS.map((level, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.levelItem,
-                    current_streak >= level.min &&
-                      current_streak < level.max &&
-                      styles.levelItemActive,
-                  ]}
-                >
-                  <Icon name={level.icon} size={28} color={level.color} />
-                  <View style={styles.levelInfo}>
-                    <Text style={styles.levelRange}>
-                      {level.min}–{level.max === Infinity ? '∞' : level.max}{' '}
-                      ngày
-                    </Text>
+              <View style={styles.content}>
+                {/* Streak display */}
+                <View style={styles.streakHeader}>
+                  <View style={styles.streakBadge}>
+                    <Icon
+                      name={currentLevel.icon}
+                      size={32}
+                      color={practiced_today ? currentLevel.color : '#BDBDBD'}
+                    />
                     <Text
-                      style={[styles.levelNameSmall, { color: level.color }]}
+                      style={[
+                        styles.streakNumber,
+                        !practiced_today && styles.streakNumberGray,
+                      ]}
                     >
-                      {level.name}
+                      {current_streak}
                     </Text>
                   </View>
-                  {current_streak >= level.min &&
-                    current_streak < level.max && (
-                      <Icon name="check-circle" size={20} color={level.color} />
-                    )}
+                  <Text
+                    style={[
+                      styles.levelName,
+                      { color: practiced_today ? currentLevel.color : '#BDBDBD' },
+                    ]}
+                  >
+                    {currentLevel.name}
+                  </Text>
                 </View>
-              ))}
+
+                {/* Status message */}
+                <View
+                  style={[styles.statusCard, { borderLeftColor: status.color }]}
+                >
+                  <Icon name={status.icon} size={18} color={status.color} />
+                  <Text style={styles.statusText}>{status.text}</Text>
+                </View>
+
+                {/* Freeze count */}
+                {current_streak >= 2 && (
+                  <View style={styles.freezeInfo}>
+                    <Icon name="ac-unit" size={16} color="#4D96FF" />
+                    <Text style={styles.freezeText}>
+                      {streak_freeze_count}/3 lần phục hồi
+                    </Text>
+                  </View>
+                )}
+
+                {/* Info tip */}
+                <View style={styles.infoTip}>
+                  <Icon name="info-outline" size={16} color="#5E72EB" />
+                  <Text style={styles.infoText}>
+                    Luyện đọc hàng ngày để duy trì Streak
+                  </Text>
+                </View>
+
+                {/* Streak levels - Grid 2 columns */}
+                <Text style={styles.levelsTitle}>Các cấp độ</Text>
+                <View style={styles.levelsGrid}>
+                  {STREAK_LEVELS.map((level, index) => {
+                    const isActive = current_streak >= level.min && current_streak < level.max;
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          styles.levelCard,
+                          isActive && styles.levelCardActive,
+                        ]}
+                      >
+                        <Icon name={level.icon} size={20} color={level.color} />
+                        <View style={styles.levelCardInfo}>
+                          <Text style={styles.levelCardRange}>
+                            {level.min}–{level.max === Infinity ? '∞' : level.max}
+                          </Text>
+                          <Text
+                            style={[styles.levelCardName, { color: level.color }]}
+                            numberOfLines={1}
+                          >
+                            {level.name}
+                          </Text>
+                        </View>
+                        {isActive && (
+                          <Icon name="check-circle" size={16} color={level.color} style={styles.checkIcon} />
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -231,147 +232,153 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: width * 0.9,
-    maxHeight: '80%',
+    maxHeight: height * 0.85,
   },
   modalContent: {
     borderRadius: 20,
-    padding: 25,
+    backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
   },
+  content: {
+    padding: 20,
+    paddingTop: 45,
+  },
   closeButton: {
     position: 'absolute',
-    top: 15,
-    right: 15,
+    top: 12,
+    right: 12,
     zIndex: 10,
     padding: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 15,
   },
   streakHeader: {
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  streakLabel: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
     borderRadius: 50,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   streakNumber: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#333',
-    marginLeft: 10,
+    marginLeft: 6,
   },
   streakNumberGray: {
     color: '#BDBDBD',
   },
   levelName: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
-    marginTop: 5,
   },
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    padding: 15,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    marginBottom: 15,
+    padding: 10,
+    borderRadius: 10,
+    borderLeftWidth: 3,
+    marginBottom: 10,
   },
   statusText: {
     flex: 1,
-    marginLeft: 12,
-    fontSize: 15,
+    marginLeft: 8,
+    fontSize: 13,
     color: '#333',
-    lineHeight: 22,
+    lineHeight: 18,
   },
   freezeInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#E3F2FD',
-    padding: 10,
+    padding: 6,
     borderRadius: 8,
-    marginBottom: 15,
+    marginBottom: 12,
   },
   freezeText: {
-    marginLeft: 8,
-    fontSize: 14,
+    marginLeft: 4,
+    fontSize: 12,
     color: '#4D96FF',
     fontWeight: '500',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 20,
   },
   infoTip: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F0F7FF',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 15,
+    padding: 8,
+    borderRadius: 8,
+    marginBottom: 10,
     borderLeftWidth: 3,
     borderLeftColor: '#5E72EB',
   },
   infoText: {
-    marginLeft: 10,
-    fontSize: 14,
+    marginLeft: 6,
+    fontSize: 12,
     color: '#5E72EB',
     fontWeight: '500',
     flex: 1,
   },
   levelsTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 15,
+    marginBottom: 10,
   },
-  levelItem: {
+  levelsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  levelCard: {
+    width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    padding: 12,
+    padding: 8,
     borderRadius: 10,
-    marginBottom: 10,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    gap: 12,
+    position: 'relative',
   },
-  levelItemActive: {
+  levelCardActive: {
     borderColor: '#5E72EB',
     borderWidth: 2,
     backgroundColor: '#F0F7FF',
   },
-
-  levelInfo: {
+  levelCardInfo: {
     flex: 1,
+    marginLeft: 8,
   },
-  levelRange: {
-    fontSize: 14,
+  levelCardRange: {
+    fontSize: 11,
     color: '#666',
     marginBottom: 2,
   },
-  levelNameSmall: {
-    fontSize: 15,
+  levelCardName: {
+    fontSize: 12,
     fontWeight: '600',
+  },
+  checkIcon: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
   },
 });

@@ -6,7 +6,15 @@ const mailer = require("../services/mailer");
 // Generate email HTML từ Gemini
 exports.generateEmail = async (req, res) => {
   try {
-    const { title, description, imageUrls, ctaLink, ctaText, primaryColor, designStyle } = req.body;
+    const {
+      title,
+      description,
+      imageUrls,
+      ctaLink,
+      ctaText,
+      primaryColor,
+      designStyle,
+    } = req.body;
 
     if (!title || !description) {
       return res.status(400).json({ message: "Thiếu tiêu đề hoặc mô tả" });
@@ -24,15 +32,24 @@ exports.generateEmail = async (req, res) => {
       designStyle,
     });
 
-    res.json({ 
-      success: true, 
-      htmlContent 
+    res.json({
+      success: true,
+      htmlContent,
     });
   } catch (error) {
     console.error("Error generating email:", error);
-    res.status(500).json({ 
-      message: "Lỗi khi tạo email", 
-      error: error.message 
+
+    // Xử lý lỗi quota Gemini API
+    if (error.message && error.message.includes("Resource exhausted")) {
+      return res.status(429).json({
+        message: "API Gemini đã hết quota. Vui lòng thử lại sau.",
+        error: "QUOTA_EXCEEDED",
+      });
+    }
+
+    res.status(500).json({
+      message: "Lỗi khi tạo email",
+      error: error.message,
     });
   }
 };
@@ -43,7 +60,9 @@ exports.sendMarketingEmail = async (req, res) => {
     const { title, htmlContent, subject } = req.body;
 
     if (!htmlContent || !subject) {
-      return res.status(400).json({ message: "Thiếu nội dung email hoặc tiêu đề" });
+      return res
+        .status(400)
+        .json({ message: "Thiếu nội dung email hoặc tiêu đề" });
     }
 
     // Lấy danh sách tất cả users
@@ -75,9 +94,9 @@ exports.sendMarketingEmail = async (req, res) => {
     });
   } catch (error) {
     console.error("Error sending marketing email:", error);
-    res.status(500).json({ 
-      message: "Lỗi khi gửi email", 
-      error: error.message 
+    res.status(500).json({
+      message: "Lỗi khi gửi email",
+      error: error.message,
     });
   }
 };
@@ -115,7 +134,9 @@ async function sendEmailsInBackground(campaignId, users, subject, htmlContent) {
     [successCount, failCount, campaignId]
   );
 
-  console.log(`📧 Campaign ${campaignId} completed: ${successCount} sent, ${failCount} failed`);
+  console.log(
+    `📧 Campaign ${campaignId} completed: ${successCount} sent, ${failCount} failed`
+  );
 }
 
 // Lấy lịch sử campaigns
@@ -132,9 +153,36 @@ exports.getCampaigns = async (req, res) => {
     res.json({ success: true, campaigns });
   } catch (error) {
     console.error("Error fetching campaigns:", error);
-    res.status(500).json({ 
-      message: "Lỗi khi lấy lịch sử campaigns", 
-      error: error.message 
+    res.status(500).json({
+      message: "Lỗi khi lấy lịch sử campaigns",
+      error: error.message,
+    });
+  }
+};
+
+// Lấy chi tiết campaign (bao gồm HTML content)
+exports.getCampaignDetail = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+
+    const [campaigns] = await db.query(
+      `SELECT campaign_id, title, subject, html_content, total_recipients, 
+              sent_count, failed_count, status, created_at, completed_at 
+       FROM marketing_campaigns 
+       WHERE campaign_id = ?`,
+      [campaignId]
+    );
+
+    if (campaigns.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy campaign" });
+    }
+
+    res.json({ success: true, campaign: campaigns[0] });
+  } catch (error) {
+    console.error("Error fetching campaign detail:", error);
+    res.status(500).json({
+      message: "Lỗi khi lấy chi tiết campaign",
+      error: error.message,
     });
   }
 };

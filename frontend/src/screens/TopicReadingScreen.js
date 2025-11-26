@@ -18,6 +18,7 @@ import { fetchReadingsByTopic } from '../api/reading';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Easing } from 'react-native';
+import { getLevelText } from '../utils/levelHelper';
 
 // Mapping ảnh chủ đề
 // const topicImages = {
@@ -49,14 +50,24 @@ import { Easing } from 'react-native';
 
 export default function TopicReadingsScreen() {
   const [readings, setReadings] = useState([]);
+  const [filteredReadings, setFilteredReadings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState('all');
+  const [showLevelPicker, setShowLevelPicker] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
   const { topic } = route.params;
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const itemScale = useRef(new Animated.Value(1)).current;
+
+  const levelOptions = [
+    { value: 'all', label: 'Tất cả' },
+    { value: 'A1', label: 'Dễ' },
+    { value: 'B1', label: 'Vừa' },
+    { value: 'C1', label: 'Khó' },
+  ];
 
   useEffect(() => {
     Animated.loop(
@@ -74,6 +85,7 @@ export default function TopicReadingsScreen() {
       if (!isRefreshing) setLoading(true);
       const res = await fetchReadingsByTopic(topic.id);
       setReadings(res.data);
+      filterReadings(res.data, selectedLevel);
     } catch (err) {
       Alert.alert('Lỗi', 'Không thể tải bài đọc');
     } finally {
@@ -81,6 +93,19 @@ export default function TopicReadingsScreen() {
       setRefreshing(false);
     }
   };
+
+  const filterReadings = (readingsList, level) => {
+    if (level === 'all') {
+      setFilteredReadings(readingsList);
+    } else {
+      const filtered = readingsList.filter(reading => reading.level === level);
+      setFilteredReadings(filtered);
+    }
+  };
+
+  useEffect(() => {
+    filterReadings(readings, selectedLevel);
+  }, [selectedLevel]);
 
   // Auto refresh khi quay lại màn hình
   useFocusEffect(
@@ -147,9 +172,23 @@ export default function TopicReadingsScreen() {
             style={styles.itemIcon}
           />
           <View style={styles.itemTextContainer}>
-            <Text style={styles.itemText} numberOfLines={2}>
-              {item.title || item.content.slice(0, 100) + '...'}
-            </Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.itemText} numberOfLines={2}>
+                {item.title || item.content.slice(0, 100) + '...'}
+              </Text>
+              {/* Hiển thị level */}
+              <View
+                style={[
+                  styles.levelBadge,
+                  item.level === 'A1' && styles.levelEasy,
+                  item.level === 'B1' && styles.levelMedium,
+                  item.level === 'C1' && styles.levelHard,
+                ]}>
+                <Text style={styles.levelText}>
+                  {getLevelText(item.level)}
+                </Text>
+              </View>
+            </View>
             {/* Hiển thị điểm cao nhất và trạng thái */}
             {item.best_score !== null && (
               <View style={styles.scoreContainer}>
@@ -243,12 +282,54 @@ export default function TopicReadingsScreen() {
             />
           </View>
           <Text style={styles.screenTitle}>📂 {topic.name}</Text>
-          <Text style={styles.subtitle}>{readings.length} bài đọc có sẵn</Text>
+          
+          {/* Filter row with count and level dropdown */}
+          <View style={styles.filterRow}>
+            <Text style={styles.subtitle}>{readings.length} bài đọc có sẵn</Text>
+            
+            <View>
+              <TouchableOpacity 
+                style={styles.levelDropdown}
+                onPress={() => setShowLevelPicker(!showLevelPicker)}
+              >
+                <Text style={styles.levelDropdownText}>
+                  {levelOptions.find(opt => opt.value === selectedLevel)?.label}
+                </Text>
+                <Icon name={showLevelPicker ? "arrow-drop-up" : "arrow-drop-down"} size={20} color="#5E72EB" />
+              </TouchableOpacity>
+              
+              {/* Dropdown menu */}
+              {showLevelPicker && (
+                <View style={styles.dropdownMenu}>
+                  {levelOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.dropdownOption,
+                        selectedLevel === option.value && styles.dropdownOptionSelected
+                      ]}
+                      onPress={() => {
+                        setSelectedLevel(option.value);
+                        setShowLevelPicker(false);
+                      }}
+                    >
+                      <Text style={[
+                        styles.dropdownOptionText,
+                        selectedLevel === option.value && styles.dropdownOptionTextSelected
+                      ]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
         </View>
 
-        {readings.length > 0 ? (
+        {filteredReadings.length > 0 ? (
           <FlatList
-            data={readings}
+            data={filteredReadings}
             keyExtractor={item => item.id.toString()}
             renderItem={renderReadingItem}
             contentContainerStyle={styles.list}
@@ -258,7 +339,9 @@ export default function TopicReadingsScreen() {
           <View style={styles.emptyContainer}>
             <Icon name="info" size={40} color="#5E72EB" />
             <Text style={styles.emptyText}>
-              Chưa có bài đọc nào trong chủ đề này
+              {readings.length === 0 
+                ? 'Chưa có bài đọc nào trong chủ đề này'
+                : 'Không có bài đọc nào ở cấp độ này'}
             </Text>
           </View>
         )}
@@ -364,7 +447,64 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#6C757D',
-    textAlign: 'center',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 5,
+  },
+  levelDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.3)',
+  },
+  levelDropdownText: {
+    fontSize: 14,
+    color: '#5E72EB',
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 40,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 5,
+    minWidth: 120,
+    zIndex: 1000,
+  },
+  dropdownOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  dropdownOptionSelected: {
+    backgroundColor: '#E7EBFF',
+  },
+  dropdownOptionText: {
+    fontSize: 14,
+    color: '#495057',
+    fontWeight: '500',
+  },
+  dropdownOptionTextSelected: {
+    color: '#5E72EB',
+    fontWeight: '700',
   },
   list: {
     paddingBottom: 30,
@@ -392,11 +532,38 @@ const styles = StyleSheet.create({
   itemTextContainer: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
   itemText: {
     fontSize: 16,
     color: '#343A40',
     fontWeight: '500',
-    marginBottom: 4,
+    flex: 1,
+    marginRight: 8,
+  },
+  levelBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  levelEasy: {
+    backgroundColor: '#D4EDDA',
+  },
+  levelMedium: {
+    backgroundColor: '#FFF3CD',
+  },
+  levelHard: {
+    backgroundColor: '#F8D7DA',
+  },
+  levelText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#495057',
   },
   scoreContainer: {
     flexDirection: 'row',

@@ -22,13 +22,19 @@ import { useNavigation } from '@react-navigation/native';
 import { getProfile } from '../api/account';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import WordCounter from '../components/WordCounter';
 
 export default function CustomReadingScreen({ route }) {
   const navigation = useNavigation();
   const { customText: incomingText } = route.params || {};
   const [customText, setCustomText] = useState(incomingText || '');
   const [profile, setProfile] = useState(null);
+  const [isContentValid, setIsContentValid] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  // Giới hạn cho Custom Reading: 6-100 từ
+  const MIN_WORDS = 6;
+  const MAX_WORDS = 100;
 
   // Animation values
   const scanButtonScale = useRef(new Animated.Value(1)).current;
@@ -81,11 +87,24 @@ export default function CustomReadingScreen({ route }) {
   });
 
   const handleStartPractice = () => {
-    if (!customText.trim()) {
+    const trimmedText = customText.trim();
+    
+    if (!trimmedText) {
       Alert.alert('Vui lòng nhập nội dung để luyện đọc');
       return;
     }
-    navigation.navigate('PracticeCustomReadingScreen', { customText });
+    
+    if (!isContentValid) {
+      Alert.alert(
+        'Độ dài không hợp lệ',
+        `Nội dung phải có từ ${MIN_WORDS} đến ${MAX_WORDS} từ để đảm bảo chất lượng đánh giá.`
+      );
+      return;
+    }
+    
+    // Clean text trước khi chuyển sang màn hình luyện
+    const cleanedText = cleanText(trimmedText);
+    navigation.navigate('PracticeCustomReadingScreen', { customText: cleanedText });
   };
 
   const handleImageSelection = () => {
@@ -162,17 +181,17 @@ export default function CustomReadingScreen({ route }) {
     
     let cleaned = text;
     
-    // 1. Xóa các ký tự đặc biệt không cần thiết, giữ lại dấu câu cơ bản
-    cleaned = cleaned.replace(/[^\w\s.,!?'-]/g, ' ');
+    // 1. Xóa các ký tự đặc biệt không cần thiết, giữ lại dấu câu cơ bản và xuống dòng
+    cleaned = cleaned.replace(/[^\w\s.,!?'\-\n]/g, ' ');
     
-    // 2. Thay thế nhiều khoảng trắng liên tiếp thành 1 khoảng trắng
-    cleaned = cleaned.replace(/\s+/g, ' ');
+    // 2. Thay thế nhiều khoảng trắng liên tiếp thành 1 khoảng trắng (nhưng giữ xuống dòng)
+    cleaned = cleaned.replace(/[^\S\n]+/g, ' ');
     
     // 3. Xóa khoảng trắng trước dấu câu
     cleaned = cleaned.replace(/\s+([.,!?])/g, '$1');
     
     // 4. Thêm khoảng trắng sau dấu câu nếu chưa có
-    cleaned = cleaned.replace(/([.,!?])([^\s])/g, '$1 $2');
+    cleaned = cleaned.replace(/([.,!?])([^\s\n])/g, '$1 $2');
     
     // 5. Xóa khoảng trắng đầu/cuối
     cleaned = cleaned.trim();
@@ -303,9 +322,17 @@ export default function CustomReadingScreen({ route }) {
           placeholderTextColor="#888"
           style={styles.input}
           value={customText}
-          onChangeText={(text) => setCustomText(cleanText(text))}
+          onChangeText={setCustomText}
           spellCheck={false}
           autoCorrect={false}
+        />
+
+        {/* Word Counter */}
+        <WordCounter
+          text={customText}
+          min={MIN_WORDS}
+          max={MAX_WORDS}
+          onValidationChange={(valid) => setIsContentValid(valid)}
         />
 
         {/* Action Buttons */}
@@ -315,7 +342,12 @@ export default function CustomReadingScreen({ route }) {
               onPressIn={() => handlePressIn(startButtonScale)}
               onPressOut={() => handlePressOut(startButtonScale)}
               onPress={handleStartPractice}
-              style={[styles.actionButton, styles.startButton]}
+              style={[
+                styles.actionButton, 
+                styles.startButton,
+                !isContentValid && styles.disabledButton
+              ]}
+              disabled={!isContentValid}
             >
               <Icon name="mic" size={24} color="#FFF" style={styles.buttonIcon} />
               <Text style={styles.buttonText}>🚀 Bắt đầu luyện đọc</Text>
@@ -484,6 +516,10 @@ const styles = StyleSheet.create({
   },
   startButton: {
     backgroundColor: '#5E72EB',
+  },
+  disabledButton: {
+    backgroundColor: '#CCC',
+    opacity: 0.6,
   },
   scanButton: {
     backgroundColor: '#6A5ACD',

@@ -63,18 +63,34 @@ const UserList = () => {
           <thead>
             <tr className="bg-gray-100">
               <th className="p-3 border border-gray-300 text-left">ID</th>
+              <th className="p-3 border border-gray-300 text-left">Avatar</th>
               <th className="p-3 border border-gray-300 text-left">Tên</th>
               <th className="p-3 border border-gray-300 text-left">Email</th>
               <th className="p-3 border border-gray-300 text-left">Trạng thái</th>
               <th className="p-3 border border-gray-300 text-left">Streak</th>
               <th className="p-3 border border-gray-300 text-left">Ngày tạo</th>
-              <th className="p-3 border border-gray-300 text-left">Actions</th>
+              <th className="p-3 border border-gray-300 text-left">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50">
                 <td className="p-3 border border-gray-300">{user.id}</td>
+                <td className="p-3 border border-gray-300">
+                  {user.avatar_url ? (
+                    <img 
+                      src={user.avatar_url} 
+                      alt={user.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </td>
                 <td className="p-3 border border-gray-300">{user.name}</td>
                 <td className="p-3 border border-gray-300">{user.email}</td>
                 <td className="p-3 border border-gray-300">

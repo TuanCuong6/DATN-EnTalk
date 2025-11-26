@@ -17,6 +17,7 @@ import { Easing } from 'react-native';
 import AudioRecorder from '../components/AudioRecorder';
 import { submitRecording, getReadingById } from '../api/reading';
 import TextToSpeechPlayer from '../components/TextToSpeechPlayer';
+import WordAnalysisDisplay from '../components/WordAnalysisDisplay';
 
 export default function ReadingPracticeScreen({ route, navigation }) {
   const { readingId, reading: readingFromParams } = route.params || {};
@@ -91,13 +92,23 @@ export default function ReadingPracticeScreen({ route, navigation }) {
     outputRange: ['0deg', '360deg'],
   });
 
-  const handleSubmit = async path => {
+  const handleRecordingComplete = path => {
     setAudioPath(path);
+  };
+
+  const handleSubmit = async (path) => {
+    const filePath = path || audioPath;
+    if (!filePath) {
+      Alert.alert('Lỗi', 'Không có file ghi âm');
+      return;
+    }
+    
     setIsScoring(true);
     try {
-      const res = await submitRecording(path, reading.id);
+      const res = await submitRecording(filePath, reading.id);
       setScoreResult(res.data);
       setShowScoreModal(true);
+      setAudioPath(null);
     } catch (err) {
       console.error('❌ Gửi file lỗi:', err);
       Alert.alert(
@@ -106,7 +117,6 @@ export default function ReadingPracticeScreen({ route, navigation }) {
           err.message ||
           'Đã xảy ra lỗi không xác định. Vui lòng thử lại sau.',
       );
-      x;
     } finally {
       setIsScoring(false);
     }
@@ -174,12 +184,13 @@ export default function ReadingPracticeScreen({ route, navigation }) {
         <View style={styles.card}>
           <Text style={styles.title}>{reading.title || 'Bài đọc'}</Text>
           <Text style={styles.contentText}>{reading.content}</Text>
-          <TextToSpeechPlayer text={reading.content} style={styles.ttsPlayer} />
+          <TextToSpeechPlayer text={reading.content} readingId={reading.id} style={styles.ttsPlayer} />
         </View>
 
         <View style={styles.recorderContainer}>
           <AudioRecorder
-            onFinish={handleSubmit}
+            onFinish={handleRecordingComplete}
+            onSubmit={handleSubmit}
             buttonStyle={styles.recordButton}
             textStyle={styles.recordButtonText}
             iconStyle={styles.recordIcon}
@@ -212,61 +223,54 @@ export default function ReadingPracticeScreen({ route, navigation }) {
             </LinearGradient>
 
             {scoreResult && (
-              <View style={styles.scoreContainer}>
-                {/* Overall Score */}
-                <View style={styles.overallScore}>
-                  <Text style={styles.overallLabel}>Tổng điểm</Text>
-                  <Text style={styles.overallValue}>
-                    {scoreResult.scores.overall}
-                    <Text style={styles.overallTotal}>/10</Text>
-                  </Text>
+              <ScrollView style={styles.scoreScrollView}>
+                <View style={styles.scoreContainer}>
+                  {/* Compact Score Summary */}
+                  <View style={styles.compactScoreCard}>
+                    <View style={styles.overallScoreCompact}>
+                      <Text style={styles.overallLabelCompact}>Tổng điểm</Text>
+                      <Text style={styles.overallValueCompact}>
+                        {scoreResult.scores.overall}
+                        <Text style={styles.overallTotalCompact}>/10</Text>
+                      </Text>
+                    </View>
+                    
+                    <View style={styles.scoreDetailsCompact}>
+                      <View style={styles.scoreItemCompact}>
+                        <Text style={styles.scoreLabelCompact}>Phát âm</Text>
+                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.pronunciation}</Text>
+                      </View>
+                      <View style={styles.scoreItemCompact}>
+                        <Text style={styles.scoreLabelCompact}>Ngữ điệu</Text>
+                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.intonation}</Text>
+                      </View>
+                      <View style={styles.scoreItemCompact}>
+                        <Text style={styles.scoreLabelCompact}>Lưu loát</Text>
+                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.fluency}</Text>
+                      </View>
+                      <View style={styles.scoreItemCompact}>
+                        <Text style={styles.scoreLabelCompact}>Tốc độ</Text>
+                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.speed}</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Word Analysis */}
+                  {scoreResult.wordAnalysis && scoreResult.wordAnalysis.length > 0 && (
+                    <WordAnalysisDisplay 
+                      wordAnalysis={scoreResult.wordAnalysis}
+                      originalText={reading?.content}
+                      transcript={scoreResult.transcript}
+                    />
+                  )}
+
+                  {/* Comment Section */}
+                  <View style={styles.commentContainer}>
+                    <Text style={styles.commentLabel}>💬 Nhận xét</Text>
+                    <Text style={styles.commentText}>{scoreResult.comment}</Text>
+                  </View>
                 </View>
-
-                {/* Score Details */}
-                <View style={styles.scoreGrid}>
-                  <View style={styles.scoreItem}>
-                    <Text style={[styles.scoreLabel, styles.pronunciation]}>
-                      Phát âm
-                    </Text>
-                    <Text style={styles.scoreValue}>
-                      {scoreResult.scores.pronunciation}/10
-                    </Text>
-                  </View>
-
-                  <View style={styles.scoreItem}>
-                    <Text style={[styles.scoreLabel, styles.intonation]}>
-                      Ngữ điệu
-                    </Text>
-                    <Text style={styles.scoreValue}>
-                      {scoreResult.scores.intonation}/10
-                    </Text>
-                  </View>
-
-                  <View style={styles.scoreItem}>
-                    <Text style={[styles.scoreLabel, styles.fluency]}>
-                      Lưu loát
-                    </Text>
-                    <Text style={styles.scoreValue}>
-                      {scoreResult.scores.fluency}/10
-                    </Text>
-                  </View>
-
-                  <View style={styles.scoreItem}>
-                    <Text style={[styles.scoreLabel, styles.speed]}>
-                      Tốc độ
-                    </Text>
-                    <Text style={styles.scoreValue}>
-                      {scoreResult.scores.speed}/10
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Comment Section */}
-                <View style={styles.commentContainer}>
-                  <Text style={styles.commentLabel}>Nhận xét</Text>
-                  <Text style={styles.commentText}>{scoreResult.comment}</Text>
-                </View>
-              </View>
+              </ScrollView>
             )}
 
             <TouchableOpacity
@@ -431,6 +435,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
+    maxHeight: '85%',
     backgroundColor: '#fff',
     borderRadius: 20,
     overflow: 'hidden',
@@ -445,81 +450,80 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+  scoreScrollView: {
+    maxHeight: 500,
+  },
   scoreContainer: {
     padding: 20,
   },
-  overallScore: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  overallLabel: {
-    fontSize: 16,
-    color: '#6c757d',
-    marginBottom: 5,
-  },
-  overallValue: {
-    fontSize: 48,
-    fontWeight: '800',
-    color: '#5E72EB',
-  },
-  overallTotal: {
-    fontSize: 24,
-    color: '#6c757d',
-  },
-  scoreGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  scoreItem: {
-    width: '48%',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+  compactScoreCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
     padding: 15,
-    marginBottom: 15,
-    borderLeftWidth: 4,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  scoreLabel: {
+  overallScoreCompact: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 12,
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(94, 114, 235, 0.2)',
+  },
+  overallLabelCompact: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 5,
+    color: '#495057',
   },
-  scoreValue: {
-    fontSize: 20,
+  overallValueCompact: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#5E72EB',
+  },
+  overallTotalCompact: {
+    fontSize: 18,
+    color: '#6c757d',
+  },
+  scoreDetailsCompact: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  scoreItemCompact: {
+    alignItems: 'center',
+  },
+  scoreLabelCompact: {
+    fontSize: 12,
+    color: '#6c757d',
+    marginBottom: 4,
+  },
+  scoreValueCompact: {
+    fontSize: 18,
     fontWeight: '700',
     color: '#495057',
   },
-  pronunciation: {
-    color: '#5E72EB',
-    borderLeftColor: '#5E72EB',
-  },
-  intonation: {
-    color: '#FF6B6B',
-    borderLeftColor: '#FF6B6B',
-  },
-  fluency: {
-    color: '#4CD964',
-    borderLeftColor: '#4CD964',
-  },
-  speed: {
-    color: '#FF9500',
-    borderLeftColor: '#FF9500',
-  },
   commentContainer: {
-    backgroundColor: '#f1f3f9',
-    borderRadius: 12,
-    padding: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.2)',
   },
   commentLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#5E72EB',
+    fontWeight: '700',
+    color: '#495057',
     marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(94, 114, 235, 0.2)',
+    paddingBottom: 8,
   },
   commentText: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 22,
     color: '#495057',
   },
   closeButton: {
