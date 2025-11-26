@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { readingsAPI, topicsAPI } from "../../services/api";
+import { showToast } from "../../utils/toast";
 
 const ReadingList = () => {
   const [readings, setReadings] = useState([]);
@@ -33,11 +34,15 @@ const ReadingList = () => {
         `Bạn có chắc muốn xóa bài đọc?\n\n${content.substring(0, 100)}...`
       )
     ) {
+      const loadingToast = showToast.loading('Đang xóa...');
       try {
         await readingsAPI.delete(id);
+        showToast.dismiss(loadingToast);
+        showToast.success('Đã xóa bài đọc thành công!');
         fetchData();
       } catch (error) {
-        alert("Lỗi khi xóa bài đọc");
+        showToast.dismiss(loadingToast);
+        showToast.error('Lỗi khi xóa bài đọc');
       }
     }
   };
@@ -67,10 +72,10 @@ const ReadingList = () => {
             <tr className="bg-gray-100">
               <th className="p-3 border border-gray-300 text-left">ID</th>
               <th className="p-3 border border-gray-300 text-left">Nội dung</th>
-              <th className="p-3 border border-gray-300 text-left">Level</th>
+              <th className="p-3 border border-gray-300 text-left">Trình độ</th>
               <th className="p-3 border border-gray-300 text-left">Chủ đề</th>
               <th className="p-3 border border-gray-300 text-left">Ngày tạo</th>
-              <th className="p-3 border border-gray-300 text-left">Actions</th>
+              <th className="p-3 border border-gray-300 text-left">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -80,7 +85,9 @@ const ReadingList = () => {
                 <td className="p-3 border border-gray-300 max-w-xs">
                   {reading.content.substring(0, 100)}...
                 </td>
-                <td className="p-3 border border-gray-300">{reading.level}</td>
+                <td className="p-3 border border-gray-300">
+                  {reading.level === 'A1' ? 'Dễ' : reading.level === 'B1' ? 'Vừa' : 'Khó'}
+                </td>
                 <td className="p-3 border border-gray-300">
                   {getTopicName(reading.topic_id)}
                 </td>

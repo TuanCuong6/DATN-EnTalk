@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { topicsAPI } from "../../services/api";
+import { showToast } from "../../utils/toast";
 
 const TopicList = () => {
   const [topics, setTopics] = useState([]);
@@ -25,11 +26,15 @@ const TopicList = () => {
 
   const handleDelete = async (id, name) => {
     if (window.confirm(`Bạn có chắc muốn xóa chủ đề "${name}"?`)) {
+      const loadingToast = showToast.loading('Đang xóa...');
       try {
         await topicsAPI.delete(id);
+        showToast.dismiss(loadingToast);
+        showToast.success('Đã xóa chủ đề thành công!');
         fetchTopics();
       } catch (error) {
-        alert(error.response?.data?.message || "Lỗi khi xóa chủ đề");
+        showToast.dismiss(loadingToast);
+        showToast.error(error.response?.data?.message || "Lỗi khi xóa chủ đề");
       }
     }
   };
@@ -60,7 +65,7 @@ const TopicList = () => {
               <th className="p-3 border border-gray-300 text-left">Tên chủ đề</th>
               <th className="p-3 border border-gray-300 text-left">Ảnh</th>
               <th className="p-3 border border-gray-300 text-left">Mô tả</th>
-              <th className="p-3 border border-gray-300 text-left">Actions</th>
+              <th className="p-3 border border-gray-300 text-left">Thao tác</th>
             </tr>
           </thead>
           <tbody>

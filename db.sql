@@ -8,7 +8,7 @@ CREATE TABLE users (
     name VARCHAR(100) NOT NULL,                            -- Tên người dùng
     email VARCHAR(100) UNIQUE NOT NULL,                    -- Email đăng nhập
     password_hash VARCHAR(255) NOT NULL,                   -- Mật khẩu đã mã hoá
-    level ENUM('A1','A2','B1','B2','C1','C2') DEFAULT 'A1', -- Trình độ tiếng Anh mặc định
+    level ENUM('A1','B1','C1') DEFAULT 'A1',               -- Trình độ: A1=Dễ, B1=Vừa, C1=Khó
     avatar_url TEXT,                                       -- Ảnh đại diện (tuỳ chọn)
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,          -- thời điểm tạo tài khoản
     is_verified BOOLEAN DEFAULT FALSE,                     -- xác thực email chưa 
@@ -27,7 +27,7 @@ CREATE TABLE topics (
 CREATE TABLE readings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     content TEXT NOT NULL,                                 -- Nội dung đoạn văn
-    level ENUM('A1','A2','B1','B2','C1','C2'),              -- Trình độ
+    level ENUM('A1','B1','C1'),                            -- Trình độ: A1=Dễ, B1=Vừa, C1=Khó
     created_by INT,                                        -- ID người tạo (null nếu của hệ thống)
     topic_id INT,                                          -- Chủ đề bài
     is_community_post BOOLEAN DEFAULT FALSE,               -- TRUE nếu do người dùng đăng
@@ -142,6 +142,9 @@ ALTER TABLE records
 DROP FOREIGN KEY records_ibfk_2,
 ADD FOREIGN KEY (reading_id) REFERENCES readings(id) ON DELETE SET NULL;
 
+-- Thêm cột word_analysis để lưu phân tích từng từ (JSON)
+ALTER TABLE records ADD COLUMN word_analysis JSON AFTER comment;
+
 -- Thêm bảng feedbacks để lưu phản hồi từ người dùng
 CREATE TABLE feedbacks (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -167,7 +170,7 @@ INSERT INTO topics (name, description) VALUES
 -- Thêm bài đọc mẫu
 INSERT INTO readings (content, level, topic_id, is_community_post) VALUES 
 ('London is the capital city of England. It has many famous landmarks such as Big Ben and the London Eye.', 'A1', 1, FALSE),
-('Water is made of two elements: hydrogen and oxygen. It is essential for life on Earth.', 'A2', 2, FALSE),
+('Water is made of two elements: hydrogen and oxygen. It is essential for life on Earth.', 'A1', 2, FALSE),
 ('The stock market had a surprising increase yesterday, with major tech companies reporting record profits.', 'B1', 3, FALSE);
 
 INSERT INTO topics (name, description) VALUES 
@@ -212,18 +215,18 @@ INSERT INTO readings (content, level, topic_id, is_community_post)
 VALUES 
 ('I eat fruits and vegetables every day. They help me stay healthy. I drink water instead of soda. I go for a walk after dinner.', 'A1', 6, FALSE),
 ('Sleep is important for our body. I try to sleep eight hours every night. When I sleep well, I feel happy. My brain works better, too.', 'A1', 6, FALSE),
-('Exercise is good for the heart. I go jogging in the park three times a week. Sometimes I ride my bike to school. It makes me feel strong.', 'A2', 6, FALSE);
+('Exercise is good for the heart. I go jogging in the park three times a week. Sometimes I ride my bike to school. It makes me feel strong.', 'B1', 6, FALSE);
 
 INSERT INTO readings (content, level, topic_id, is_community_post)
 VALUES 
 ('I go to school from Monday to Friday. My favorite subject is English. I like to read and write in class. The teacher is very kind.', 'A1', 7, FALSE),
 ('We have a big library in our school. I borrow books every week. I enjoy reading stories about animals. Reading helps me learn new words.', 'A1', 7, FALSE),
-('Math is sometimes hard for me. But I study with my friends after class. We help each other solve problems. Teamwork makes it easier.', 'A2', 7, FALSE);
+('Math is sometimes hard for me. But I study with my friends after class. We help each other solve problems. Teamwork makes it easier.', 'B1', 7, FALSE);
 INSERT INTO readings (content, level, topic_id, is_community_post)
 VALUES 
 ('I live with my parents and my little brother. We eat dinner together every night. On weekends, we go to the park. We play and laugh a lot.', 'A1', 8, FALSE),
 ('My best friend is Anna. She is funny and smart. We go to the same school. We like to draw and play games together.', 'A1', 8, FALSE),
-('Every Sunday, my family visits my grandparents. Grandma cooks delicious food. We talk and watch TV together. I love spending time with them.', 'A2', 8, FALSE);
+('Every Sunday, my family visits my grandparents. Grandma cooks delicious food. We talk and watch TV together. I love spending time with them.', 'B1', 8, FALSE);
 
 -- thêm bảng admin
 CREATE TABLE admins (
@@ -310,4 +313,19 @@ ADD COLUMN audio_generated_at DATETIME DEFAULT NULL COMMENT 'Thời điểm tạ
 CREATE INDEX idx_audio_file ON readings(audio_file);
 
 
+-- Thay đổi ENUM trong database
+ALTER TABLE users MODIFY COLUMN level ENUM('A1','B1','C1') DEFAULT 'A1';
+ALTER TABLE readings MODIFY COLUMN level ENUM('A1','B1','C1');
 
+-- Migrate dữ liệu cũ
+UPDATE users SET level = 'A1' WHERE level IN ('A1', 'A2');
+UPDATE users SET level = 'B1' WHERE level IN ('B1', 'B2');
+UPDATE users SET level = 'C1' WHERE level IN ('C1', 'C2');
+
+UPDATE readings SET level = 'A1' WHERE level IN ('A1', 'A2');
+UPDATE readings SET level = 'B1' WHERE level IN ('B1', 'B2');
+UPDATE readings SET level = 'C1' WHERE level IN ('C1', 'C2');
+
+-- thêm cột phân tích từ 
+ALTER TABLE records 
+ADD COLUMN word_analysis JSON AFTER comment;

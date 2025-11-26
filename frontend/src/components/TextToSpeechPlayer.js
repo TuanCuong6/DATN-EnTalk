@@ -18,6 +18,7 @@ const API_URL = `${BASE_URL}/tts`;
 export default function TextToSpeechPlayer({ text, readingId, style }) {
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [sound, setSound] = useState(null);
 
   useEffect(() => {
@@ -29,19 +30,45 @@ export default function TextToSpeechPlayer({ text, readingId, style }) {
     };
   }, [sound]);
 
-  const generateAndPlayAudio = async () => {
+  const togglePlayPause = async () => {
     if (!text.trim()) {
       Alert.alert('Lỗi', 'Không có nội dung để phát');
       return;
     }
 
-    if (playing && sound) {
-      sound.stop();
-      sound.release();
-      setSound(null);
+    // Nếu đang phát, pause lại
+    if (playing && sound && !paused) {
+      sound.pause();
       setPlaying(false);
+      setPaused(true);
       return;
     }
+
+    // Nếu đang pause, resume
+    if (paused && sound) {
+      sound.play(success => {
+        if (success) {
+          console.log('✅ Audio playback finished');
+        } else {
+          console.log('❌ Audio playback failed');
+        }
+        setPlaying(false);
+        setPaused(false);
+        sound.release();
+        setSound(null);
+      });
+      setPlaying(true);
+      setPaused(false);
+      return;
+    }
+
+    // Nếu chưa có sound, tạo mới và phát
+    if (!sound) {
+      await generateAndPlayAudio();
+    }
+  };
+
+  const generateAndPlayAudio = async () => {
 
     setLoading(true);
     try {
@@ -111,6 +138,7 @@ export default function TextToSpeechPlayer({ text, readingId, style }) {
             console.log('❌ Audio playback failed');
           }
           setPlaying(false);
+          setPaused(false);
           newSound.release();
           setSound(null);
 
@@ -121,6 +149,7 @@ export default function TextToSpeechPlayer({ text, readingId, style }) {
         });
 
         setPlaying(true);
+        setPaused(false);
         setSound(newSound);
       });
     } catch (error) {
@@ -164,6 +193,7 @@ export default function TextToSpeechPlayer({ text, readingId, style }) {
       setSound(null);
     }
     setPlaying(false);
+    setPaused(false);
   };
 
   return (
@@ -171,17 +201,17 @@ export default function TextToSpeechPlayer({ text, readingId, style }) {
       <TouchableOpacity
         style={[
           styles.button,
-          playing ? styles.stopButton : styles.playButton,
+          (playing || paused) ? styles.pauseButton : styles.playButton,
           loading && styles.disabledButton,
         ]}
-        onPress={generateAndPlayAudio}
+        onPress={togglePlayPause}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator size="small" color="#FFF" />
         ) : (
           <Icon
-            name={playing ? 'stop' : 'play-arrow'}
+            name={playing ? 'pause' : 'play-arrow'}
             size={24}
             color="#FFF"
             style={styles.icon}
@@ -191,7 +221,9 @@ export default function TextToSpeechPlayer({ text, readingId, style }) {
           {loading
             ? 'Đang tạo...'
             : playing
-            ? '⏹️ Dừng nghe'
+            ? '⏸️ Tạm dừng'
+            : paused
+            ? '▶️ Tiếp tục'
             : '🔊 Nghe bài đọc'}
         </Text>
       </TouchableOpacity>
@@ -221,8 +253,8 @@ const styles = StyleSheet.create({
   playButton: {
     backgroundColor: '#5E72EB',
   },
-  stopButton: {
-    backgroundColor: '#dc3545',
+  pauseButton: {
+    backgroundColor: '#FF9500',
   },
   disabledButton: {
     backgroundColor: '#6c757d',

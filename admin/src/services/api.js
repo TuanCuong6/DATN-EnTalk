@@ -48,6 +48,8 @@ export const dashboardAPI = {
 
 export const usersAPI = {
   getAll: () => adminAPI.get("/users"),
+  create: (data) => adminAPI.post("/users", data),
+  update: (id, data) => adminAPI.put(`/users/${id}`, data),
 };
 
 export const topicsAPI = {

@@ -65,13 +65,13 @@ router.post(
 
       const geminiRes = await scoreWithGemini(transcript, originalText);
 
-      // SỬA phần tạo record
+      // SỬA phần tạo record - thêm word_analysis
       await dbConnection.execute(
         `INSERT INTO records (
     user_id, reading_id, original_content, transcript,
     score_pronunciation, score_fluency, score_intonation,
-    score_speed, score_overall, comment, custom_text
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    score_speed, score_overall, comment, word_analysis, custom_text
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           userId,
           readingIdToUse,
@@ -83,6 +83,7 @@ router.post(
           geminiRes.scores.speed,
           geminiRes.scores.overall,
           geminiRes.comment,
+          JSON.stringify(geminiRes.wordAnalysis || []), // Lưu word analysis
           customText || null, // custom_text
         ]
       );
@@ -116,6 +117,7 @@ router.post(
         originalText,
         scores: geminiRes.scores,
         comment: geminiRes.comment,
+        wordAnalysis: geminiRes.wordAnalysis || [],
       });
     } catch (err) {
       console.error("❌ Lỗi xử lý file ghi âm:", err);

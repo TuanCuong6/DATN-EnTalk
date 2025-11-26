@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout/Layout";
+import ToastProvider from "./components/Toast/ToastProvider";
 
 // Pages
 import Login from "./pages/Auth/Login";
@@ -212,6 +213,7 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
+      <ToastProvider />
       <AppContent />
     </AuthProvider>
   );

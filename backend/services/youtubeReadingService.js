@@ -1,10 +1,13 @@
 // backend/services/youtubeReadingService.js
 const axios = require('axios');
+const { CONTENT_LIMITS, validateContentLength } = require('../config/contentLimits');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const VCYON_API_KEY = process.env.VCYON_API_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 const VCYON_API_URL = 'https://api.vcyon.com/v1/youtube/transcript';
+
+const YTB_LIMITS = CONTENT_LIMITS.YOUTUBE_READING;
 
 // Extract video ID from YouTube URL
 function extractVideoId(url) {
@@ -126,18 +129,19 @@ async function generateReadingFromSubtitle(subtitle) {
     const prompt = `
 Bạn là một giáo viên tiếng Anh chuyên nghiệp.
 
-Từ phụ đề video sau (có thể là tiếng Anh hoặc ngôn ngữ khác), hãy tạo một bài đọc TIẾNG ANH ngắn (3-5 câu) để học sinh luyện đọc:
+Từ phụ đề video sau (có thể là tiếng Anh hoặc ngôn ngữ khác), hãy tạo một bài đọc TIẾNG ANH ngắn để học sinh luyện đọc:
 
 PHỤ ĐỀ:
 "${subtitle.substring(0, 2500)}"
 
 YÊU CẦU:
-- Nếu phụ đề là tiếng Anh: Chọn ra 3-5 câu HAY NHẤT, THÚ VỊ NHẤT
-- Nếu phụ đề là ngôn ngữ khác: Dịch nội dung chính sang tiếng Anh, sau đó tạo 3-5 câu hay nhất
+- Nếu phụ đề là tiếng Anh: Chọn ra các câu HAY NHẤT, THÚ VỊ NHẤT
+- Nếu phụ đề là ngôn ngữ khác: Dịch nội dung chính sang tiếng Anh
 - Bài đọc PHẢI HOÀN TOÀN BẰNG TIẾNG ANH
+- Độ dài: CHÍNH XÁC ${YTB_LIMITS.min}-${YTB_LIMITS.max} từ (QUAN TRỌNG: đếm từ chính xác)
+- KHÔNG được vượt quá ${YTB_LIMITS.max} từ
 - Ưu tiên câu có từ vựng hữu ích, cấu trúc rõ ràng
 - Sắp xếp lại cho mạch lạc, dễ hiểu
-- Độ dài: 3-5 câu (khoảng 40-100 từ)
 - Loại bỏ các ký tự đặc biệt, chỉ giữ lại văn bản thuần túy
 - Nội dung phải tự nhiên, phù hợp để luyện phát âm
 
@@ -153,12 +157,22 @@ CHỈ TRẢ VỀ BÀI ĐỌC TIẾNG ANH, KHÔNG GIẢI THÍCH, KHÔNG MARKDOWN.
     const content =
       response.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    if (!content.trim()) {
+    const trimmedContent = content.trim();
+    
+    if (!trimmedContent) {
       throw new Error('Gemini không trả về nội dung');
     }
 
-    console.log(`✅ Đã tạo bài đọc từ YouTube`);
-    return content.trim();
+    // Validate độ dài
+    const validation = validateContentLength(trimmedContent, 'YOUTUBE_READING');
+    console.log(`📊 Validation: ${validation.message}`);
+    
+    if (!validation.valid) {
+      console.warn(`⚠️ Bài đọc YouTube không đúng độ dài: ${validation.wordCount} từ (yêu cầu: ${validation.min}-${validation.max})`);
+    }
+
+    console.log(`✅ Đã tạo bài đọc từ YouTube (${validation.wordCount} từ)`);
+    return trimmedContent;
   } catch (err) {
     console.error(
       '❌ Lỗi gọi Gemini AI:',

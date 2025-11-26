@@ -1,23 +1,27 @@
 // backend/services/aiReadingService.js
 const axios = require("axios");
 const db = require("../config/db");
+const { CONTENT_LIMITS, validateContentLength } = require("../config/contentLimits");
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
+const AI_LIMITS = CONTENT_LIMITS.AI_GENERATED;
+
 const PROMPT_TEMPLATE = `
 Bạn là một giáo viên tiếng Anh chuyên nghiệp.
 
-Hãy tạo một bài đọc tiếng Anh ngắn (2-4 câu) về chủ đề: "{{topic}}"
+Hãy tạo một bài đọc tiếng Anh ngắn về chủ đề: "{{topic}}"
 
 {{description}}
 
 YÊU CẦU:
 - Bài đọc phải HOÀN TOÀN MỚI và KHÁC BIỆT với các bài đã tạo trước đó
-- Độ dài: 2-4 câu (khoảng 30-60 từ)
-- Ngôn ngữ: Tiếng Anh đơn giản, dễ hiểu (trình độ A1-A2)
+- Độ dài: CHÍNH XÁC ${AI_LIMITS.min}-${AI_LIMITS.max} từ (QUAN TRỌNG: đếm từ chính xác)
+- Ngôn ngữ: Tiếng Anh đơn giản, dễ hiểu (trình độ A1-B1)
 - Nội dung: Thú vị, thực tế, dễ hình dung
 - Không sử dụng từ vựng quá khó hoặc cấu trúc phức tạp
+- KHÔNG được vượt quá ${AI_LIMITS.max} từ
 
 {{history}}
 
@@ -65,9 +69,20 @@ async function generateReadingContent(topic, description = "", userId) {
       throw new Error("Gemini không trả về nội dung");
     }
 
-    console.log(`✅ Đã tạo bài đọc: "${content.substring(0, 50)}..."`);
+    const trimmedContent = content.trim();
+    
+    // Validate độ dài
+    const validation = validateContentLength(trimmedContent, 'AI_GENERATED');
+    console.log(`📊 Validation: ${validation.message}`);
+    
+    if (!validation.valid) {
+      console.warn(`⚠️ Bài đọc AI tạo không đúng độ dài: ${validation.wordCount} từ (yêu cầu: ${validation.min}-${validation.max})`);
+      // Vẫn trả về nhưng log warning
+    }
 
-    return content.trim();
+    console.log(`✅ Đã tạo bài đọc: "${trimmedContent.substring(0, 50)}..." (${validation.wordCount} từ)`);
+
+    return trimmedContent;
   } catch (err) {
     console.error(
       "❌ Lỗi gọi Gemini AI:",

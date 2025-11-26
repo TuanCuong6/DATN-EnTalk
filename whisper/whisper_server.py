@@ -4,7 +4,9 @@ import os
 import uuid
 
 app = Flask(__name__)
-model = whisper.load_model("base")  # hoặc 'small', 'medium', 'large'
+# Dùng 'base' cho ổn định (medium cần tải ~1.5GB)
+# Nếu muốn chính xác hơn, tải thủ công: whisper --model medium --download-root .
+model = whisper.load_model("small")  # Hoặc 'medium' nếu đã tải
 
 @app.route("/transcribe", methods=["POST"])
 def transcribe():
