@@ -12,13 +12,20 @@ import {
 import AudioRecord from 'react-native-audio-record';
 import Sound from 'react-native-sound';
 
-export default function AudioRecorder({ onFinish, onSubmit }) {
+export default function AudioRecorder({ onFinish, onSubmit, resetTrigger }) {
   const [recording, setRecording] = useState(false);
   const [audioFile, setAudioFile] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
   const [sound, setSound] = useState(null);
+
+  // Reset khi resetTrigger thay đổi
+  useEffect(() => {
+    if (resetTrigger) {
+      handleReset();
+    }
+  }, [resetTrigger]);
 
   useEffect(() => {
     const init = async () => {
@@ -140,6 +147,21 @@ export default function AudioRecorder({ onFinish, onSubmit }) {
   const handleSubmit = () => {
     if (!audioFile) return;
     onSubmit?.(audioFile);
+  };
+
+  const handleReset = () => {
+    // Dừng và cleanup sound nếu đang phát
+    if (sound) {
+      sound.stop();
+      sound.release();
+      setSound(null);
+    }
+    
+    // Reset tất cả states về ban đầu
+    setRecording(false);
+    setAudioFile(null);
+    setPlaying(false);
+    setPaused(false);
   };
 
   return (

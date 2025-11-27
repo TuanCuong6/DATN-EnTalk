@@ -27,6 +27,7 @@ export default function ReadingPracticeScreen({ route, navigation }) {
   const [isScoring, setIsScoring] = useState(false);
   const [scoreResult, setScoreResult] = useState(null);
   const [showScoreModal, setShowScoreModal] = useState(false);
+  const [resetRecorder, setResetRecorder] = useState(0);
   const buttonScale = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -191,6 +192,7 @@ export default function ReadingPracticeScreen({ route, navigation }) {
           <AudioRecorder
             onFinish={handleRecordingComplete}
             onSubmit={handleSubmit}
+            resetTrigger={resetRecorder}
             buttonStyle={styles.recordButton}
             textStyle={styles.recordButtonText}
             iconStyle={styles.recordIcon}
@@ -211,7 +213,10 @@ export default function ReadingPracticeScreen({ route, navigation }) {
         visible={showScoreModal}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowScoreModal(false)}
+        onRequestClose={() => {
+          setShowScoreModal(false);
+          setResetRecorder(prev => prev + 1);
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -275,7 +280,10 @@ export default function ReadingPracticeScreen({ route, navigation }) {
 
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setShowScoreModal(false)}
+              onPress={() => {
+                setShowScoreModal(false);
+                setResetRecorder(prev => prev + 1); // Trigger reset AudioRecorder
+              }}
             >
               <Text style={styles.closeButtonText}>Đóng</Text>
             </TouchableOpacity>
