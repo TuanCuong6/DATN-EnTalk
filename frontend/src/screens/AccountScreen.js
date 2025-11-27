@@ -102,18 +102,8 @@ export default function AccountScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
-        </View>
-
-        <View style={styles.userInfo}>
-          {profile?.avatar_url ? (
-            <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Icon name="person" size={20} color="#5E72EB" />
-            </View>
-          )}
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Tài khoản người dùng</Text>
         </View>
       </View>
 
@@ -244,11 +234,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     padding: 25,
     paddingBottom: 10,
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -256,35 +246,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 22,
+  title: {
+    fontSize: 18,
     fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
-  },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+    color: '#5E72EB',
   },
   content: {
     padding: 25,

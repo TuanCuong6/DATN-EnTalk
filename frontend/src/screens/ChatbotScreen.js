@@ -99,11 +99,17 @@ export default function ChatbotScreen() {
   const renderItem = ({ item }) => (
     <>
       <View style={[styles.chatBlock, styles.alignRight]}>
-        <Text style={styles.userText}>🧑‍🎓 {item.question}</Text>
+        <View style={styles.messageRow}>
+          <Ionicons name="person" size={16} color="#2C3E50" />
+          <Text style={styles.userText}>{item.question}</Text>
+        </View>
       </View>
       {item.answer && (
         <View style={[styles.chatBlock, styles.alignLeft]}>
-          <Text style={styles.botText}>🤖 {formatAnswer(item.answer)}</Text>
+          <View style={styles.messageRow}>
+            <Ionicons name="chatbubble-ellipses" size={16} color="#2C3E50" />
+            <Text style={styles.botText}>{formatAnswer(item.answer)}</Text>
+          </View>
         </View>
       )}
     </>
@@ -121,7 +127,10 @@ export default function ChatbotScreen() {
       />
 
       <View style={styles.header}>
-        <Text style={styles.title}>🤖 Hỏi EnTalk về tiếng Anh</Text>
+        <View style={styles.titleRow}>
+          <Ionicons name="chatbubble-ellipses" size={22} color="#5E72EB" />
+          <Text style={styles.title}>Hỏi EnTalk về tiếng Anh</Text>
+        </View>
       </View>
 
       <FlatList
@@ -173,11 +182,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
   title: {
     fontSize: 22,
     fontWeight: '800',
     color: '#5E72EB',
-    textAlign: 'center',
   },
   list: {
     paddingHorizontal: 16,
@@ -204,16 +218,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#DDE9FF',
     borderTopRightRadius: 4,
   },
+  messageRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+  },
   userText: {
     fontWeight: '600',
     color: '#2C3E50',
     fontSize: 15,
     lineHeight: 22,
+    flex: 1,
   },
   botText: {
     color: '#2C3E50',
     fontSize: 15,
     lineHeight: 24,
+    flex: 1,
   },
   inputContainer: {
     flexDirection: 'row',

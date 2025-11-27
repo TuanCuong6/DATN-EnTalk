@@ -244,13 +244,11 @@ export default function TopicReadingsScreen() {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Danh sách bài đọc</Text>
         </View>
 
-        <View style={styles.userInfo}>
-          <Icon name="menu-book" size={24} color="#5E72EB" />
-        </View>
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView 
@@ -281,7 +279,10 @@ export default function TopicReadingsScreen() {
               resizeMode="cover"
             />
           </View>
-          <Text style={styles.screenTitle}>📂 {topic.name}</Text>
+          <View style={styles.screenTitleRow}>
+            <Icon name="folder" size={24} color="#5E72EB" />
+            <Text style={styles.screenTitle}>{topic.name}</Text>
+          </View>
           
           {/* Filter row with count and level dropdown */}
           <View style={styles.filterRow}>
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -407,18 +408,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 22,
+  title: {
+    fontSize: 20,
     fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
+    color: '#5E72EB',
   },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  headerRightPlaceholder: {
+    width: 40,
   },
   topicHeader: {
     alignItems: 'center',
@@ -437,12 +433,17 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 15,
   },
+  screenTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 5,
+    gap: 8,
+  },
   screenTitle: {
     fontSize: 24,
     fontWeight: '800',
     color: '#5E72EB',
-    marginBottom: 5,
-    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,

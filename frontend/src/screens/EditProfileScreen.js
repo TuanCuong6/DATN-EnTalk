@@ -161,7 +161,7 @@ export default function EditProfileScreen() {
         ]}
       />
 
-      {/* Header: Logo + Avatar + Tên */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -170,28 +170,14 @@ export default function EditProfileScreen() {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Chỉnh sửa hồ sơ</Text>
         </View>
 
-        {profile && (
-          <View style={styles.userInfo}>
-            {profile.avatar_url ? (
-              <Image
-                source={{ uri: profile.avatar_url }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="person" size={20} color="#5E72EB" />
-              </View>
-            )}
-          </View>
-        )}
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.screenTitle}>Chỉnh Sửa Hồ Sơ</Text>
 
         <View style={styles.avatarContainer}>
           <Image
@@ -236,7 +222,10 @@ export default function EditProfileScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>👤 Tên của bạn</Text>
+          <View style={styles.labelRow}>
+            <Icon name="person" size={18} color="#495057" />
+            <Text style={styles.label}>Tên của bạn</Text>
+          </View>
           <TextInput
             placeholder="Nhập tên của bạn"
             placeholderTextColor="#888"
@@ -248,7 +237,10 @@ export default function EditProfileScreen() {
 
         {/* THÊM: Thông tin chỉ xem, không chỉnh sửa */}
         <View style={styles.infoGroup}>
-          <Text style={styles.label}>📧 Email</Text>
+          <View style={styles.labelRow}>
+            <Icon name="email" size={18} color="#495057" />
+            <Text style={styles.label}>Email</Text>
+          </View>
           <View style={styles.infoContainer}>
             <Text style={styles.infoText}>
               {profile?.email || 'Chưa có email'}
@@ -257,7 +249,10 @@ export default function EditProfileScreen() {
         </View>
 
         <View style={styles.infoGroup}>
-          <Text style={styles.label}>📅 Ngày tham gia</Text>
+          <View style={styles.labelRow}>
+            <Icon name="event" size={18} color="#495057" />
+            <Text style={styles.label}>Ngày tham gia</Text>
+          </View>
           <View style={styles.infoContainer}>
             <Text style={styles.infoText}>
               {profile?.created_at
@@ -345,7 +340,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -353,42 +348,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
-  },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  screenTitle: {
-    fontSize: 24,
+  title: {
+    fontSize: 20,
     fontWeight: '800',
     color: '#5E72EB',
-    textAlign: 'center',
-    marginBottom: 20,
+  },
+  headerRightPlaceholder: {
+    width: 40,
   },
   avatarContainer: {
     marginBottom: 20,
@@ -440,11 +406,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: '100%',
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 6,
+  },
   label: {
     fontSize: 16,
     fontWeight: '600',
     color: '#495057',
-    marginBottom: 10,
   },
   input: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',

@@ -29,6 +29,7 @@ export default function PracticeCustomReadingScreen({ route }) {
   const [isScoring, setIsScoring] = useState(false);
   const [scoreResult, setScoreResult] = useState(null);
   const [showScoreModal, setShowScoreModal] = useState(false);
+  const [resetRecorder, setResetRecorder] = useState(0);
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -49,12 +50,25 @@ export default function PracticeCustomReadingScreen({ route }) {
     outputRange: ['0deg', '360deg'],
   });
 
-  const handleFinishRecording = async path => {
+  const [audioPath, setAudioPath] = useState(null);
+
+  const handleRecordingComplete = path => {
+    setAudioPath(path);
+  };
+
+  const handleSubmit = async (path) => {
+    const filePath = path || audioPath;
+    if (!filePath) {
+      Alert.alert('Lỗi', 'Không có file ghi âm');
+      return;
+    }
+    
     setIsScoring(true);
     try {
-      const res = await submitRecording(path, null, customText);
+      const res = await submitRecording(filePath, null, customText);
       setScoreResult(res.data);
       setShowScoreModal(true);
+      setAudioPath(null);
     } catch (err) {
       console.error('❌ Lỗi gửi file:', err);
       Alert.alert('Lỗi khi gửi file ghi âm', err?.response?.data?.message || 'Server lỗi');
@@ -80,36 +94,32 @@ export default function PracticeCustomReadingScreen({ route }) {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Luyện đọc</Text>
         </View>
 
-        {profile && (
-          <View style={styles.userInfo}>
-            {profile.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="person" size={20} color="#5E72EB" />
-              </View>
-            )}
-          </View>
-        )}
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.screenTitle}>🎤 Luyện Đọc</Text>
 
         {/* Content Display */}
         <View style={styles.contentCard}>
-          <Text style={styles.contentLabel}>📖 Nội dung bạn sẽ đọc:</Text>
+          <View style={styles.contentLabelRow}>
+            <Icon name="article" size={18} color="#495057" />
+            <Text style={styles.contentLabel}>Nội dung bạn sẽ đọc:</Text>
+          </View>
           <Text style={styles.contentText}>{customText}</Text>
           <TextToSpeechPlayer text={customText} style={styles.ttsPlayer} />
         </View>
 
         {/* Audio Recorder */}
         <View style={styles.recorderCard}>
-          <AudioRecorder onFinish={handleFinishRecording} />
+          <AudioRecorder 
+            onFinish={handleRecordingComplete}
+            onSubmit={handleSubmit}
+            resetTrigger={resetRecorder}
+          />
         </View>
 
         {/* Loading Overlay */}
@@ -126,7 +136,10 @@ export default function PracticeCustomReadingScreen({ route }) {
         visible={showScoreModal}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowScoreModal(false)}
+        onRequestClose={() => {
+          setShowScoreModal(false);
+          setResetRecorder(prev => prev + 1);
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -137,39 +150,34 @@ export default function PracticeCustomReadingScreen({ route }) {
             {scoreResult && (
               <ScrollView style={styles.scoreScrollView}>
                 <View style={styles.scoreContainer}>
-                  <View style={styles.overallScore}>
-                    <Text style={styles.overallLabel}>Tổng điểm</Text>
-                    <Text style={styles.overallValue}>
-                      {scoreResult.scores.overall}
-                      <Text style={styles.overallTotal}>/10</Text>
-                    </Text>
-                  </View>
-
-                  <View style={styles.scoreGrid}>
-                    <View style={styles.scoreItem}>
-                      <Text style={[styles.scoreLabel, styles.pronunciation]}>Phát âm</Text>
-                      <Text style={styles.scoreValue}>{scoreResult.scores.pronunciation}/10</Text>
+                  {/* Compact Score Summary */}
+                  <View style={styles.compactScoreCard}>
+                    <View style={styles.overallScoreCompact}>
+                      <Text style={styles.overallLabelCompact}>Tổng điểm</Text>
+                      <Text style={styles.overallValueCompact}>
+                        {scoreResult.scores.overall}
+                        <Text style={styles.overallTotalCompact}>/10</Text>
+                      </Text>
                     </View>
-
-                    <View style={styles.scoreItem}>
-                      <Text style={[styles.scoreLabel, styles.intonation]}>Ngữ điệu</Text>
-                      <Text style={styles.scoreValue}>{scoreResult.scores.intonation}/10</Text>
+                    
+                    <View style={styles.scoreDetailsCompact}>
+                      <View style={styles.scoreItemCompact}>
+                        <Text style={styles.scoreLabelCompact}>Phát âm</Text>
+                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.pronunciation}</Text>
+                      </View>
+                      <View style={styles.scoreItemCompact}>
+                        <Text style={styles.scoreLabelCompact}>Ngữ điệu</Text>
+                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.intonation}</Text>
+                      </View>
+                      <View style={styles.scoreItemCompact}>
+                        <Text style={styles.scoreLabelCompact}>Lưu loát</Text>
+                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.fluency}</Text>
+                      </View>
+                      <View style={styles.scoreItemCompact}>
+                        <Text style={styles.scoreLabelCompact}>Tốc độ</Text>
+                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.speed}</Text>
+                      </View>
                     </View>
-
-                    <View style={styles.scoreItem}>
-                      <Text style={[styles.scoreLabel, styles.fluency]}>Lưu loát</Text>
-                      <Text style={styles.scoreValue}>{scoreResult.scores.fluency}/10</Text>
-                    </View>
-
-                    <View style={styles.scoreItem}>
-                      <Text style={[styles.scoreLabel, styles.speed]}>Tốc độ</Text>
-                      <Text style={styles.scoreValue}>{scoreResult.scores.speed}/10</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.commentContainer}>
-                    <Text style={styles.commentLabel}>Nhận xét</Text>
-                    <Text style={styles.commentText}>{scoreResult.comment}</Text>
                   </View>
 
                   {/* Word Analysis */}
@@ -180,11 +188,26 @@ export default function PracticeCustomReadingScreen({ route }) {
                       transcript={scoreResult.transcript}
                     />
                   )}
+
+                  {/* Comment Section */}
+                  <View style={styles.commentContainer}>
+                    <View style={styles.commentLabelRow}>
+                      <Icon name="comment" size={16} color="#495057" />
+                      <Text style={styles.commentLabel}>Nhận xét</Text>
+                    </View>
+                    <Text style={styles.commentText}>{scoreResult.comment}</Text>
+                  </View>
                 </View>
               </ScrollView>
             )}
 
-            <TouchableOpacity style={styles.closeButton} onPress={() => setShowScoreModal(false)}>
+            <TouchableOpacity 
+              style={styles.closeButton} 
+              onPress={() => {
+                setShowScoreModal(false);
+                setResetRecorder(prev => prev + 1);
+              }}
+            >
               <Text style={styles.closeButtonText}>Đóng</Text>
             </TouchableOpacity>
           </View>
@@ -231,7 +254,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -239,30 +262,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: { fontSize: 22, fontWeight: '800', color: '#3D50EB', letterSpacing: 0.5 },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#5E72EB',
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  headerRightPlaceholder: {
+    width: 40,
   },
   screenTitle: {
     fontSize: 24,
@@ -279,11 +285,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.3)',
   },
+  contentLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 6,
+  },
   contentLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: '#495057',
-    marginBottom: 12,
   },
   contentText: {
     fontSize: 17,
@@ -328,33 +339,81 @@ const styles = StyleSheet.create({
     maxHeight: 500,
   },
   scoreContainer: { padding: 20 },
-  overallScore: { alignItems: 'center', marginBottom: 20 },
-  overallLabel: { fontSize: 16, color: '#6c757d', marginBottom: 5 },
-  overallValue: { fontSize: 48, fontWeight: '800', color: '#5E72EB' },
-  overallTotal: { fontSize: 24, color: '#6c757d' },
-  scoreGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  scoreItem: {
-    width: '48%',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+  compactScoreCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
     padding: 15,
-    marginBottom: 15,
-    borderLeftWidth: 4,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  scoreLabel: { fontSize: 16, fontWeight: '600', marginBottom: 5 },
-  scoreValue: { fontSize: 20, fontWeight: '700', color: '#495057' },
-  pronunciation: { color: '#5E72EB', borderLeftColor: '#5E72EB' },
-  intonation: { color: '#FF6B6B', borderLeftColor: '#FF6B6B' },
-  fluency: { color: '#4CD964', borderLeftColor: '#4CD964' },
-  speed: { color: '#FF9500', borderLeftColor: '#FF9500' },
-  commentContainer: { backgroundColor: '#f1f3f9', borderRadius: 12, padding: 15 },
-  commentLabel: { fontSize: 16, fontWeight: '600', color: '#5E72EB', marginBottom: 10 },
-  commentText: { fontSize: 16, lineHeight: 24, color: '#495057' },
+  overallScoreCompact: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 12,
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(94, 114, 235, 0.2)',
+  },
+  overallLabelCompact: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#495057',
+  },
+  overallValueCompact: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#5E72EB',
+  },
+  overallTotalCompact: {
+    fontSize: 18,
+    color: '#6c757d',
+  },
+  scoreDetailsCompact: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  scoreItemCompact: {
+    alignItems: 'center',
+  },
+  scoreLabelCompact: {
+    fontSize: 12,
+    color: '#6c757d',
+    marginBottom: 4,
+  },
+  scoreValueCompact: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#495057',
+  },
+  commentContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.2)',
+  },
+  commentLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(94, 114, 235, 0.2)',
+    paddingBottom: 8,
+    gap: 6,
+  },
+  commentLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#495057',
+  },
+  commentText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#495057',
+  },
   closeButton: { backgroundColor: '#5E72EB', padding: 15, alignItems: 'center' },
   closeButtonText: { color: '#fff', fontSize: 18, fontWeight: '600' },
 });

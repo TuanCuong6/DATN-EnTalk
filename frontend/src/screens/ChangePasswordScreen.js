@@ -154,7 +154,7 @@ export default function ChangePasswordScreen() {
         ]}
       />
 
-      {/* Header: Logo + Avatar + Tên */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -164,34 +164,23 @@ export default function ChangePasswordScreen() {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Đổi mật khẩu</Text>
         </View>
 
-        {profile && (
-          <View style={styles.userInfo}>
-            {profile.avatar_url ? (
-              <Image
-                source={{ uri: profile.avatar_url }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="person" size={20} color="#5E72EB" />
-              </View>
-            )}
-          </View>
-        )}
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.screenTitle}>Đổi Mật Khẩu</Text>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>🔒 Mật khẩu hiện tại</Text>
+          <View style={styles.labelRow}>
+            <Icon name="lock" size={18} color="#495057" />
+            <Text style={styles.label}>Mật khẩu hiện tại</Text>
+          </View>
           <TouchableOpacity
             style={styles.inputContainer}
             onPress={() => focusInput(oldPasswordRef)}
@@ -225,7 +214,10 @@ export default function ChangePasswordScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>🔑 Mật khẩu mới</Text>
+          <View style={styles.labelRow}>
+            <Icon name="vpn-key" size={18} color="#495057" />
+            <Text style={styles.label}>Mật khẩu mới</Text>
+          </View>
           <TouchableOpacity
             style={styles.inputContainer}
             onPress={() => focusInput(newPasswordRef)}
@@ -259,7 +251,10 @@ export default function ChangePasswordScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>✅ Xác nhận mật khẩu</Text>
+          <View style={styles.labelRow}>
+            <Icon name="check-circle" size={18} color="#495057" />
+            <Text style={styles.label}>Xác nhận mật khẩu</Text>
+          </View>
           <TouchableOpacity
             style={styles.inputContainer}
             onPress={() => focusInput(confirmPasswordRef)}
@@ -373,7 +368,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -381,51 +376,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
-  },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  screenTitle: {
-    fontSize: 24,
+  title: {
+    fontSize: 20,
     fontWeight: '800',
     color: '#5E72EB',
-    textAlign: 'center',
-    marginBottom: 30,
+  },
+  headerRightPlaceholder: {
+    width: 40,
   },
   inputGroup: {
     marginBottom: 20,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 6,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
     color: '#495057',
-    marginBottom: 10,
   },
   inputContainer: {
     flexDirection: 'row',

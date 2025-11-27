@@ -91,7 +91,9 @@ export default function YoutubeReadingScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color="#5E72EB" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Bài đọc từ YouTube</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.headerTitle}>Bài đọc từ YouTube</Text>
+        </View>
         <View style={{ width: 40 }} />
       </View>
 
@@ -262,10 +264,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  titleContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.2)',
+  },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#343A40',
+    color: '#5E72EB',
   },
   content: {
     flex: 1,

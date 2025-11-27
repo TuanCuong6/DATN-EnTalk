@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Easing } from 'react-native';
+import WordAnalysisDisplay from '../components/WordAnalysisDisplay';
 
 export default function RecordDetailScreen({ route }) {
   const navigation = useNavigation();
@@ -154,30 +155,27 @@ export default function RecordDetailScreen({ route }) {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Chi tiết bản ghi</Text>
         </View>
+
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.screenTitle}>Chi tiết bản ghi</Text>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📖 Nội dung đã đọc:</Text>
-          <Text style={styles.sectionText}>{detail.reading_content}</Text>
-        </View>
-
         {/* CẢNH BÁO KHI BÀI ĐỌC BỊ SỬA/XÓA */}
         {showWarning && (
           <View style={styles.warningSection}>
-            <Text style={styles.warningText}>
-              ⚠️{' '}
-              {readingStatus === 'deleted'
-                ? 'Bài đọc này đã bị xóa'
-                : 'Bài đọc này đã bị sửa đổi'}
-            </Text>
+            <View style={styles.warningTextRow}>
+              <Icon name="warning" size={18} color="#856404" />
+              <Text style={styles.warningText}>
+                {readingStatus === 'deleted'
+                  ? 'Bài đọc này đã bị xóa'
+                  : 'Bài đọc này đã bị sửa đổi'}
+              </Text>
+            </View>
             <TouchableOpacity
-              onPress={handleChooseNewReading} // ĐÃ SỬA: gọi hàm mới
+              onPress={handleChooseNewReading}
               style={styles.chooseButton}
             >
               <Icon
@@ -186,55 +184,78 @@ export default function RecordDetailScreen({ route }) {
                 color="#FFF"
                 style={styles.buttonIcon}
               />
-              <Text style={styles.chooseButtonText}>📚 Chọn bài mới</Text>
+              <Text style={styles.chooseButtonText}>Chọn bài mới</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🗣 Transcript:</Text>
-          <Text style={styles.sectionText}>{detail.transcript}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⭐ Điểm số:</Text>
-          <View style={styles.scoreContainer}>
-            <View style={styles.scoreItem}>
-              <Text style={styles.scoreLabel}>Tổng thể:</Text>
-              <Text style={styles.scoreValue}>
-                {detail.score_overall?.toFixed(1)}
-              </Text>
+        {/* Compact Score Summary */}
+        <View style={styles.compactScoreCard}>
+          <View style={styles.overallScoreCompact}>
+            <Text style={styles.overallLabelCompact}>Tổng điểm</Text>
+            <Text style={styles.overallValueCompact}>
+              {detail.score_overall?.toFixed(1)}
+              <Text style={styles.overallTotalCompact}>/10</Text>
+            </Text>
+          </View>
+          
+          <View style={styles.scoreDetailsCompact}>
+            <View style={styles.scoreItemCompact}>
+              <Text style={styles.scoreLabelCompact}>Phát âm</Text>
+              <Text style={styles.scoreValueCompact}>{parseFloat(detail.score_pronunciation).toFixed(1)}</Text>
             </View>
-            <View style={styles.scoreItem}>
-              <Text style={styles.scoreLabel}>Phát âm:</Text>
-              <Text style={styles.scoreValue}>
-                {parseFloat(detail.score_pronunciation).toFixed(1)}
-              </Text>
+            <View style={styles.scoreItemCompact}>
+              <Text style={styles.scoreLabelCompact}>Ngữ điệu</Text>
+              <Text style={styles.scoreValueCompact}>{parseFloat(detail.score_intonation).toFixed(1)}</Text>
             </View>
-            <View style={styles.scoreItem}>
-              <Text style={styles.scoreLabel}>Trôi chảy:</Text>
-              <Text style={styles.scoreValue}>
-                {parseFloat(detail.score_fluency).toFixed(1)}
-              </Text>
+            <View style={styles.scoreItemCompact}>
+              <Text style={styles.scoreLabelCompact}>Lưu loát</Text>
+              <Text style={styles.scoreValueCompact}>{parseFloat(detail.score_fluency).toFixed(1)}</Text>
             </View>
-            <View style={styles.scoreItem}>
-              <Text style={styles.scoreLabel}>Ngữ điệu:</Text>
-              <Text style={styles.scoreValue}>
-                {parseFloat(detail.score_intonation).toFixed(1)}
-              </Text>
-            </View>
-            <View style={styles.scoreItem}>
-              <Text style={styles.scoreLabel}>Tốc độ:</Text>
-              <Text style={styles.scoreValue}>
-                {parseFloat(detail.score_speed).toFixed(1)}
-              </Text>
+            <View style={styles.scoreItemCompact}>
+              <Text style={styles.scoreLabelCompact}>Tốc độ</Text>
+              <Text style={styles.scoreValueCompact}>{parseFloat(detail.score_speed).toFixed(1)}</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🧠 Nhận xét:</Text>
-          <Text style={styles.sectionText}>{detail.comment}</Text>
+        {/* Word Analysis - bao gồm cả nội dung gốc và transcript */}
+        {detail.word_analysis && detail.word_analysis.length > 0 && (
+          <WordAnalysisDisplay 
+            wordAnalysis={detail.word_analysis}
+            originalText={detail.reading_content}
+            transcript={detail.transcript}
+          />
+        )}
+        
+        {/* Nếu không có word_analysis, hiển thị nội dung gốc và transcript riêng */}
+        {(!detail.word_analysis || detail.word_analysis.length === 0) && (
+          <>
+            <View style={styles.contentContainer}>
+              <View style={styles.contentLabelRow}>
+                <Icon name="article" size={16} color="#495057" />
+                <Text style={styles.contentLabel}>Nội dung gốc</Text>
+              </View>
+              <Text style={styles.contentText}>{detail.reading_content}</Text>
+            </View>
+            
+            <View style={styles.contentContainer}>
+              <View style={styles.contentLabelRow}>
+                <Icon name="record-voice-over" size={16} color="#495057" />
+                <Text style={styles.contentLabel}>Bạn đã đọc</Text>
+              </View>
+              <Text style={styles.contentText}>{detail.transcript}</Text>
+            </View>
+          </>
+        )}
+
+        {/* Comment Section */}
+        <View style={styles.commentContainer}>
+          <View style={styles.commentLabelRow}>
+            <Icon name="comment" size={16} color="#495057" />
+            <Text style={styles.commentLabel}>Nhận xét</Text>
+          </View>
+          <Text style={styles.commentText}>{detail.comment}</Text>
         </View>
 
         {/* NÚT LUYỆN LẠI - LUÔN HIỂN THỊ */}
@@ -246,7 +267,7 @@ export default function RecordDetailScreen({ route }) {
             style={styles.buttonIcon}
           />
           <Text style={styles.retryButtonText}>
-            {showWarning ? '🔄 Luyện với nội dung cũ' : '🔁 Luyện lại'}
+            {showWarning ? 'Luyện với nội dung cũ' : 'Luyện lại'}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -298,7 +319,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -306,68 +327,120 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 22,
+  title: {
+    fontSize: 20,
     fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
+    color: '#5E72EB',
+  },
+  headerRightPlaceholder: {
+    width: 40,
   },
   content: {
-    padding: 25,
+    padding: 20,
     paddingTop: 10,
     zIndex: 10,
   },
-  screenTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#5E72EB',
-    textAlign: 'center',
+  compactScoreCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    padding: 15,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  section: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+  overallScoreCompact: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 12,
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(94, 114, 235, 0.2)',
+  },
+  overallLabelCompact: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#495057',
+  },
+  overallValueCompact: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#5E72EB',
+  },
+  overallTotalCompact: {
+    fontSize: 18,
+    color: '#6c757d',
+  },
+  scoreDetailsCompact: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  scoreItemCompact: {
+    alignItems: 'center',
+  },
+  scoreLabelCompact: {
+    fontSize: 12,
+    color: '#6c757d',
+    marginBottom: 4,
+  },
+  scoreValueCompact: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#495057',
+  },
+  commentContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
+    borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#495057',
+  commentLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(94, 114, 235, 0.2)',
     paddingBottom: 8,
+    gap: 6,
   },
-  sectionText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#343A40',
-  },
-  scoreContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  scoreItem: {
-    width: '48%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(94, 114, 235, 0.1)',
-  },
-  scoreLabel: {
-    fontSize: 16,
-    color: '#495057',
-  },
-  scoreValue: {
+  commentLabel: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#5E72EB',
+    color: '#495057',
+  },
+  commentText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#495057',
+  },
+  contentContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(94, 114, 235, 0.2)',
+  },
+  contentLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(94, 114, 235, 0.2)',
+    paddingBottom: 8,
+    gap: 6,
+  },
+  contentLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#495057',
+  },
+  contentText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#495057',
   },
   retryButton: {
     flexDirection: 'row',
@@ -397,12 +470,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FFEaaA',
   },
+  warningTextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    gap: 6,
+  },
   warningText: {
     color: '#856404',
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 12,
-    textAlign: 'center',
   },
   chooseButton: {
     flexDirection: 'row',

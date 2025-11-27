@@ -20,15 +20,77 @@ import StreakModal from '../components/StreakModal';
 const chatbotImage = require('../assets/chatbot.png');
 
 const STREAK_LEVELS = [
-  { min: 1, max: 10, icon: 'local-fire-department', color: '#FF6B6B', name: 'Beginner Flame' },
-  { min: 10, max: 50, icon: 'flash-on', color: '#FFD93D', name: 'Intermediate Master' },
-  { min: 50, max: 100, icon: 'diamond', color: '#6BCB77', name: 'Advanced Speaker' },
-  { min: 100, max: 200, icon: 'emoji-events', color: '#4D96FF', name: 'Proficient Legend' },
-  { min: 200, max: Infinity, icon: 'stars', color: '#9D4EDD', name: 'Native Immortal' },
+  {
+    min: 1,
+    max: 10,
+    icon: 'local-fire-department',
+    color: '#FF6B6B',
+    name: 'Beginner Flame',
+  },
+  {
+    min: 10,
+    max: 50,
+    icon: 'flash-on',
+    color: '#FFD93D',
+    name: 'Intermediate Master',
+  },
+  {
+    min: 50,
+    max: 100,
+    icon: 'diamond',
+    color: '#6BCB77',
+    name: 'Advanced Speaker',
+  },
+  {
+    min: 100,
+    max: 200,
+    icon: 'emoji-events',
+    color: '#4D96FF',
+    name: 'Proficient Legend',
+  },
+  {
+    min: 200,
+    max: Infinity,
+    icon: 'stars',
+    color: '#9D4EDD',
+    name: 'Native Immortal',
+  },
 ];
 
-const getStreakLevel = (streak) => {
-  return STREAK_LEVELS.find(level => streak >= level.min && streak < level.max) || STREAK_LEVELS[0];
+const getStreakLevel = streak => {
+  return (
+    STREAK_LEVELS.find(level => streak >= level.min && streak < level.max) ||
+    STREAK_LEVELS[0]
+  );
+};
+
+// Hàm rút gọn tên hiển thị
+const getDisplayName = fullName => {
+  if (!fullName) return '';
+  const trimmedName = fullName.trim();
+  if (trimmedName.length <= 12) {
+    return trimmedName;
+  }
+  const words = trimmedName.split(/\s+/);
+  if (words.length > 2) {
+    const lastTwoWords = words.slice(-2).join(' ');
+    if (lastTwoWords.length > 12) {
+      const lastName = words[words.length - 1];
+      return lastName.length > 10
+        ? lastName.substring(0, 10) + '...'
+        : lastName;
+    }
+    return lastTwoWords;
+  }
+
+  if (words.length === 1 || words.length === 2) {
+    const displayText = words.join(' ');
+    return displayText.length > 10
+      ? displayText.substring(0, 10) + '...'
+      : displayText;
+  }
+
+  return trimmedName.substring(0, 10) + '...';
 };
 
 export default function HomeScreen() {
@@ -65,7 +127,6 @@ export default function HomeScreen() {
       useNativeDriver: true,
     }).start();
 
-    // Pulse animation for streak
     Animated.loop(
       Animated.sequence([
         Animated.timing(streakPulse, {
@@ -83,7 +144,6 @@ export default function HomeScreen() {
       ]),
     ).start();
 
-    // Floating animation for chatbot
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
@@ -101,7 +161,6 @@ export default function HomeScreen() {
       ]),
     ).start();
 
-    // Rotate animation for logo
     Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
@@ -181,14 +240,10 @@ export default function HomeScreen() {
         {/* Header: Logo + Avatar + Tên */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <View style={styles.logoBackground}>
-              <Text style={styles.logo}>EnTalk</Text>
-            </View>
-            <Icon
-              name="language"
-              size={24}
-              color="#5E72EB"
-              style={styles.cableCar}
+            <Image
+              source={require('../assets/logo_entalk.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
             />
           </View>
 
@@ -196,24 +251,32 @@ export default function HomeScreen() {
             {/* Streak button */}
             {streakData && (
               <Animated.View style={{ transform: [{ scale: streakPulse }] }}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[
                     styles.streakButton,
-                    !streakData.practiced_today && 
-                    (streakData.current_streak >= 2 || (streakData.current_streak === 1 && streakData.last_practice_date)) && 
-                    styles.streakButtonWarning
+                    !streakData.practiced_today &&
+                      (streakData.current_streak >= 2 ||
+                        (streakData.current_streak === 1 &&
+                          streakData.last_practice_date)) &&
+                      styles.streakButtonWarning,
                   ]}
                   onPress={() => setShowStreakModal(true)}
                 >
-                  <Icon 
-                    name={getStreakLevel(streakData.current_streak).icon} 
-                    size={24} 
-                    color={streakData.practiced_today ? getStreakLevel(streakData.current_streak).color : '#BDBDBD'}
+                  <Icon
+                    name={getStreakLevel(streakData.current_streak).icon}
+                    size={24}
+                    color={
+                      streakData.practiced_today
+                        ? getStreakLevel(streakData.current_streak).color
+                        : '#BDBDBD'
+                    }
                   />
-                  <Text style={[
-                    styles.streakText,
-                    !streakData.practiced_today && styles.streakTextGray
-                  ]}>
+                  <Text
+                    style={[
+                      styles.streakText,
+                      !streakData.practiced_today && styles.streakTextGray,
+                    ]}
+                  >
                     {streakData.current_streak}
                   </Text>
                 </TouchableOpacity>
@@ -221,7 +284,10 @@ export default function HomeScreen() {
             )}
 
             {profile && (
-              <View style={styles.userInfo}>
+              <TouchableOpacity
+                style={styles.userInfo}
+                onPress={() => navigation.navigate('Account')}
+              >
                 {profile.avatar_url ? (
                   <Image
                     source={{ uri: profile.avatar_url }}
@@ -232,8 +298,10 @@ export default function HomeScreen() {
                     <Icon name="person" size={20} color="#5E72EB" />
                   </View>
                 )}
-                <Text style={styles.name}>{profile.name}</Text>
-              </View>
+                <Text style={styles.name} numberOfLines={1}>
+                  {getDisplayName(profile.name)}
+                </Text>
+              </TouchableOpacity>
             )}
           </View>
         </View>
@@ -245,9 +313,11 @@ export default function HomeScreen() {
           <View style={styles.divider} />
         </View>
 
-        {/* Nút chức năng - Grid 3 nút */}
+        {/* Nút chức năng - Grid 2x2 */}
         <View style={styles.buttonGrid}>
-          <Animated.View style={[styles.gridItem, { transform: [{ scale: button1Scale }] }]}>
+          <Animated.View
+            style={[styles.gridItem, { transform: [{ scale: button1Scale }] }]}
+          >
             <TouchableOpacity
               onPressIn={() => handlePressIn(button1Scale)}
               onPressOut={() => handlePressOut(button1Scale)}
@@ -262,7 +332,9 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[styles.gridItem, { transform: [{ scale: button2Scale }] }]}>
+          <Animated.View
+            style={[styles.gridItem, { transform: [{ scale: button2Scale }] }]}
+          >
             <TouchableOpacity
               onPressIn={() => handlePressIn(button2Scale)}
               onPressOut={() => handlePressOut(button2Scale)}
@@ -277,7 +349,9 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[styles.gridItem, styles.gridItemFull, { transform: [{ scale: button3Scale }] }]}>
+          <Animated.View
+            style={[styles.gridItem, { transform: [{ scale: button3Scale }] }]}
+          >
             <TouchableOpacity
               onPressIn={() => handlePressIn(button3Scale)}
               onPressOut={() => handlePressOut(button3Scale)}
@@ -286,39 +360,33 @@ export default function HomeScreen() {
             >
               <View style={[styles.gridButtonContent, styles.button3]}>
                 <Icon name="play-circle-outline" size={40} color="#9D4EDD" />
-                <Text style={styles.gridButtonTitle}>Tạo bài đọc từ video YouTube</Text>
-                <Text style={styles.gridButtonSubtitle}>Học từ video yêu thích</Text>
+                <Text style={styles.gridButtonTitle}>Bài đọc từ YouTube</Text>
+                <Text style={styles.gridButtonSubtitle}>Học từ video</Text>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Animated.View
+            style={[styles.gridItem, { transform: [{ scale: button1Scale }] }]}
+          >
+            <TouchableOpacity
+              onPressIn={() => handlePressIn(button1Scale)}
+              onPressOut={() => handlePressOut(button1Scale)}
+              onPress={() => navigation.navigate('ChatbotScreen')}
+              style={styles.gridButton}
+            >
+              <View style={[styles.gridButtonContent, styles.button4]}>
+                <Image source={chatbotImage} style={styles.chatbotIconImage} />
+                <Text style={styles.gridButtonTitle}>Trợ lý AI</Text>
+                <Text style={styles.gridButtonSubtitle}>Hỏi đáp tiếng Anh</Text>
               </View>
             </TouchableOpacity>
           </Animated.View>
         </View>
-
-        {/* Chatbot với hiệu ứng nổi */}
-        <Animated.View
-          style={[
-            styles.chatbotContainer,
-            { transform: [{ translateY: floatInterpolation }] },
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.chatbotButton}
-            onPress={() => navigation.navigate('ChatbotScreen')}
-          >
-            <BlurView
-              style={styles.chatbotBlur}
-              blurType="light"
-              blurAmount={10}
-            />
-            <Image source={chatbotImage} style={styles.chatbotImage} />
-            <Text style={styles.chatbotText}>
-              Hỏi mình bất cứ điều gì về tiếng Anh nhé!
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
       </Animated.View>
 
       {/* Streak Modal */}
-      <StreakModal 
+      <StreakModal
         visible={showStreakModal}
         onClose={() => setShowStreakModal(false)}
         streakData={streakData}
@@ -402,29 +470,15 @@ const styles = StyleSheet.create({
     color: '#BDBDBD',
   },
   logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoBackground: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
+    padding: 8,
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
-  },
-  cableCar: {
-    marginLeft: 10,
-    transform: [{ rotate: '90deg' }],
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 12,
-    padding: 5,
+  logoImage: {
+    width: 40,
+    height: 40,
   },
   userInfo: {
     flexDirection: 'row',
@@ -501,9 +555,7 @@ const styles = StyleSheet.create({
     width: '48%',
     marginBottom: 15,
   },
-  gridItemFull: {
-    width: '100%',
-  },
+
   gridButton: {
     width: '100%',
   },
@@ -513,7 +565,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 140,
+    height: 160,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.05)',
     shadowColor: '#000',
@@ -534,6 +586,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 4,
     borderTopColor: '#9D4EDD',
   },
+  button4: {
+    borderTopWidth: 4,
+    borderTopColor: '#6BCB77',
+  },
   gridButtonTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -548,39 +604,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
-  chatbotContainer: {
-    position: 'absolute',
-    bottom: 30,
-    alignSelf: 'center',
-  },
-  chatbotButton: {
-    alignItems: 'center',
-    position: 'relative',
-  },
-  chatbotBlur: {
-    position: 'absolute',
-    width: 250,
-    height: 100,
+  chatbotIconImage: {
+    width: 50,
+    height: 50,
     borderRadius: 25,
-    overflow: 'hidden',
-  },
-  chatbotImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: '#FFF',
-    marginBottom: 10,
-  },
-  chatbotText: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    color: '#5E72EB',
-    fontWeight: '500',
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
   },
 });

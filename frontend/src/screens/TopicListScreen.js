@@ -109,7 +109,7 @@ export default function TopicListScreen() {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>📚 Chủ đề bài đọc</Text>
+          <Text style={styles.title}>Chủ đề bài đọc</Text>
         </View>
         <View style={styles.headerRightPlaceholder} />
       </View>
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
     color: '#5E72EB',
   },

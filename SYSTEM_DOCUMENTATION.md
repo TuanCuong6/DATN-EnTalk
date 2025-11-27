@@ -303,24 +303,24 @@
 
 #### Chiến lược 1: Gợi ý bài tự nhập điểm thấp chưa cải thiện
 - Tìm bài `custom_text` có điểm < 7 và chưa cải thiện lên >= 8
-- Gửi thông báo: "📉 Luyện lại bài tự nhập - Bài: '...' có điểm X, hãy thử cải thiện nhé!"
+- Gửi thông báo: "Luyện lại bài tự nhập - Bài: '...' có điểm X, hãy thử cải thiện nhé!"
 - Data: `{ customText, suggestionReason }`
 
 #### Chiến lược 2: Gợi ý bài hệ thống từng luyện có điểm thấp
 - Tìm bài đọc có sẵn (không phải custom) có điểm < 7.5
-- Gửi thông báo: "📉 Luyện lại bài hệ thống - Bài: '...' điểm X, thử lại nhé!"
+- Gửi thông báo: "Luyện lại bài hệ thống - Bài: '...' điểm X, thử lại nhé!"
 - Data: `{ readingId, recordId, suggestionReason }`
 
 #### Chiến lược 3: Bài hệ thống chưa từng luyện
 - Tìm bài đọc có sẵn mà user chưa luyện lần nào
 - Chọn ngẫu nhiên 1 bài
-- Gửi thông báo: "🆕 Bài mới cho bạn - Thử đọc bài: '...' nhé!"
+- Gửi thông báo: "Bài mới cho bạn - Thử đọc bài: '...' nhé!"
 - Data: `{ readingId, suggestionReason }`
 
 #### Chiến lược 4: Chủ đề ít luyện
 - Tìm chủ đề mà user luyện ít nhất
 - Chọn 1 bài chưa đọc hoặc ít đọc trong chủ đề đó
-- Gửi thông báo: "📚 Chủ đề: [Tên] - Thử bài này: '...'"
+- Gửi thông báo: "Chủ đề: [Tên] - Thử bài này: '...'"
 - Data: `{ readingId, suggestionReason }`
 
 #### Chiến lược 5: AI đề xuất sinh đoạn văn mới
@@ -328,7 +328,7 @@
 - Gọi Gemini AI phân tích:
   - Điểm yếu của user (phát âm, ngữ điệu, từ vựng...)
   - Tạo đoạn văn mới phù hợp để luyện tập
-- Gửi thông báo: "🎯 Gợi ý từ AI - AI gợi ý bài mới: '...'"
+- Gửi thông báo: "Gợi ý từ AI - AI gợi ý bài mới: '...'"
 - Data: `{ customText, suggestionReason }`
 
 4. **Gửi thông báo**:
@@ -396,7 +396,7 @@
      - `user_id`, `user_email`, `content`, `screenshot_url`
      - `status = 'pending'` (chờ admin trả lời)
 7. **Backend trả về thành công**
-8. **App hiển thị thông báo** "🎉 Gửi góp ý thành công!"
+8. **App hiển thị thông báo** "Gửi góp ý thành công!"
 
 #### Admin xem và trả lời góp ý:
 1. **Admin đăng nhập web** → Vào trang "Feedbacks"

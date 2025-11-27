@@ -15,6 +15,7 @@ import {
 import { LineChart } from 'react-native-chart-kit';
 import { fetchChartData, fetchRecentRecords } from '../api/history';
 import { fetchAllTopics } from '../api/reading';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const RANGE_OPTIONS = [
   { label: '7 ngày', value: '7' },
@@ -197,16 +198,22 @@ export default function HistoryScreen({ navigation }) {
         <Text style={styles.score}>
           {item.score_overall?.toFixed(1) ?? '-'}
         </Text>
-        <Text style={styles.retry}>🔁 Luyện lại</Text>
+        <View style={styles.retryRow}>
+          <Icon name="replay" size={14} color="#5E72EB" />
+          <Text style={styles.retry}>Luyện lại</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
 
   const renderHeader = () => (
     <View>
-      <Text style={styles.sectionTitle}>
-        📈 Tiến độ luyện tập ({range} ngày gần đây)
-      </Text>
+      <View style={styles.sectionTitleRow}>
+        <Icon name="trending-up" size={22} color="#5E72EB" />
+        <Text style={styles.sectionTitle}>
+          Tiến độ luyện tập ({range} ngày gần đây)
+        </Text>
+      </View>
 
       <View style={styles.rangeContainer}>
         {RANGE_OPTIONS.map(opt => (
@@ -274,14 +281,20 @@ export default function HistoryScreen({ navigation }) {
             </View>
           </ScrollView>
 
-          <Text style={styles.chartHint}>
-            📍 Ấn vào biểu đồ để xem chi tiết lịch sử
-          </Text>
+          <View style={styles.chartHintRow}>
+            <Icon name="touch-app" size={14} color="#6C757D" />
+            <Text style={styles.chartHint}>
+              Ấn vào biểu đồ để xem chi tiết lịch sử
+            </Text>
+          </View>
 
           {chartData.scores.every(score => score === null) && (
-            <Text style={styles.emptyText}>
-              ⛔ Chưa có dữ liệu trong khoảng thời gian này
-            </Text>
+            <View style={styles.emptyTextRow}>
+              <Icon name="block" size={16} color="#888" />
+              <Text style={styles.emptyText}>
+                Chưa có dữ liệu trong khoảng thời gian này
+              </Text>
+            </View>
           )}
         </View>
       )}
@@ -343,11 +356,14 @@ export default function HistoryScreen({ navigation }) {
             <ActivityIndicator size="small" style={{ marginVertical: 16 }} />
           )}
           {!hasMore && records.length > 0 && (
-            <Text
-              style={{ textAlign: 'center', color: '#888', marginVertical: 12 }}
-            >
-              ✅ Đã tải hết bản ghi
-            </Text>
+            <View style={styles.endMessageRow}>
+              <Icon name="check-circle" size={16} color="#888" />
+              <Text
+                style={{ textAlign: 'center', color: '#888', marginLeft: 6 }}
+              >
+                Đã tải hết bản ghi
+              </Text>
+            </View>
           )}
         </>
       }
@@ -356,12 +372,17 @@ export default function HistoryScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 12,
     color: '#5E72EB',
-    textAlign: 'center',
   },
   rangeContainer: {
     flexDirection: 'row',
@@ -378,18 +399,28 @@ const styles = StyleSheet.create({
   rangeOptionSelected: {
     backgroundColor: '#5E72EB',
   },
-  chartHint: {
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#6C757D',
+  chartHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 12,
     marginBottom: 8,
+    gap: 6,
   },
-  emptyText: {
+  chartHint: {
+    fontSize: 14,
+    color: '#6C757D',
+  },
+  emptyTextRow: {
     position: 'absolute',
     top: 100,
     width: '100%',
-    textAlign: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  emptyText: {
     fontSize: 16,
     color: '#888',
   },
@@ -426,9 +457,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#5E72EB',
   },
+  retryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 4,
+  },
   retry: {
     fontSize: 13,
     color: '#5E72EB',
-    marginTop: 4,
+  },
+  endMessageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 12,
   },
 });

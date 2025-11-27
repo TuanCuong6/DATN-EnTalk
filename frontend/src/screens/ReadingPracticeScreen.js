@@ -27,6 +27,7 @@ export default function ReadingPracticeScreen({ route, navigation }) {
   const [isScoring, setIsScoring] = useState(false);
   const [scoreResult, setScoreResult] = useState(null);
   const [showScoreModal, setShowScoreModal] = useState(false);
+  const [resetRecorder, setResetRecorder] = useState(0);
   const buttonScale = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -169,20 +170,16 @@ export default function ReadingPracticeScreen({ route, navigation }) {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Luyện đọc</Text>
         </View>
 
-        <View style={styles.userInfo}>
-          <Icon name="menu-book" size={24} color="#5E72EB" />
-        </View>
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.screenTitle}>Luyện Đọc</Text>
-
         <View style={styles.card}>
-          <Text style={styles.title}>{reading.title || 'Bài đọc'}</Text>
+          <Text style={styles.cardTitle}>{reading.title || 'Bài đọc'}</Text>
           <Text style={styles.contentText}>{reading.content}</Text>
           <TextToSpeechPlayer text={reading.content} readingId={reading.id} style={styles.ttsPlayer} />
         </View>
@@ -191,6 +188,7 @@ export default function ReadingPracticeScreen({ route, navigation }) {
           <AudioRecorder
             onFinish={handleRecordingComplete}
             onSubmit={handleSubmit}
+            resetTrigger={resetRecorder}
             buttonStyle={styles.recordButton}
             textStyle={styles.recordButtonText}
             iconStyle={styles.recordIcon}
@@ -211,7 +209,10 @@ export default function ReadingPracticeScreen({ route, navigation }) {
         visible={showScoreModal}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowScoreModal(false)}
+        onRequestClose={() => {
+          setShowScoreModal(false);
+          setResetRecorder(prev => prev + 1);
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -275,7 +276,10 @@ export default function ReadingPracticeScreen({ route, navigation }) {
 
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setShowScoreModal(false)}
+              onPress={() => {
+                setShowScoreModal(false);
+                setResetRecorder(prev => prev + 1); // Trigger reset AudioRecorder
+              }}
             >
               <Text style={styles.closeButtonText}>Đóng</Text>
             </TouchableOpacity>
@@ -335,7 +339,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -343,25 +347,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
-  },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  screenTitle: {
-    fontSize: 24,
+  title: {
+    fontSize: 20,
     fontWeight: '800',
     color: '#5E72EB',
-    textAlign: 'center',
-    marginBottom: 20,
+  },
+  headerRightPlaceholder: {
+    width: 40,
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
@@ -371,7 +363,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(94, 114, 235, 0.2)',
     marginBottom: 25,
   },
-  title: {
+  cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
