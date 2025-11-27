@@ -41,6 +41,7 @@ router.delete("/readings/:id", adminAuth, adminController.deleteReading);
 
 // Records management
 router.get("/records", adminAuth, adminController.getRecords);
+router.get("/records/:id", adminAuth, adminController.getRecordDetail);
 
 // Feedback management
 router.get("/feedbacks", adminAuth, feedbackController.getFeedbacks);

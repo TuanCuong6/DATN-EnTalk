@@ -286,74 +286,9 @@
 ---
 
 
-### 6. LUỒNG THÔNG BÁO & GỢI Ý LUYỆN TẬP (PUSH NOTIFICATION)
-
-#### Đăng ký nhận thông báo:
-1. **User cài đặt app lần đầu** → App yêu cầu quyền nhận thông báo
-2. **Firebase Messaging tạo FCM token** (unique cho mỗi thiết bị)
-3. **App gửi token** lên backend `POST /api/notification/save-token`
-4. **Backend lưu token** vào cột `fcm_token` trong bảng `users`
-
-#### Hệ thống gợi ý tự động (Cron Job):
-1. **Backend chạy cron job** vào 8h sáng, 14h và 20h tối mỗi ngày
-2. **Cron gọi hàm** `recommendOnce()` trong `dailyRecommender.js`
-3. **Với mỗi user có FCM token**:
-   - Lấy `last_suggestion_type` (0-4) để xoay vòng tiêu chí
-   - Thử 5 chiến lược gợi ý theo thứ tự:
-
-#### Chiến lược 1: Gợi ý bài tự nhập điểm thấp chưa cải thiện
-- Tìm bài `custom_text` có điểm < 7 và chưa cải thiện lên >= 8
-- Gửi thông báo: "Luyện lại bài tự nhập - Bài: '...' có điểm X, hãy thử cải thiện nhé!"
-- Data: `{ customText, suggestionReason }`
-
-#### Chiến lược 2: Gợi ý bài hệ thống từng luyện có điểm thấp
-- Tìm bài đọc có sẵn (không phải custom) có điểm < 7.5
-- Gửi thông báo: "Luyện lại bài hệ thống - Bài: '...' điểm X, thử lại nhé!"
-- Data: `{ readingId, recordId, suggestionReason }`
-
-#### Chiến lược 3: Bài hệ thống chưa từng luyện
-- Tìm bài đọc có sẵn mà user chưa luyện lần nào
-- Chọn ngẫu nhiên 1 bài
-- Gửi thông báo: "Bài mới cho bạn - Thử đọc bài: '...' nhé!"
-- Data: `{ readingId, suggestionReason }`
-
-#### Chiến lược 4: Chủ đề ít luyện
-- Tìm chủ đề mà user luyện ít nhất
-- Chọn 1 bài chưa đọc hoặc ít đọc trong chủ đề đó
-- Gửi thông báo: "Chủ đề: [Tên] - Thử bài này: '...'"
-- Data: `{ readingId, suggestionReason }`
-
-#### Chiến lược 5: AI đề xuất sinh đoạn văn mới
-- Lấy 3 bài gần nhất của user (transcript + điểm)
-- Gọi Gemini AI phân tích:
-  - Điểm yếu của user (phát âm, ngữ điệu, từ vựng...)
-  - Tạo đoạn văn mới phù hợp để luyện tập
-- Gửi thông báo: "Gợi ý từ AI - AI gợi ý bài mới: '...'"
-- Data: `{ customText, suggestionReason }`
-
-4. **Gửi thông báo**:
-   - Backend gọi Firebase Admin SDK
-   - Gửi push notification đến FCM token
-   - Lưu thông báo vào bảng `notifications` (để xem lại trong app)
-5. **Cập nhật** `last_suggestion_type` để lần sau dùng tiêu chí khác
-
-#### Xem thông báo trong app:
-1. **User vào tab "Thông báo"** (`NotificationScreen`)
-2. **App gọi API** `GET /api/notification/list`
-3. **Backend trả về danh sách thông báo** (sắp xếp mới nhất trước)
-4. **App hiển thị**:
-   - Tiêu đề + nội dung
-   - Thời gian
-   - Trạng thái đã đọc/chưa đọc
-5. **User nhấn vào thông báo**:
-   - Đánh dấu đã đọc (`POST /api/notification/mark-read`)
-   - Điều hướng đến màn hình tương ứng:
-     - Nếu có `readingId` → Màn hình luyện đọc bài có sẵn
-     - Nếu có `customText` → Màn hình luyện đọc custom
-     - Nếu có `recordId` → Màn hình chi tiết bài đã luyện
-
----
-
+Feedback
+4
+Cần xử lý
 ### 7. LUỒNG CHATBOT HỎI ĐÁP TIẾNG ANH
 
 #### Hỏi câu hỏi:

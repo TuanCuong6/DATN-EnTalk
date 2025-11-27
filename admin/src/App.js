@@ -23,6 +23,7 @@ import TopicList from "./pages/Topics/TopicList";
 import TopicAdd from "./pages/Topics/TopicAdd";
 import TopicEdit from "./pages/Topics/TopicEdit";
 import RecordList from "./pages/Records/RecordList";
+import RecordDetail from "./pages/Records/RecordDetail";
 import FeedbackList from "./pages/Feedbacks/FeedbackList";
 import FeedbackDetail from "./pages/Feedbacks/FeedbackDetail";
 import EmailMarketing from "./pages/EmailMarketing/EmailMarketing";
@@ -159,6 +160,16 @@ function AppContent() {
             <ProtectedRoute>
               <Layout>
                 <RecordList />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/records/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <RecordDetail />
               </Layout>
             </ProtectedRoute>
           }

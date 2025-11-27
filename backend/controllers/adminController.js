@@ -40,29 +40,97 @@ exports.adminLogin = async (req, res) => {
 // Dashboard Statistics
 exports.getDashboardStats = async (req, res) => {
   try {
+    // Thống kê cơ bản
     const [[{ totalUsers }]] = await db.execute(
       "SELECT COUNT(*) as totalUsers FROM users"
     );
-    // CHỈ ĐẾM BÀI ĐỌC HỆ THỐNG (có topic_id)
     const [[{ totalReadings }]] = await db.execute(
       "SELECT COUNT(*) as totalReadings FROM readings WHERE topic_id IS NOT NULL"
     );
     const [[{ totalRecords }]] = await db.execute(
       "SELECT COUNT(*) as totalRecords FROM records"
     );
-    const [[{ totalAdmins }]] = await db.execute(
-      "SELECT COUNT(*) as totalAdmins FROM admins"
-    );
     const [[{ avgScore }]] = await db.execute(
       "SELECT AVG(score_overall) as avgScore FROM records WHERE score_overall IS NOT NULL"
     );
+
+    // Feedback chưa trả lời
+    const [[{ pendingFeedbacks }]] = await db.execute(
+      "SELECT COUNT(*) as pendingFeedbacks FROM feedbacks WHERE status = 'pending'"
+    );
+
+    // Users hoạt động 7 ngày qua
+    const [[{ activeUsers }]] = await db.execute(
+      "SELECT COUNT(DISTINCT user_id) as activeUsers FROM records WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+    );
+
+    // Luyện tập 7 ngày qua (cho biểu đồ)
+    const [dailyRecords] = await db.execute(`
+      SELECT DATE(created_at) as date, COUNT(*) as count
+      FROM records
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `);
+
+    // Top 3 users tích cực nhất
+    const [topUsers] = await db.execute(`
+      SELECT u.id, u.name, 
+             COUNT(r.id) as total_records,
+             AVG(r.score_overall) as avg_score,
+             COALESCE(us.current_streak, 0) as streak
+      FROM users u
+      LEFT JOIN records r ON u.id = r.user_id
+      LEFT JOIN user_streaks us ON u.id = us.user_id
+      GROUP BY u.id
+      HAVING total_records > 0
+      ORDER BY total_records DESC
+      LIMIT 3
+    `);
+
+    // 5 hoạt động gần đây
+    const [recentActivities] = await db.execute(`
+      SELECT r.id, r.score_overall, r.created_at,
+             u.name as user_name,
+             t.name as topic_name
+      FROM records r
+      LEFT JOIN users u ON r.user_id = u.id
+      LEFT JOIN readings rd ON r.reading_id = rd.id
+      LEFT JOIN topics t ON rd.topic_id = t.id
+      ORDER BY r.created_at DESC
+      LIMIT 5
+    `);
+
+    // Điểm trung bình theo kỹ năng
+    const [[qualityStats]] = await db.execute(`
+      SELECT 
+        AVG(score_pronunciation) as avg_pronunciation,
+        AVG(score_fluency) as avg_fluency,
+        AVG(score_intonation) as avg_intonation,
+        AVG(score_speed) as avg_speed
+      FROM records
+      WHERE score_overall IS NOT NULL
+    `);
 
     res.json({
       totalUsers,
       totalReadings,
       totalRecords,
-      totalAdmins,
       avgScore: avgScore ? parseFloat(avgScore).toFixed(2) : 0,
+      pendingFeedbacks,
+      activeUsers,
+      dailyRecords,
+      topUsers: topUsers.map(u => ({
+        ...u,
+        avg_score: u.avg_score ? parseFloat(u.avg_score).toFixed(1) : 0
+      })),
+      recentActivities,
+      qualityStats: {
+        pronunciation: qualityStats.avg_pronunciation ? parseFloat(qualityStats.avg_pronunciation).toFixed(1) : 0,
+        fluency: qualityStats.avg_fluency ? parseFloat(qualityStats.avg_fluency).toFixed(1) : 0,
+        intonation: qualityStats.avg_intonation ? parseFloat(qualityStats.avg_intonation).toFixed(1) : 0,
+        speed: qualityStats.avg_speed ? parseFloat(qualityStats.avg_speed).toFixed(1) : 0
+      }
     });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
@@ -299,13 +367,52 @@ exports.getRecords = async (req, res) => {
   try {
     const [records] = await db.execute(`
       SELECT rec.*, u.name as user_name, 
-             COALESCE(r.content, rec.original_content) as reading_content
+             COALESCE(r.content, rec.original_content) as reading_content,
+             t.name as topic_name
       FROM records rec
       LEFT JOIN users u ON rec.user_id = u.id
       LEFT JOIN readings r ON rec.reading_id = r.id
+      LEFT JOIN topics t ON r.topic_id = t.id
       ORDER BY rec.created_at DESC
     `);
     res.json(records);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
+// Get Record Detail for Admin
+exports.getRecordDetail = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [records] = await db.execute(`
+      SELECT rec.*, 
+             u.name as user_name, 
+             u.email as user_email,
+             u.level as user_level,
+             COALESCE(r.content, rec.original_content) as reading_content,
+             t.name as topic_name,
+             r.level as reading_level
+      FROM records rec
+      LEFT JOIN users u ON rec.user_id = u.id
+      LEFT JOIN readings r ON rec.reading_id = r.id
+      LEFT JOIN topics t ON r.topic_id = t.id
+      WHERE rec.id = ?
+    `, [id]);
+
+    if (records.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy bản ghi" });
+    }
+
+    // Lấy chi tiết feedback nếu có
+    const [feedbacks] = await db.execute(`
+      SELECT * FROM record_feedback WHERE record_id = ?
+    `, [id]);
+
+    res.json({
+      ...records[0],
+      feedbacks
+    });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
