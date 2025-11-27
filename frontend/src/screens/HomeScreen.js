@@ -18,6 +18,9 @@ import { BlurView } from '@react-native-community/blur';
 import StreakModal from '../components/StreakModal';
 
 const chatbotImage = require('../assets/chatbot.png');
+const topicImage = require('../assets/topic.png');
+const editImage = require('../assets/edit.png');
+const youtubeImage = require('../assets/youtube.png');
 
 const STREAK_LEVELS = [
   {
@@ -161,6 +164,7 @@ export default function HomeScreen() {
       ]),
     ).start();
 
+    // Rotate animation for logo
     Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
@@ -325,7 +329,7 @@ export default function HomeScreen() {
               style={styles.gridButton}
             >
               <View style={[styles.gridButtonContent, styles.button1]}>
-                <Icon name="folder" size={40} color="#5E72EB" />
+                <Image source={topicImage} style={styles.buttonIconImage} />
                 <Text style={styles.gridButtonTitle}>Bài đọc theo chủ đề</Text>
                 <Text style={styles.gridButtonSubtitle}>Khám phá chủ đề</Text>
               </View>
@@ -342,7 +346,7 @@ export default function HomeScreen() {
               style={styles.gridButton}
             >
               <View style={[styles.gridButtonContent, styles.button2]}>
-                <Icon name="edit" size={40} color="#FF6B6B" />
+                <Image source={editImage} style={styles.buttonIconImage} />
                 <Text style={styles.gridButtonTitle}>Nội dung tùy chỉnh</Text>
                 <Text style={styles.gridButtonSubtitle}>Nội dung của bạn</Text>
               </View>
@@ -359,7 +363,7 @@ export default function HomeScreen() {
               style={styles.gridButton}
             >
               <View style={[styles.gridButtonContent, styles.button3]}>
-                <Icon name="play-circle-outline" size={40} color="#9D4EDD" />
+                <Image source={youtubeImage} style={styles.buttonIconImage} />
                 <Text style={styles.gridButtonTitle}>Bài đọc từ YouTube</Text>
                 <Text style={styles.gridButtonSubtitle}>Học từ video</Text>
               </View>
@@ -605,6 +609,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   chatbotIconImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  buttonIconImage: {
     width: 50,
     height: 50,
     borderRadius: 25,

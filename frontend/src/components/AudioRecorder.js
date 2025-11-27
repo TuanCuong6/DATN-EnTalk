@@ -255,16 +255,19 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   button: {
+    flexDirection: 'row',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 30,
     marginVertical: 10,
     width: '80%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   halfButton: {
     width: '48%',
     marginVertical: 0,
+    paddingHorizontal: 12,
   },
   startButton: {
     backgroundColor: '#4caf50',

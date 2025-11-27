@@ -99,17 +99,19 @@ export default function ChatbotScreen() {
   const renderItem = ({ item }) => (
     <>
       <View style={[styles.chatBlock, styles.alignRight]}>
-        <View style={styles.messageRow}>
-          <Ionicons name="person" size={16} color="#2C3E50" />
-          <Text style={styles.userText}>{item.question}</Text>
+        <View style={styles.messageHeader}>
+          <Ionicons name="person-circle" size={20} color="#5E72EB" />
+          <Text style={styles.roleText}>Bạn</Text>
         </View>
+        <Text style={styles.userText}>{item.question}</Text>
       </View>
       {item.answer && (
         <View style={[styles.chatBlock, styles.alignLeft]}>
-          <View style={styles.messageRow}>
-            <Ionicons name="chatbubble-ellipses" size={16} color="#2C3E50" />
-            <Text style={styles.botText}>{formatAnswer(item.answer)}</Text>
+          <View style={styles.messageHeader}>
+            <Ionicons name="school" size={20} color="#FF6B6B" />
+            <Text style={styles.roleText}>EnTalk</Text>
           </View>
+          <Text style={styles.botText}>{formatAnswer(item.answer)}</Text>
         </View>
       )}
     </>
@@ -127,8 +129,8 @@ export default function ChatbotScreen() {
       />
 
       <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <Ionicons name="chatbubble-ellipses" size={22} color="#5E72EB" />
+        <View style={styles.titleContainer}>
+          <Ionicons name="chatbubble-ellipses" size={28} color="#5E72EB" />
           <Text style={styles.title}>Hỏi EnTalk về tiếng Anh</Text>
         </View>
       </View>
@@ -142,31 +144,33 @@ export default function ChatbotScreen() {
         onContentSizeChange={() =>
           flatListRef.current?.scrollToEnd({ animated: true })
         }
-        ListFooterComponent={<View style={{ height: 20 }} />} 
+        ListFooterComponent={<View style={{ height: 20 }} />}
       />
 
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nhập câu hỏi liên quan đến tiếng Anh"
-          value={question}
-          onChangeText={setQuestion}
-          placeholderTextColor="#888"
-          multiline
-          blurOnSubmit={false}
-          onSubmitEditing={handleSend}
-        />
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={handleSend}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Ionicons name="send" size={20} color="#fff" />
-          )}
-        </TouchableOpacity>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập câu hỏi liên quan đến tiếng Anh"
+            value={question}
+            onChangeText={setQuestion}
+            placeholderTextColor="#888"
+            multiline
+            blurOnSubmit={false}
+            onSubmitEditing={handleSend}
+          />
+          <TouchableOpacity
+            style={[styles.sendButton, loading && styles.sendButtonDisabled]}
+            onPress={handleSend}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Ionicons name="send" size={20} color="#fff" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -182,7 +186,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
   },
-  titleRow: {
+  titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -192,6 +196,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     color: '#5E72EB',
+    textAlign: 'center',
   },
   list: {
     paddingHorizontal: 16,
@@ -218,32 +223,38 @@ const styles = StyleSheet.create({
     backgroundColor: '#DDE9FF',
     borderTopRightRadius: 4,
   },
-  messageRow: {
+  messageHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 6,
+    marginBottom: 6,
+  },
+  roleText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#5E72EB',
   },
   userText: {
     fontWeight: '600',
     color: '#2C3E50',
     fontSize: 15,
     lineHeight: 22,
-    flex: 1,
   },
   botText: {
     color: '#2C3E50',
     fontSize: 15,
     lineHeight: 24,
-    flex: 1,
   },
   inputContainer: {
-    flexDirection: 'row',
-    padding: 10,
+    padding: 16,
     backgroundColor: 'rgba(255,255,255,0.95)',
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    gap: 10,
   },
   input: {
     flex: 1,
@@ -252,19 +263,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
     minHeight: 44,
     maxHeight: 100,
     textAlignVertical: 'center',
     borderWidth: 1,
     borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   sendButton: {
     backgroundColor: '#5E72EB',
     borderRadius: 24,
-    padding: 10,
-    marginLeft: 10,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#5E72EB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#A0A7EB',
+    shadowOpacity: 0.1,
   },
 });

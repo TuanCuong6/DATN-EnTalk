@@ -106,7 +106,7 @@ export default function CustomContentChoiceScreen() {
       </View>
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <Text style={styles.subtitle}>Chọn cách bạn muốn luyện đọc</Text>
+        <Text style={styles.subtitle}>Chọn cách bạn muốn tạo bài đọc</Text>
 
         {/* Option 1: Nhập nội dung tùy chỉnh */}
         <Animated.View style={{ transform: [{ scale: button1Scale }] }}>
