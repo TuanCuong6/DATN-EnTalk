@@ -133,29 +133,21 @@ export default function AIGenerateReadingScreen() {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>AI tạo bài đọc</Text>
         </View>
 
-        {profile && (
-          <View style={styles.userInfo}>
-            {profile.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="person" size={20} color="#5E72EB" />
-              </View>
-            )}
-          </View>
-        )}
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.screenTitle}>✨ AI Tạo Bài Đọc</Text>
         <Text style={styles.subtitle}>Chọn chủ đề và để AI tạo bài đọc cho bạn</Text>
 
         {/* Topic Selection */}
-        <Text style={styles.label}>📚 Chọn chủ đề:</Text>
+        <View style={styles.labelRow}>
+          <Icon name="library-books" size={18} color="#495057" />
+          <Text style={styles.label}>Chọn chủ đề:</Text>
+        </View>
         <View style={styles.pickerContainer}>
           <Picker
             selectedValue={selectedTopic}
@@ -175,7 +167,10 @@ export default function AIGenerateReadingScreen() {
         </View>
 
         {/* Custom Topic Input - Always visible */}
-        <Text style={styles.label}>✏️ Hoặc nhập chủ đề tùy ý:</Text>
+        <View style={styles.labelRow}>
+          <Icon name="edit" size={18} color="#495057" />
+          <Text style={styles.label}>Hoặc nhập chủ đề tùy ý:</Text>
+        </View>
         <TextInput
           placeholder="Ví dụ: Lịch sử Việt Nam"
           placeholderTextColor="#888"
@@ -191,7 +186,10 @@ export default function AIGenerateReadingScreen() {
         />
 
         {/* Description Input */}
-        <Text style={styles.label}>📝 Mô tả chi tiết (tùy chọn):</Text>
+        <View style={styles.labelRow}>
+          <Icon name="description" size={18} color="#495057" />
+          <Text style={styles.label}>Mô tả chi tiết (tùy chọn):</Text>
+        </View>
         <TextInput
           multiline
           placeholder="Ví dụ: Bài đọc về du lịch ở châu Âu, đi cùng gia đình, không khí vui vẻ"
@@ -216,7 +214,7 @@ export default function AIGenerateReadingScreen() {
               ) : (
                 <>
                   <Icon name="auto-awesome" size={24} color="#FFF" style={styles.buttonIcon} />
-                  <Text style={styles.buttonText}>🚀 Tạo bài đọc</Text>
+                  <Text style={styles.buttonText}>Tạo bài đọc</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -227,7 +225,10 @@ export default function AIGenerateReadingScreen() {
         {generatedText && (
           <View style={styles.generatedContainer}>
             <View style={styles.generatedHeader}>
-              <Text style={styles.generatedTitle}>📖 Bài đọc đã tạo:</Text>
+              <View style={styles.generatedTitleRow}>
+                <Icon name="article" size={18} color="#495057" />
+                <Text style={styles.generatedTitle}>Bài đọc đã tạo:</Text>
+              </View>
             </View>
 
             <TextInput
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -320,30 +321,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: { fontSize: 22, fontWeight: '800', color: '#3D50EB', letterSpacing: 0.5 },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#5E72EB',
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  headerRightPlaceholder: {
+    width: 40,
   },
   screenTitle: {
     fontSize: 24,
@@ -359,7 +343,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
   },
-  label: { fontSize: 16, fontWeight: '600', color: '#495057', marginBottom: 10 },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 6,
+  },
+  label: { fontSize: 16, fontWeight: '600', color: '#495057' },
   pickerContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderColor: 'rgba(94, 114, 235, 0.3)',
@@ -410,6 +400,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(94, 114, 235, 0.3)',
   },
   generatedHeader: { marginBottom: 12 },
+  generatedTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   generatedTitle: { fontWeight: '600', fontSize: 16, color: '#495057' },
   generatedText: {
     fontSize: 16,

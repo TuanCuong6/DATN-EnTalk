@@ -39,8 +39,8 @@ exports.sendFeedbackEmail = async ({
   screenshot_url,
   hasImage,
 }) => {
-  // Tạo rating stars
-  const stars = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+  // Tạo rating stars (using HTML entities)
+  const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
   const ratingColor = ['', '#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997'][rating];
 
   let imageSection = "";
@@ -52,7 +52,7 @@ exports.sendFeedbackEmail = async ({
           <img src="${screenshot_url}" alt="Screenshot" style="max-width: 100%; max-height: 350px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
           <div style="margin-top: 10px;">
             <a href="${screenshot_url}" target="_blank" style="color: #5E72EB; text-decoration: none; font-size: 14px; font-weight: 500;">
-              👁️ Xem ảnh gốc
+              👁 Xem ảnh gốc
             </a>
           </div>
         </div>

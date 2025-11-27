@@ -94,29 +94,21 @@ export default function PracticeCustomReadingScreen({ route }) {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Luyện đọc</Text>
         </View>
 
-        {profile && (
-          <View style={styles.userInfo}>
-            {profile.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="person" size={20} color="#5E72EB" />
-              </View>
-            )}
-          </View>
-        )}
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.screenTitle}>🎤 Luyện Đọc</Text>
 
         {/* Content Display */}
         <View style={styles.contentCard}>
-          <Text style={styles.contentLabel}>📖 Nội dung bạn sẽ đọc:</Text>
+          <View style={styles.contentLabelRow}>
+            <Icon name="article" size={18} color="#495057" />
+            <Text style={styles.contentLabel}>Nội dung bạn sẽ đọc:</Text>
+          </View>
           <Text style={styles.contentText}>{customText}</Text>
           <TextToSpeechPlayer text={customText} style={styles.ttsPlayer} />
         </View>
@@ -199,7 +191,10 @@ export default function PracticeCustomReadingScreen({ route }) {
 
                   {/* Comment Section */}
                   <View style={styles.commentContainer}>
-                    <Text style={styles.commentLabel}>💬 Nhận xét</Text>
+                    <View style={styles.commentLabelRow}>
+                      <Icon name="comment" size={16} color="#495057" />
+                      <Text style={styles.commentLabel}>Nhận xét</Text>
+                    </View>
                     <Text style={styles.commentText}>{scoreResult.comment}</Text>
                   </View>
                 </View>
@@ -259,7 +254,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -267,30 +262,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: { fontSize: 22, fontWeight: '800', color: '#3D50EB', letterSpacing: 0.5 },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#5E72EB',
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  headerRightPlaceholder: {
+    width: 40,
   },
   screenTitle: {
     fontSize: 24,
@@ -307,11 +285,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.3)',
   },
+  contentLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 6,
+  },
   contentLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: '#495057',
-    marginBottom: 12,
   },
   contentText: {
     fontSize: 17,
@@ -412,14 +395,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  commentLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#495057',
+  commentLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(94, 114, 235, 0.2)',
     paddingBottom: 8,
+    gap: 6,
+  },
+  commentLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#495057',
   },
   commentText: {
     fontSize: 15,

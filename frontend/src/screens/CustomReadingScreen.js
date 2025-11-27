@@ -117,11 +117,11 @@ export default function CustomReadingScreen({ route }) {
           style: 'cancel',
         },
         {
-          text: '📷 Chụp ảnh',
+          text: 'Chụp ảnh',
           onPress: () => handleCameraCapture(),
         },
         {
-          text: '🖼️ Thư viện',
+          text: 'Thư viện',
           onPress: () => handleGalleryPick(),
         },
       ],
@@ -263,7 +263,7 @@ export default function CustomReadingScreen({ route }) {
         ]}
       />
 
-      {/* Header: Logo + Avatar + Tên */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -272,34 +272,23 @@ export default function CustomReadingScreen({ route }) {
           <Icon name="arrow-back" size={28} color="#5E72EB" />
         </TouchableOpacity>
 
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Nhập nội dung</Text>
         </View>
 
-        {profile && (
-          <View style={styles.userInfo}>
-            {profile.avatar_url ? (
-              <Image
-                source={{ uri: profile.avatar_url }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="person" size={20} color="#5E72EB" />
-              </View>
-            )}
-          </View>
-        )}
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.screenTitle}>Nhập nội dung tùy chỉnh</Text>
         
         {/* Input Header with Clear Button */}
         <View style={styles.inputHeader}>
-          <Text style={styles.label}>
-            {customText.trim() ? '📖 Nội dung bạn sẽ đọc:' : '📝 Nhập nội dung bạn muốn luyện:'}
-          </Text>
+          <View style={styles.labelRow}>
+            <Icon name={customText.trim() ? 'article' : 'edit'} size={18} color="#495057" />
+            <Text style={styles.label}>
+              {customText.trim() ? 'Nội dung bạn sẽ đọc:' : 'Nhập nội dung bạn muốn luyện:'}
+            </Text>
+          </View>
           {customText.trim() && (
             <Animated.View style={{ transform: [{ scale: clearButtonScale }] }}>
               <TouchableOpacity
@@ -350,7 +339,7 @@ export default function CustomReadingScreen({ route }) {
               disabled={!isContentValid}
             >
               <Icon name="mic" size={24} color="#FFF" style={styles.buttonIcon} />
-              <Text style={styles.buttonText}>🚀 Bắt đầu luyện đọc</Text>
+              <Text style={styles.buttonText}>Bắt đầu luyện đọc</Text>
             </TouchableOpacity>
           </Animated.View>
 
@@ -362,7 +351,7 @@ export default function CustomReadingScreen({ route }) {
               style={[styles.actionButton, styles.scanButton]}
             >
               <Icon name="camera-alt" size={24} color="#FFF" style={styles.buttonIcon} />
-              <Text style={styles.buttonText}>📸 Quét ảnh văn bản</Text>
+              <Text style={styles.buttonText}>Quét ảnh văn bản</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -420,7 +409,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -428,35 +417,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 22,
+  title: {
+    fontSize: 20,
     fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
+    color: '#5E72EB',
   },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  headerRightPlaceholder: {
+    width: 40,
   },
   screenTitle: {
     fontSize: 24,
@@ -477,6 +444,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   label: {
     fontSize: 16,

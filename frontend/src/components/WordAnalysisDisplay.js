@@ -28,7 +28,10 @@ export default function WordAnalysisDisplay({ originalText, transcript, wordAnal
     <View style={styles.outerContainer}>
       {/* Original Text Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📖 Văn bản gốc:</Text>
+        <View style={styles.sectionTitleRow}>
+          <Icon name="article" size={20} color="#495057" />
+          <Text style={styles.sectionTitle}>Văn bản gốc:</Text>
+        </View>
         <Text style={styles.sectionText}>
           {wordAnalysis.map((wordInfo, index) => (
             <Text key={index}>
@@ -39,12 +42,18 @@ export default function WordAnalysisDisplay({ originalText, transcript, wordAnal
             </Text>
           ))}
         </Text>
-        <Text style={styles.hint}>💡 Nhấn vào từ để xem chi tiết</Text>
+        <View style={styles.hintRow}>
+          <Icon name="lightbulb-outline" size={14} color="#6C757D" />
+          <Text style={styles.hint}>Nhấn vào từ để xem chi tiết</Text>
+        </View>
       </View>
 
       {/* Transcript Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🗣 Bạn đã đọc:</Text>
+        <View style={styles.sectionTitleRow}>
+          <Icon name="record-voice-over" size={20} color="#495057" />
+          <Text style={styles.sectionTitle}>Bạn đã đọc:</Text>
+        </View>
         <Text style={styles.sectionText}>{transcript || 'Không có transcript'}</Text>
       </View>
 
@@ -132,14 +141,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.3)',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#495057',
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(94, 114, 235, 0.2)',
     paddingBottom: 8,
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#495057',
   },
   sectionText: {
     fontSize: 16,
@@ -150,12 +164,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
   },
+  hintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    gap: 6,
+  },
   hint: {
     fontSize: 12,
     color: '#6C757D',
     fontStyle: 'italic',
-    textAlign: 'center',
-    marginTop: 10,
   },
   modalOverlay: {
     flex: 1,

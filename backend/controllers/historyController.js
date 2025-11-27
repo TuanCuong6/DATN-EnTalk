@@ -109,7 +109,7 @@ exports.getRecordDetail = async (req, res) => {
       `
       SELECT r.id, r.reading_id, r.transcript, r.comment, r.original_content,
              r.score_overall, r.score_pronunciation, r.score_fluency,
-             r.score_intonation, r.score_speed, r.created_at,
+             r.score_intonation, r.score_speed, r.created_at, r.word_analysis,
              COALESCE(r.original_content, rd.content) AS reading_content,
              rd.is_community_post, rd.topic_id, tp.name AS topic_name
       FROM records r
@@ -124,7 +124,19 @@ exports.getRecordDetail = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy bản ghi" });
     }
 
-    res.json(rows[0]);
+    const record = rows[0];
+    
+    // Parse word_analysis nếu là JSON string
+    if (record.word_analysis && typeof record.word_analysis === 'string') {
+      try {
+        record.word_analysis = JSON.parse(record.word_analysis);
+      } catch (err) {
+        console.error('❌ Lỗi parse word_analysis:', err);
+        record.word_analysis = [];
+      }
+    }
+
+    res.json(record);
   } catch (err) {
     console.error("❌ Lỗi lấy chi tiết bản ghi:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });

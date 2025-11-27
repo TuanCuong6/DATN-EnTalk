@@ -24,7 +24,7 @@ const suggestionStrategies = [
     if (customs.length > 0) {
       const shortText = shorten(customs[0].custom_text);
       return {
-        title: "📉 Luyện lại bài tự nhập",
+        title: "Luyện lại bài tự nhập",
         body: `Bài: \"${shortText}\" có điểm ${customs[0].max_score.toFixed(1)}, hãy thử cải thiện nhé!`,
         data: {
           customText: customs[0].custom_text,
@@ -53,7 +53,7 @@ const suggestionStrategies = [
     if (readings.length > 0) {
       const shortText = shorten(readings[0].content);
       return {
-        title: "📉 Luyện lại bài hệ thống",
+        title: "Luyện lại bài hệ thống",
         body: `Bài: \"${shortText}\" điểm ${readings[0].max_score.toFixed(1)}, thử lại nhé!`,
         data: {
           readingId: readings[0].reading_id.toString(),
@@ -121,7 +121,7 @@ const suggestionStrategies = [
       if (reading.length > 0) {
         const shortText = shorten(reading[0].content);
         return {
-          title: `📚 Chủ đề: ${topics[0].name}`,
+          title: `Chủ đề: ${topics[0].name}`,
           body: `Thử bài này: \"${shortText}\"`,
           data: {
             readingId: reading[0].id.toString(),
@@ -153,7 +153,7 @@ const suggestionStrategies = [
       const shortText = shorten(suggestionText);
 
       return {
-        title: "🎯 Gợi ý từ AI",
+        title: "Gợi ý từ AI",
         body: `AI gợi ý bài mới: \"${shortText}\"`,
         data: {
           customText: suggestionText,

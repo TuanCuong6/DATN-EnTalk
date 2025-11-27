@@ -221,10 +221,10 @@ export default function TextToSpeechPlayer({ text, readingId, style }) {
           {loading
             ? 'Đang tạo...'
             : playing
-            ? '⏸️ Tạm dừng'
+            ? 'Tạm dừng'
             : paused
-            ? '▶️ Tiếp tục'
-            : '🔊 Nghe bài đọc'}
+            ? 'Tiếp tục'
+            : 'Nghe bài đọc'}
         </Text>
       </TouchableOpacity>
     </View>

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import AudioRecord from 'react-native-audio-record';
 import Sound from 'react-native-sound';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function AudioRecorder({ onFinish, onSubmit, resetTrigger }) {
   const [recording, setRecording] = useState(false);
@@ -166,7 +167,10 @@ export default function AudioRecorder({ onFinish, onSubmit, resetTrigger }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🎧 Ghi âm bài đọc</Text>
+      <View style={styles.titleRow}>
+        <Icon name="headset" size={20} color="#333" />
+        <Text style={styles.title}>Ghi âm bài đọc</Text>
+      </View>
 
       {/* Nếu chưa ghi hoặc đang ghi: hiển thị 1 nút full width */}
       {!audioFile || recording ? (
@@ -177,8 +181,9 @@ export default function AudioRecorder({ onFinish, onSubmit, resetTrigger }) {
           ]}
           onPress={recording ? stopRecording : startRecording}
         >
+          <Icon name={recording ? 'stop' : 'mic'} size={20} color="#FFF" style={styles.buttonIcon} />
           <Text style={styles.buttonText}>
-            {recording ? '⏹️ Dừng ghi' : '🎤 Bắt đầu ghi'}
+            {recording ? 'Dừng ghi' : 'Bắt đầu ghi'}
           </Text>
         </TouchableOpacity>
       ) : (
@@ -189,14 +194,16 @@ export default function AudioRecorder({ onFinish, onSubmit, resetTrigger }) {
               style={[styles.button, styles.halfButton, styles.startButton]}
               onPress={startRecording}
             >
-              <Text style={styles.buttonText}>🔄 Ghi lại</Text>
+              <Icon name="refresh" size={20} color="#FFF" style={styles.buttonIcon} />
+              <Text style={styles.buttonText}>Ghi lại</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.button, styles.halfButton, styles.submitButton]}
               onPress={handleSubmit}
             >
-              <Text style={styles.buttonText}>✅ Chấm điểm</Text>
+              <Icon name="check-circle" size={20} color="#FFF" style={styles.buttonIcon} />
+              <Text style={styles.buttonText}>Chấm điểm</Text>
             </TouchableOpacity>
           </View>
 
@@ -208,8 +215,9 @@ export default function AudioRecorder({ onFinish, onSubmit, resetTrigger }) {
             ]}
             onPress={togglePlayPause}
           >
+            <Icon name={playing ? 'pause' : 'play-arrow'} size={20} color="#FFF" style={styles.buttonIcon} />
             <Text style={styles.buttonText}>
-              {playing ? '⏸️ Tạm dừng' : paused ? '▶️ Tiếp tục' : '▶️ Nghe lại'}
+              {playing ? 'Tạm dừng' : paused ? 'Tiếp tục' : 'Nghe lại'}
             </Text>
           </TouchableOpacity>
         </>
@@ -228,10 +236,15 @@ const styles = StyleSheet.create({
     margin: 10,
     elevation: 3,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 8,
+  },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 20,
     color: '#333',
   },
   buttonRow: {
@@ -270,6 +283,9 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: '#ccc',
+  },
+  buttonIcon: {
+    marginRight: 8,
   },
   buttonText: {
     color: '#fff',

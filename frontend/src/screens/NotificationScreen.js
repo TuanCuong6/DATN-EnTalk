@@ -165,14 +165,8 @@ export default function NotificationScreen() {
       />
 
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>EnTalk</Text>
-        </View>
-
-        <Text style={styles.screenTitle}>Thông Báo</Text>
-
-        <View style={styles.userInfo}>
-          <Icon name="notifications" size={24} color="#5E72EB" />
+        <View style={styles.titleContainer}>
+          <Text style={styles.screenTitle}>Thông báo</Text>
         </View>
       </View>
 
@@ -216,7 +210,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     padding: 25,
     paddingBottom: 15,
@@ -224,7 +218,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logoContainer: {
+  titleContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     paddingVertical: 8,
@@ -232,23 +226,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(94, 114, 235, 0.2)',
   },
-  logo: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#3D50EB',
-    letterSpacing: 0.5,
-  },
   screenTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#5E72EB',
-  },
-  userInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
   },
   listContent: {
     padding: 15,
