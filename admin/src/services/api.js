@@ -68,6 +68,7 @@ export const readingsAPI = {
 
 export const recordsAPI = {
   getAll: () => adminAPI.get("/records"),
+  getDetail: (id) => adminAPI.get(`/records/${id}`),
 };
 
 //Thêm feedback APIs:

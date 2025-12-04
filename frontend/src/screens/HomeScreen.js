@@ -8,52 +8,57 @@ import {
   Image,
   Animated,
   Easing,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getProfile } from '../api/account';
 import { getStreak } from '../api/streak';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { BlurView } from '@react-native-community/blur';
 import StreakModal from '../components/StreakModal';
 
+const { width } = Dimensions.get('window');
 const chatbotImage = require('../assets/chatbot.png');
+const topicImage = require('../assets/topic.png');
+const editImage = require('../assets/edit.png');
+const youtubeImage = require('../assets/youtube.png');
 
 const STREAK_LEVELS = [
   {
     min: 1,
     max: 10,
     icon: 'local-fire-department',
-    color: '#FF6B6B',
-    name: 'Beginner Flame',
+    color: '#FF6B35',
+    name: 'Người mới bắt đầu',
   },
   {
     min: 10,
     max: 50,
     icon: 'flash-on',
-    color: '#FFD93D',
-    name: 'Intermediate Master',
+    color: '#FFB347',
+    name: 'Người học trung cấp',
   },
   {
     min: 50,
     max: 100,
     icon: 'diamond',
-    color: '#6BCB77',
-    name: 'Advanced Speaker',
+    color: '#4ECDC4',
+    name: 'Người nói nâng cao',
   },
   {
     min: 100,
     max: 200,
     icon: 'emoji-events',
-    color: '#4D96FF',
-    name: 'Proficient Legend',
+    color: '#45B7D1',
+    name: 'Chuyên gia',
   },
   {
     min: 200,
     max: Infinity,
     icon: 'stars',
-    color: '#9D4EDD',
-    name: 'Native Immortal',
+    color: '#96CEB4',
+    name: 'Bậc thầy',
   },
 ];
 
@@ -64,7 +69,6 @@ const getStreakLevel = streak => {
   );
 };
 
-// Hàm rút gọn tên hiển thị
 const getDisplayName = fullName => {
   if (!fullName) return '';
   const trimmedName = fullName.trim();
@@ -99,28 +103,23 @@ export default function HomeScreen() {
   const [streakData, setStreakData] = useState(null);
   const [showStreakModal, setShowStreakModal] = useState(false);
 
-  // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const button1Scale = useRef(new Animated.Value(1)).current;
   const button2Scale = useRef(new Animated.Value(1)).current;
   const button3Scale = useRef(new Animated.Value(1)).current;
-  const floatAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const button4Scale = useRef(new Animated.Value(1)).current;
   const streakPulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     getProfile().then(res => setProfile(res.data));
     getStreak()
       .then(data => {
-        console.log('✅ Streak data:', data);
         setStreakData(data);
       })
       .catch(err => {
-        console.log('❌ Streak error:', err);
-        console.log('❌ Error details:', err.response?.data);
+        console.log('Lỗi streak:', err);
       });
 
-    // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 800,
@@ -143,43 +142,17 @@ export default function HomeScreen() {
         }),
       ]),
     ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-
-    Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 10000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    ).start();
   }, []);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       getProfile().then(res => setProfile(res.data));
       getStreak()
         .then(data => {
-          console.log('✅ Streak data (focus):', data);
           setStreakData(data);
         })
         .catch(err => {
-          console.log('❌ Streak error (focus):', err);
+          console.log('Lỗi streak:', err);
         });
     });
     return unsubscribe;
@@ -202,190 +175,183 @@ export default function HomeScreen() {
     }).start();
   };
 
-  // Floating animation interpolation
-  const floatInterpolation = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -15],
-  });
-
-  // Rotate animation interpolation
-  const rotateInterpolation = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
   return (
     <View style={styles.container}>
-      {/* Background gradient */}
       <LinearGradient
-        colors={['#F0F7FF', '#E6FCFF']}
+        colors={['#1A2980', '#26D0CE']}
         style={styles.background}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       />
 
-      {/* Decorative elements */}
-      <Animated.View
-        style={[
-          styles.circle1,
-          { transform: [{ rotate: rotateInterpolation }] },
-        ]}
-      />
-      <Animated.View
-        style={[
-          styles.circle2,
-          { transform: [{ rotate: rotateInterpolation }] },
-        ]}
-      />
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Header Section */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Icon name="school" size={32} color="#FFFFFF" />
+              <Text style={styles.appTitle}>EnTalk</Text>
+            </View>
 
-      <Animated.View style={styles.content}>
-        {/* Header: Logo + Avatar + Tên */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require('../assets/logo_entalk.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
+            <View style={styles.headerRight}>
+              {streakData && (
+                <Animated.View style={{ transform: [{ scale: streakPulse }] }}>
+                  <TouchableOpacity
+                    style={[
+                      styles.streakContainer,
+                      !streakData.practiced_today && styles.streakWarning,
+                    ]}
+                    onPress={() => setShowStreakModal(true)}
+                  >
+                    <Icon
+                      name={getStreakLevel(streakData.current_streak).icon}
+                      size={22}
+                      color={streakData.practiced_today ? '#FFFFFF' : '#FFD93D'}
+                    />
+                    <Text
+                      style={[
+                        styles.streakCount,
+                        !streakData.practiced_today && styles.streakWarningText,
+                      ]}
+                    >
+                      {streakData.current_streak}
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              )}
+
+              {profile && (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Account')}
+                  style={styles.avatarContainer}
+                >
+                  {profile.avatar_url ? (
+                    <Image
+                      source={{ uri: profile.avatar_url }}
+                      style={styles.avatar}
+                    />
+                  ) : (
+                    <View style={styles.avatarPlaceholder}>
+                      <Icon name="person" size={20} color="#FFFFFF" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
-          <View style={styles.headerRight}>
-            {/* Streak button */}
-            {streakData && (
-              <Animated.View style={{ transform: [{ scale: streakPulse }] }}>
+          {/* Welcome Section */}
+          <View style={styles.welcomeSection}>
+            <Text style={styles.greeting}>
+              Xin chào, {profile ? getDisplayName(profile.name) : 'bạn'}!
+            </Text>
+            <Text style={styles.subtitle}>
+              Cùng luyện đọc tiếng Anh ngay hôm nay
+            </Text>
+          </View>
+
+          {/* Main Features Grid */}
+          <View style={styles.featuresGrid}>
+            <View style={styles.gridRow}>
+              <Animated.View
+                style={[
+                  styles.featureCardContainer,
+                  { transform: [{ scale: button1Scale }] },
+                ]}
+              >
                 <TouchableOpacity
-                  style={[
-                    styles.streakButton,
-                    !streakData.practiced_today &&
-                      (streakData.current_streak >= 2 ||
-                        (streakData.current_streak === 1 &&
-                          streakData.last_practice_date)) &&
-                      styles.streakButtonWarning,
-                  ]}
-                  onPress={() => setShowStreakModal(true)}
+                  onPressIn={() => handlePressIn(button1Scale)}
+                  onPressOut={() => handlePressOut(button1Scale)}
+                  onPress={() => navigation.navigate('TopicList')}
+                  style={[styles.featureCard, styles.cardBlue]}
+                  activeOpacity={0.8}
                 >
-                  <Icon
-                    name={getStreakLevel(streakData.current_streak).icon}
-                    size={24}
-                    color={
-                      streakData.practiced_today
-                        ? getStreakLevel(streakData.current_streak).color
-                        : '#BDBDBD'
-                    }
-                  />
-                  <Text
-                    style={[
-                      styles.streakText,
-                      !streakData.practiced_today && styles.streakTextGray,
-                    ]}
-                  >
-                    {streakData.current_streak}
-                  </Text>
+                  <Image source={topicImage} style={styles.cardIcon} />
+                  <Text style={styles.cardTitle}>Bài đọc theo chủ đề</Text>
+                  <Text style={styles.cardSubtitle}>Khám phá chủ đề</Text>
                 </TouchableOpacity>
               </Animated.View>
-            )}
 
-            {profile && (
-              <TouchableOpacity
-                style={styles.userInfo}
-                onPress={() => navigation.navigate('Account')}
+              <Animated.View
+                style={[
+                  styles.featureCardContainer,
+                  { transform: [{ scale: button2Scale }] },
+                ]}
               >
-                {profile.avatar_url ? (
-                  <Image
-                    source={{ uri: profile.avatar_url }}
-                    style={styles.avatar}
-                  />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <Icon name="person" size={20} color="#5E72EB" />
-                  </View>
-                )}
-                <Text style={styles.name} numberOfLines={1}>
-                  {getDisplayName(profile.name)}
-                </Text>
-              </TouchableOpacity>
-            )}
+                <TouchableOpacity
+                  onPressIn={() => handlePressIn(button2Scale)}
+                  onPressOut={() => handlePressOut(button2Scale)}
+                  onPress={() =>
+                    navigation.navigate('CustomContentChoiceScreen')
+                  }
+                  style={[styles.featureCard, styles.cardOrange]}
+                  activeOpacity={0.8}
+                >
+                  <Image source={editImage} style={styles.cardIcon} />
+                  <Text style={styles.cardTitle}>Nội dung tùy chỉnh</Text>
+                  <Text style={styles.cardSubtitle}>Nội dung của bạn</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            </View>
+
+            <View style={styles.gridRow}>
+              <Animated.View
+                style={[
+                  styles.featureCardContainer,
+                  { transform: [{ scale: button3Scale }] },
+                ]}
+              >
+                <TouchableOpacity
+                  onPressIn={() => handlePressIn(button3Scale)}
+                  onPressOut={() => handlePressOut(button3Scale)}
+                  onPress={() => navigation.navigate('YoutubeReadingScreen')}
+                  style={[styles.featureCard, styles.cardPurple]}
+                  activeOpacity={0.8}
+                >
+                  <Image source={youtubeImage} style={styles.cardIcon} />
+                  <Text style={styles.cardTitle}>Bài đọc từ YouTube</Text>
+                  <Text style={styles.cardSubtitle}>Học từ video</Text>
+                </TouchableOpacity>
+              </Animated.View>
+
+              <Animated.View
+                style={[
+                  styles.featureCardContainer,
+                  { transform: [{ scale: button4Scale }] },
+                ]}
+              >
+                <TouchableOpacity
+                  onPressIn={() => handlePressIn(button4Scale)}
+                  onPressOut={() => handlePressOut(button4Scale)}
+                  onPress={() => navigation.navigate('ChatbotScreen')}
+                  style={[styles.featureCard, styles.cardTeal]}
+                  activeOpacity={0.8}
+                >
+                  <Image source={chatbotImage} style={styles.cardIcon} />
+                  <Text style={styles.cardTitle}>Trợ lý AI</Text>
+                  <Text style={styles.cardSubtitle}>Hỏi đáp tiếng Anh</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            </View>
           </View>
-        </View>
 
-        {/* Lời chào */}
-        <View style={styles.greetingContainer}>
-          <Text style={styles.appName}>EnTalk</Text>
-          <Text style={styles.subtitle}>Luyện đọc tiếng Anh hiệu quả</Text>
-          <View style={styles.divider} />
-        </View>
-
-        {/* Nút chức năng - Grid 2x2 */}
-        <View style={styles.buttonGrid}>
-          <Animated.View
-            style={[styles.gridItem, { transform: [{ scale: button1Scale }] }]}
-          >
-            <TouchableOpacity
-              onPressIn={() => handlePressIn(button1Scale)}
-              onPressOut={() => handlePressOut(button1Scale)}
-              onPress={() => navigation.navigate('TopicList')}
-              style={styles.gridButton}
-            >
-              <View style={[styles.gridButtonContent, styles.button1]}>
-                <Icon name="folder" size={40} color="#5E72EB" />
-                <Text style={styles.gridButtonTitle}>Bài đọc theo chủ đề</Text>
-                <Text style={styles.gridButtonSubtitle}>Khám phá chủ đề</Text>
+          {/* Tip Section */}
+          <View style={styles.tipContainer}>
+            <View style={styles.tipCard}>
+              <View style={styles.tipIconContainer}>
+                <Icon name="lightbulb" size={24} color="#FFB347" />
               </View>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Animated.View
-            style={[styles.gridItem, { transform: [{ scale: button2Scale }] }]}
-          >
-            <TouchableOpacity
-              onPressIn={() => handlePressIn(button2Scale)}
-              onPressOut={() => handlePressOut(button2Scale)}
-              onPress={() => navigation.navigate('CustomContentChoiceScreen')}
-              style={styles.gridButton}
-            >
-              <View style={[styles.gridButtonContent, styles.button2]}>
-                <Icon name="edit" size={40} color="#FF6B6B" />
-                <Text style={styles.gridButtonTitle}>Nội dung tùy chỉnh</Text>
-                <Text style={styles.gridButtonSubtitle}>Nội dung của bạn</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Animated.View
-            style={[styles.gridItem, { transform: [{ scale: button3Scale }] }]}
-          >
-            <TouchableOpacity
-              onPressIn={() => handlePressIn(button3Scale)}
-              onPressOut={() => handlePressOut(button3Scale)}
-              onPress={() => navigation.navigate('YoutubeReadingScreen')}
-              style={styles.gridButton}
-            >
-              <View style={[styles.gridButtonContent, styles.button3]}>
-                <Icon name="play-circle-outline" size={40} color="#9D4EDD" />
-                <Text style={styles.gridButtonTitle}>Bài đọc từ YouTube</Text>
-                <Text style={styles.gridButtonSubtitle}>Học từ video</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Animated.View
-            style={[styles.gridItem, { transform: [{ scale: button1Scale }] }]}
-          >
-            <TouchableOpacity
-              onPressIn={() => handlePressIn(button1Scale)}
-              onPressOut={() => handlePressOut(button1Scale)}
-              onPress={() => navigation.navigate('ChatbotScreen')}
-              style={styles.gridButton}
-            >
-              <View style={[styles.gridButtonContent, styles.button4]}>
-                <Image source={chatbotImage} style={styles.chatbotIconImage} />
-                <Text style={styles.gridButtonTitle}>Trợ lý AI</Text>
-                <Text style={styles.gridButtonSubtitle}>Hỏi đáp tiếng Anh</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+              <Text style={styles.tipText}>
+                Mỗi ngày luyện đọc 15 phút sẽ giúp cải thiện phát âm đáng kể
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
       </Animated.View>
 
-      {/* Streak Modal */}
       <StreakModal
         visible={showStreakModal}
         onClose={() => setShowStreakModal(false)}
@@ -398,215 +364,210 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F8FAFF',
   },
   background: {
     position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
-    bottom: 0,
+    height: 280,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   content: {
     flex: 1,
-    padding: 25,
-    zIndex: 10,
   },
-  circle1: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(94, 114, 235, 0.05)',
-    top: -100,
-    left: -100,
-  },
-  circle2: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255, 107, 107, 0.05)',
-    bottom: -50,
-    right: -50,
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 30,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 40,
-    marginTop: 15,
+    paddingHorizontal: 24,
+    paddingTop: 50,
+    paddingBottom: 20,
   },
-  headerRight: {
+  logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  streakButton: {
+  appTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    gap: 15,
+  },
+  streakContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 20,
-    paddingVertical: 8,
     paddingHorizontal: 12,
-    borderWidth: 2,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
-    shadowColor: '#5E72EB',
+    paddingVertical: 8,
+    gap: 6,
+    minWidth: 70,
+    justifyContent: 'center',
+  },
+  streakWarning: {
+    backgroundColor: 'rgba(255, 107, 53, 0.2)',
+  },
+  streakCount: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginLeft: 2,
+  },
+  streakWarningText: {
+    color: '#FFD93D',
+  },
+  avatarContainer: {
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  streakButtonWarning: {
-    borderColor: 'rgba(255, 107, 107, 0.5)',
-    shadowColor: '#FF6B6B',
-  },
-  streakText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginLeft: 5,
-  },
-  streakTextGray: {
-    color: '#BDBDBD',
-  },
-  logoContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  logoImage: {
-    width: 40,
-    height: 40,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
-    paddingRight: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
-  },
-  name: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#5E72EB',
-    fontWeight: '700',
-  },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.3)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
-  greetingContainer: {
-    marginBottom: 40,
-    alignItems: 'center',
+  welcomeSection: {
+    paddingHorizontal: 24,
+    paddingBottom: 35,
+    marginTop: 10,
   },
   greeting: {
-    fontSize: 22,
-    color: '#343A40',
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#5E72EB',
-    textAlign: 'center',
-    marginBottom: 5,
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#343A40',
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.95)',
     fontWeight: '500',
-    textAlign: 'center',
-    marginBottom: 15,
   },
-  divider: {
-    height: 4,
-    width: 80,
-    backgroundColor: '#5E72EB',
-    borderRadius: 2,
-    opacity: 0.5,
+  featuresGrid: {
+    paddingHorizontal: 20,
+    marginTop: 10,
   },
-  buttonGrid: {
+  gridRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  gridItem: {
-    width: '48%',
-    marginBottom: 15,
+  featureCardContainer: {
+    width: (width - 56) / 2, // Tính toán kích thước bằng nhau
   },
-
-  gridButton: {
+  featureCard: {
     width: '100%',
-  },
-  gridButtonContent: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
-    justifyContent: 'center',
-    height: 160,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  button1: {
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
     borderTopWidth: 4,
+    height: 180, // Chiều cao cố định để tất cả thẻ bằng nhau
+    justifyContent: 'center',
+  },
+  cardBlue: {
     borderTopColor: '#5E72EB',
   },
-  button2: {
-    borderTopWidth: 4,
-    borderTopColor: '#FF6B6B',
+  cardOrange: {
+    borderTopColor: '#FF6B35',
   },
-  button3: {
-    borderTopWidth: 4,
+  cardPurple: {
     borderTopColor: '#9D4EDD',
   },
-  button4: {
-    borderTopWidth: 4,
-    borderTopColor: '#6BCB77',
+  cardTeal: {
+    borderTopColor: '#4ECDC4',
   },
-  gridButtonTitle: {
-    fontSize: 16,
+  cardIcon: {
+    width: 60, // Tăng kích thước icon
+    height: 60,
+    resizeMode: 'contain',
+    marginBottom: 15,
+  },
+  cardTitle: {
+    fontSize: 16, // Tăng kích thước chữ
     fontWeight: '700',
-    color: '#343A40',
-    marginTop: 12,
+    color: '#1A2980',
     textAlign: 'center',
+    marginBottom: 6,
+    lineHeight: 22,
   },
-  gridButtonSubtitle: {
-    fontSize: 13,
-    color: '#6C757D',
-    marginTop: 4,
+  cardSubtitle: {
+    fontSize: 14, // Tăng kích thước chữ
+    color: '#666',
     textAlign: 'center',
     fontWeight: '500',
   },
-  chatbotIconImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  tipContainer: {
+    paddingHorizontal: 20,
+    marginTop: 25,
+    marginBottom: 20,
+  },
+  tipCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    gap: 15,
+  },
+  tipIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 179, 71, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
+    fontWeight: '500',
   },
 });

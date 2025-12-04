@@ -88,23 +88,25 @@ export default function CustomReadingScreen({ route }) {
 
   const handleStartPractice = () => {
     const trimmedText = customText.trim();
-    
+
     if (!trimmedText) {
       Alert.alert('Vui lòng nhập nội dung để luyện đọc');
       return;
     }
-    
+
     if (!isContentValid) {
       Alert.alert(
         'Độ dài không hợp lệ',
-        `Nội dung phải có từ ${MIN_WORDS} đến ${MAX_WORDS} từ để đảm bảo chất lượng đánh giá.`
+        `Nội dung phải có từ ${MIN_WORDS} đến ${MAX_WORDS} từ để đảm bảo chất lượng đánh giá.`,
       );
       return;
     }
-    
+
     // Clean text trước khi chuyển sang màn hình luyện
     const cleanedText = cleanText(trimmedText);
-    navigation.navigate('PracticeCustomReadingScreen', { customText: cleanedText });
+    navigation.navigate('PracticeCustomReadingScreen', {
+      customText: cleanedText,
+    });
   };
 
   const handleImageSelection = () => {
@@ -176,33 +178,35 @@ export default function CustomReadingScreen({ route }) {
     }
   };
 
-  const cleanText = (text) => {
+  const cleanText = text => {
     if (!text) return '';
-    
+
     let cleaned = text;
-    
+
     // 1. Xóa các ký tự đặc biệt không cần thiết, giữ lại dấu câu cơ bản và xuống dòng
     cleaned = cleaned.replace(/[^\w\s.,!?'\-\n]/g, ' ');
-    
+
     // 2. Thay thế nhiều khoảng trắng liên tiếp thành 1 khoảng trắng (nhưng giữ xuống dòng)
     cleaned = cleaned.replace(/[^\S\n]+/g, ' ');
-    
+
     // 3. Xóa khoảng trắng trước dấu câu
     cleaned = cleaned.replace(/\s+([.,!?])/g, '$1');
-    
+
     // 4. Thêm khoảng trắng sau dấu câu nếu chưa có
     cleaned = cleaned.replace(/([.,!?])([^\s\n])/g, '$1 $2');
-    
+
     // 5. Xóa khoảng trắng đầu/cuối
     cleaned = cleaned.trim();
-    
+
     // 6. Viết hoa chữ cái đầu câu
-    cleaned = cleaned.replace(/(^\w|[.!?]\s+\w)/g, (match) => match.toUpperCase());
-    
+    cleaned = cleaned.replace(/(^\w|[.!?]\s+\w)/g, match =>
+      match.toUpperCase(),
+    );
+
     return cleaned;
   };
 
-  const processImage = async (imagePath) => {
+  const processImage = async imagePath => {
     try {
       const ocrResult = await textRecognition.recognize(imagePath);
       const text = ocrResult?.text?.trim();
@@ -280,13 +284,18 @@ export default function CustomReadingScreen({ route }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        
         {/* Input Header with Clear Button */}
         <View style={styles.inputHeader}>
           <View style={styles.labelRow}>
-            <Icon name={customText.trim() ? 'article' : 'edit'} size={18} color="#495057" />
+            <Icon
+              name={customText.trim() ? 'article' : 'edit'}
+              size={18}
+              color="#495057"
+            />
             <Text style={styles.label}>
-              {customText.trim() ? 'Nội dung bạn sẽ đọc:' : 'Nhập nội dung bạn muốn luyện:'}
+              {customText.trim()
+                ? 'Nội dung bạn sẽ đọc:'
+                : 'Nhập nội dung bạn muốn luyện:'}
             </Text>
           </View>
           {customText.trim() && (
@@ -307,7 +316,7 @@ export default function CustomReadingScreen({ route }) {
         {/* Single Input Field */}
         <TextInput
           multiline
-          placeholder="Ví dụ: The quick brown fox jumps over the lazy dog..."
+          placeholder="Ví dụ: This is the sample reading content ..."
           placeholderTextColor="#888"
           style={styles.input}
           value={customText}
@@ -321,7 +330,7 @@ export default function CustomReadingScreen({ route }) {
           text={customText}
           min={MIN_WORDS}
           max={MAX_WORDS}
-          onValidationChange={(valid) => setIsContentValid(valid)}
+          onValidationChange={valid => setIsContentValid(valid)}
         />
 
         {/* Action Buttons */}
@@ -332,13 +341,18 @@ export default function CustomReadingScreen({ route }) {
               onPressOut={() => handlePressOut(startButtonScale)}
               onPress={handleStartPractice}
               style={[
-                styles.actionButton, 
+                styles.actionButton,
                 styles.startButton,
-                !isContentValid && styles.disabledButton
+                !isContentValid && styles.disabledButton,
               ]}
               disabled={!isContentValid}
             >
-              <Icon name="mic" size={24} color="#FFF" style={styles.buttonIcon} />
+              <Icon
+                name="mic"
+                size={24}
+                color="#FFF"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.buttonText}>Bắt đầu luyện đọc</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -350,7 +364,12 @@ export default function CustomReadingScreen({ route }) {
               onPress={handleImageSelection}
               style={[styles.actionButton, styles.scanButton]}
             >
-              <Icon name="camera-alt" size={24} color="#FFF" style={styles.buttonIcon} />
+              <Icon
+                name="camera-alt"
+                size={24}
+                color="#FFF"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.buttonText}>Quét ảnh văn bản</Text>
             </TouchableOpacity>
           </Animated.View>

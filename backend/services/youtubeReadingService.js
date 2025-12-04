@@ -1,11 +1,14 @@
 // backend/services/youtubeReadingService.js
-const axios = require('axios');
-const { CONTENT_LIMITS, validateContentLength } = require('../config/contentLimits');
+const axios = require("axios");
+const {
+  CONTENT_LIMITS,
+  validateContentLength,
+} = require("../config/contentLimits");
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const VCYON_API_KEY = process.env.VCYON_API_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-const VCYON_API_URL = 'https://api.vcyon.com/v1/youtube/transcript';
+const VCYON_API_URL = "https://api.vcyon.com/v1/youtube/transcript";
 
 const YTB_LIMITS = CONTENT_LIMITS.YOUTUBE_READING;
 
@@ -22,7 +25,7 @@ function extractVideoId(url) {
     if (match) return match[1];
   }
 
-  throw new Error('URL YouTube không hợp lệ');
+  throw new Error("URL YouTube không hợp lệ");
 }
 
 // Get subtitle from YouTube using vcyon API
@@ -30,7 +33,11 @@ async function getYoutubeSubtitle(videoUrl) {
   try {
     const videoId = extractVideoId(videoUrl);
     console.log(`📺 Đang tải subtitle từ video: ${videoId}`);
-    console.log(`🔑 API Key: ${VCYON_API_KEY ? VCYON_API_KEY.substring(0, 20) + '...' : 'NOT SET'}`);
+    console.log(
+      `🔑 API Key: ${
+        VCYON_API_KEY ? VCYON_API_KEY.substring(0, 20) + "..." : "NOT SET"
+      }`
+    );
     console.log(`🌐 Request URL: ${VCYON_API_URL}?videoId=${videoId}`);
 
     const response = await axios.get(`${VCYON_API_URL}?videoId=${videoId}`, {
@@ -45,17 +52,17 @@ async function getYoutubeSubtitle(videoUrl) {
     const data = response.data;
 
     if (!data.success) {
-      throw new Error('Không thể lấy thông tin video');
+      throw new Error("Không thể lấy thông tin video");
     }
 
     if (!data.data.hasTranscript) {
-      throw new Error('Video này không có phụ đề');
+      throw new Error("Video này không có phụ đề");
     }
 
     const fullText = data.data.text;
 
     if (!fullText || fullText.trim().length === 0) {
-      throw new Error('Phụ đề trống');
+      throw new Error("Phụ đề trống");
     }
 
     console.log(`✅ Đã tải subtitle (${fullText.length} ký tự)`);
@@ -63,32 +70,39 @@ async function getYoutubeSubtitle(videoUrl) {
 
     return fullText;
   } catch (err) {
-    console.error('❌ Lỗi tải subtitle:', err.message);
-    console.error('❌ Error code:', err.code);
-    console.error('❌ Response status:', err.response?.status);
-    console.error('❌ Response data:', JSON.stringify(err.response?.data, null, 2));
-    console.error('❌ Full error:', err);
+    console.error("❌ Lỗi tải subtitle:", err.message);
+    console.error("❌ Error code:", err.code);
+    console.error("❌ Response status:", err.response?.status);
+    console.error(
+      "❌ Response data:",
+      JSON.stringify(err.response?.data, null, 2)
+    );
+    console.error("❌ Full error:", err);
 
     if (err.response?.status === 401) {
-      throw new Error('⚠️ Lỗi cấu hình: API key vcyon chưa được thiết lập hoặc không hợp lệ. Vui lòng liên hệ quản trị viên.');
-    }
-
-    if (err.response?.status === 403) {
-      throw new Error('⚠️ API key đã hết hạn hoặc không có quyền truy cập.');
-    }
-
-    if (err.message.includes('không có phụ đề')) {
       throw new Error(
-        '❌ Video này không có phụ đề. Vui lòng chọn video khác có phụ đề tiếng Anh.'
+        "⚠️ Lỗi cấu hình: API key vcyon chưa được thiết lập hoặc không hợp lệ. Vui lòng liên hệ quản trị viên."
       );
     }
 
-    if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') {
-      throw new Error('⚠️ Không thể kết nối đến dịch vụ vcyon. Vui lòng kiểm tra kết nối mạng.');
+    if (err.response?.status === 403) {
+      throw new Error("⚠️ API key đã hết hạn hoặc không có quyền truy cập.");
+    }
+
+    if (err.message.includes("không có phụ đề")) {
+      throw new Error(
+        "❌ Video này không có phụ đề. Vui lòng chọn video khác có phụ đề."
+      );
+    }
+
+    if (err.code === "ENOTFOUND" || err.code === "ECONNREFUSED") {
+      throw new Error(
+        "⚠️ Không thể kết nối đến dịch vụ vcyon. Vui lòng kiểm tra kết nối mạng."
+      );
     }
 
     throw new Error(
-      '❌ Không thể tải phụ đề từ video này. Vui lòng kiểm tra:\n• Video có phụ đề tiếng Anh\n• Link YouTube hợp lệ\n• Video không bị giới hạn vùng'
+      "❌ Không thể tải phụ đề từ video này. Vui lòng kiểm tra:\n• Video có phụ đề\n• Link YouTube hợp lệ\n• Video không bị giới hạn vùng"
     );
   }
 }
@@ -115,11 +129,11 @@ CHỈ TRẢ VỀ TÓM TẮT, KHÔNG GIẢI THÍCH THÊM.
     });
 
     const summary =
-      response.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     return summary.trim();
   } catch (err) {
-    console.error('❌ Lỗi tạo summary:', err.message);
-    return 'Video có nội dung tiếng Anh phù hợp để luyện đọc.';
+    console.error("❌ Lỗi tạo summary:", err.message);
+    return "Video có nội dung tiếng Anh phù hợp để luyện đọc.";
   }
 }
 
@@ -138,7 +152,9 @@ YÊU CẦU:
 - Nếu phụ đề là tiếng Anh: Chọn ra các câu HAY NHẤT, THÚ VỊ NHẤT
 - Nếu phụ đề là ngôn ngữ khác: Dịch nội dung chính sang tiếng Anh
 - Bài đọc PHẢI HOÀN TOÀN BẰNG TIẾNG ANH
-- Độ dài: CHÍNH XÁC ${YTB_LIMITS.min}-${YTB_LIMITS.max} từ (QUAN TRỌNG: đếm từ chính xác)
+- Độ dài: CHÍNH XÁC ${YTB_LIMITS.min}-${
+      YTB_LIMITS.max
+    } từ (QUAN TRỌNG: đếm từ chính xác)
 - KHÔNG được vượt quá ${YTB_LIMITS.max} từ
 - Ưu tiên câu có từ vựng hữu ích, cấu trúc rõ ràng
 - Sắp xếp lại cho mạch lạc, dễ hiểu
@@ -148,37 +164,36 @@ YÊU CẦU:
 CHỈ TRẢ VỀ BÀI ĐỌC TIẾNG ANH, KHÔNG GIẢI THÍCH, KHÔNG MARKDOWN.
 `;
 
-    console.log('🎯 Gọi Gemini để tạo bài đọc từ subtitle...');
+    console.log("🎯 Gọi Gemini để tạo bài đọc từ subtitle...");
 
     const response = await axios.post(GEMINI_URL, {
       contents: [{ parts: [{ text: prompt }] }],
     });
 
     const content =
-      response.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     const trimmedContent = content.trim();
-    
+
     if (!trimmedContent) {
-      throw new Error('Gemini không trả về nội dung');
+      throw new Error("Gemini không trả về nội dung");
     }
 
     // Validate độ dài
-    const validation = validateContentLength(trimmedContent, 'YOUTUBE_READING');
+    const validation = validateContentLength(trimmedContent, "YOUTUBE_READING");
     console.log(`📊 Validation: ${validation.message}`);
-    
+
     if (!validation.valid) {
-      console.warn(`⚠️ Bài đọc YouTube không đúng độ dài: ${validation.wordCount} từ (yêu cầu: ${validation.min}-${validation.max})`);
+      console.warn(
+        `⚠️ Bài đọc YouTube không đúng độ dài: ${validation.wordCount} từ (yêu cầu: ${validation.min}-${validation.max})`
+      );
     }
 
     console.log(`✅ Đã tạo bài đọc từ YouTube (${validation.wordCount} từ)`);
     return trimmedContent;
   } catch (err) {
-    console.error(
-      '❌ Lỗi gọi Gemini AI:',
-      err.response?.data || err.message
-    );
-    throw new Error('Không thể tạo bài đọc từ video này');
+    console.error("❌ Lỗi gọi Gemini AI:", err.response?.data || err.message);
+    throw new Error("Không thể tạo bài đọc từ video này");
   }
 }
 

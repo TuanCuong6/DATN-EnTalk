@@ -329,3 +329,9 @@ UPDATE readings SET level = 'C1' WHERE level IN ('C1', 'C2');
 -- thêm cột phân tích từ 
 ALTER TABLE records 
 ADD COLUMN word_analysis JSON AFTER comment;
+
+
+-- Tắt safe mode tạm thời
+SET SQL_SAFE_UPDATES = 0;
+-- Bật lại safe mode
+SET SQL_SAFE_UPDATES = 1;

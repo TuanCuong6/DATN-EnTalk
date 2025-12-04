@@ -92,40 +92,24 @@ export default function YoutubeReadingScreen() {
           <Icon name="arrow-back" size={24} color="#5E72EB" />
         </TouchableOpacity>
         <View style={styles.titleContainer}>
+          <Icon name="play-circle-filled" size={20} color="#FF0000" />
           <Text style={styles.headerTitle}>Bài đọc từ YouTube</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Instructions */}
-        <View style={styles.instructionCard}>
-          <Icon name="info-outline" size={24} color="#5E72EB" style={styles.infoIcon} />
-          <Text style={styles.instructionText}>
-            Dán link video YouTube (TED Talks, bài hát, podcast...) có phụ đề để tạo bài đọc tiếng Anh
-          </Text>
-        </View>
-
-        {/* Input */}
+        {/* Input Card */}
         <View style={styles.inputCard}>
-          <View style={styles.labelRow}>
-            <Text style={styles.label}>Link YouTube</Text>
-            {videoUrl.trim() && (
-              <TouchableOpacity
-                onPress={() => {
-                  setVideoUrl('');
-                  setSummary('');
-                  setGeneratedText('');
-                }}
-                style={styles.clearButton}
-              >
-                <Icon name="delete" size={18} color="#FF6B6B" />
-              </TouchableOpacity>
-            )}
+          <View style={styles.inputHeader}>
+            <Icon name="link" size={22} color="#5E72EB" />
+            <Text style={styles.inputTitle}>Dán link YouTube</Text>
           </View>
+          
           <TextInput
             style={styles.input}
             placeholder="https://youtube.com/watch?v=..."
+            placeholderTextColor="#ADB5BD"
             value={videoUrl}
             onChangeText={setVideoUrl}
             autoCapitalize="none"
@@ -133,30 +117,44 @@ export default function YoutubeReadingScreen() {
             multiline
           />
 
-          <TouchableOpacity
-            style={[styles.analyzeButton, analyzing && styles.buttonDisabled]}
-            onPress={handleAnalyze}
-            disabled={analyzing}
-          >
-            {analyzing ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <>
-                <Icon name="search" size={20} color="#FFF" />
-                <Text style={styles.buttonText}>Phân tích video</Text>
-              </>
+          <View style={styles.buttonRow}>
+            {videoUrl.trim() && (
+              <TouchableOpacity
+                onPress={() => {
+                  setVideoUrl('');
+                  setSummary('');
+                  setGeneratedText('');
+                }}
+                style={styles.clearBtn}
+              >
+                <Icon name="close" size={18} color="#6C757D" />
+              </TouchableOpacity>
             )}
-          </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.analyzeButton, analyzing && styles.buttonDisabled]}
+              onPress={handleAnalyze}
+              disabled={analyzing}
+            >
+              {analyzing ? (
+                <ActivityIndicator color="#FFF" size="small" />
+              ) : (
+                <>
+                  <Icon name="search" size={20} color="#FFF" />
+                  <Text style={styles.buttonText}>Phân tích</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Summary */}
         {summary && (
           <View style={styles.summaryCard}>
-            <View style={styles.summaryHeader}>
-              <Icon name="video-library" size={24} color="#9D4EDD" />
-              <Text style={styles.summaryTitle}>Nội dung video</Text>
+            <View style={styles.cardHeader}>
+              <Icon name="description" size={20} color="#9D4EDD" />
+              <Text style={styles.cardTitle}>Tóm tắt nội dung</Text>
             </View>
-
             <Text style={styles.summaryText}>{summary}</Text>
 
             {!generatedText && (
@@ -166,7 +164,7 @@ export default function YoutubeReadingScreen() {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="#FFF" />
+                  <ActivityIndicator color="#FFF" size="small" />
                 ) : (
                   <>
                     <Icon name="auto-awesome" size={20} color="#FFF" />
@@ -178,11 +176,12 @@ export default function YoutubeReadingScreen() {
           </View>
         )}
 
-        {/* Generated Text Display */}
+        {/* Generated Text */}
         {generatedText && (
-          <View style={styles.generatedContainer}>
-            <View style={styles.generatedHeader}>
-              <Text style={styles.generatedTitle}>📖 Bài đọc đã tạo:</Text>
+          <View style={styles.generatedCard}>
+            <View style={styles.cardHeader}>
+              <Icon name="article" size={20} color="#10B981" />
+              <Text style={styles.cardTitle}>Bài đọc</Text>
             </View>
 
             <TextInput
@@ -194,44 +193,42 @@ export default function YoutubeReadingScreen() {
               autoCorrect={false}
             />
 
-            <View style={styles.actionButtonGroup}>
+            <View style={styles.actionRow}>
               <TouchableOpacity
                 onPress={handleRegenerate}
                 disabled={loading}
-                style={[styles.smallButton, styles.regenerateButton]}
+                style={[styles.actionBtn, styles.regenerateBtn]}
               >
                 {loading ? (
                   <ActivityIndicator color="#FFF" size="small" />
                 ) : (
                   <>
-                    <Icon name="refresh" size={20} color="#FFF" />
-                    <Text style={styles.smallButtonText}>Tạo lại</Text>
+                    <Icon name="refresh" size={18} color="#FFF" />
+                    <Text style={styles.actionBtnText}>Tạo lại</Text>
                   </>
                 )}
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleStartPractice}
-                style={[styles.smallButton, styles.practiceButton]}
+                style={[styles.actionBtn, styles.practiceBtn]}
               >
-                <Icon name="mic" size={20} color="#FFF" />
-                <Text style={styles.smallButtonText}>Luyện đọc</Text>
+                <Icon name="mic" size={18} color="#FFF" />
+                <Text style={styles.actionBtnText}>Luyện đọc</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-        {/* Examples */}
-        <View style={styles.examplesCard}>
-          <Text style={styles.examplesTitle}>💡 Gợi ý video phù hợp:</Text>
-          <Text style={styles.exampleItem}>• TED Talks về công nghệ, khoa học</Text>
-          <Text style={styles.exampleItem}>• Bài hát có phụ đề (bất kỳ ngôn ngữ)</Text>
-          <Text style={styles.exampleItem}>• Podcast, phỏng vấn</Text>
-          <Text style={styles.exampleItem}>• Video giáo dục, hướng dẫn</Text>
-          <Text style={styles.noteText}>
-            ⚠️ Lưu ý: Video phải có phụ đề (tiếng Anh, Việt, hoặc ngôn ngữ khác)
-          </Text>
-        </View>
+        {/* Hint */}
+        {!summary && !generatedText && (
+          <View style={styles.hintCard}>
+            <Icon name="info-outline" size={20} color="#5E72EB" />
+            <Text style={styles.hintText}>
+              Video cần có phụ đề (TED Talks, bài hát, podcast...)
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -263,14 +260,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   titleContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    gap: 8,
   },
   headerTitle: {
     fontSize: 18,
@@ -281,194 +284,170 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  instructionCard: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(94, 114, 235, 0.1)',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: '#5E72EB',
-  },
-  infoIcon: {
-    marginRight: 10,
-  },
-  instructionText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#343A40',
-    lineHeight: 20,
-  },
   inputCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
     padding: 20,
-    marginBottom: 20,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
-  labelRow: {
+  inputHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  label: {
+  inputTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#343A40',
-  },
-  clearButton: {
-    padding: 5,
-    backgroundColor: 'rgba(255, 107, 107, 0.1)',
-    borderRadius: 8,
+    marginLeft: 8,
   },
   input: {
     backgroundColor: '#F8F9FA',
     borderRadius: 12,
-    padding: 15,
-    fontSize: 14,
+    padding: 14,
+    fontSize: 15,
     color: '#343A40',
-    marginBottom: 15,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E9ECEF',
-    minHeight: 50,
+    minHeight: 56,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  clearBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
   },
   analyzeButton: {
+    flex: 1,
     backgroundColor: '#5E72EB',
     borderRadius: 12,
-    padding: 15,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  generateButton: {
-    backgroundColor: '#9D4EDD',
-    borderRadius: 12,
-    padding: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 15,
+    gap: 8,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
     color: '#FFF',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    marginLeft: 8,
   },
   summaryCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
     padding: 20,
-    marginBottom: 20,
+    marginBottom: 16,
     shadowColor: '#9D4EDD',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 4,
-    borderTopWidth: 4,
-    borderTopColor: '#9D4EDD',
+    elevation: 3,
   },
-  summaryHeader: {
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 12,
   },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#343A40',
-    marginLeft: 10,
+    marginLeft: 8,
   },
   summaryText: {
     fontSize: 15,
     color: '#495057',
-    lineHeight: 24,
-    marginBottom: 15,
-  },
-  generatedContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(157, 78, 221, 0.3)',
-  },
-  generatedHeader: {
+    lineHeight: 22,
     marginBottom: 12,
   },
-  generatedTitle: {
-    fontWeight: '700',
-    fontSize: 18,
-    color: '#343A40',
+  generateButton: {
+    backgroundColor: '#9D4EDD',
+    borderRadius: 12,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  generatedCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   generatedText: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 22,
     color: '#343A40',
     backgroundColor: '#F8F9FA',
     borderRadius: 12,
-    padding: 15,
+    padding: 14,
     minHeight: 120,
     textAlignVertical: 'top',
-    marginBottom: 15,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E9ECEF',
   },
-  actionButtonGroup: {
+  actionRow: {
     flexDirection: 'row',
     gap: 10,
   },
-  smallButton: {
+  actionBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 16,
     borderRadius: 12,
-    gap: 8,
-    flex: 1,
+    gap: 6,
   },
-  regenerateButton: {
+  regenerateBtn: {
     backgroundColor: '#6C757D',
   },
-  practiceButton: {
-    backgroundColor: '#9D4EDD',
+  practiceBtn: {
+    backgroundColor: '#10B981',
   },
-  smallButtonText: {
-    fontSize: 16,
+  actionBtnText: {
+    fontSize: 15,
     fontWeight: '600',
     color: '#FFF',
   },
-  examplesCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 30,
+  hintCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(94, 114, 235, 0.08)',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+    gap: 10,
   },
-  examplesTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#343A40',
-    marginBottom: 10,
-  },
-  exampleItem: {
+  hintText: {
+    flex: 1,
     fontSize: 14,
-    color: '#6C757D',
-    marginBottom: 5,
+    color: '#495057',
     lineHeight: 20,
-  },
-  noteText: {
-    fontSize: 13,
-    color: '#FF6B6B',
-    marginTop: 10,
-    fontWeight: '500',
   },
 });

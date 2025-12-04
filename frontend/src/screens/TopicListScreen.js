@@ -1,5 +1,4 @@
-//frontend/src/screens/TopicListScreen.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,7 +8,9 @@ import {
   Alert,
   StyleSheet,
   Image,
-  ScrollView,
+  Animated,
+  Easing,
+  Dimensions,
   RefreshControl,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -18,26 +19,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// const topicImages = {
-//   thamhiem: require('../assets/topics/thamhiem.png'),
-//   dulich: require('../assets/topics/dulich.png'),
-//   khoahoc: require('../assets/topics/khoahoc.png'),
-//   tintuc: require('../assets/topics/tintuc.png'),
-//   suckhoevadoisong: require('../assets/topics/suckhoevadoisong.png'),
-//   khampha: require('../assets/topics/khampha.png'),
-//   hoctapvatruonghoc: require('../assets/topics/hoctapvatruonghoc.png'),
-//   giadinhvabanbe: require('../assets/topics/giadinhvabanbe.png'),
-// };
-
-// const removeVietnameseTones = str => {
-//   return str
-//     .normalize('NFD')
-//     .replace(/[\u0300-\u036f]/g, '')
-//     .replace(/đ/g, 'd')
-//     .replace(/Đ/g, 'D')
-//     .replace(/\s+/g, '')
-//     .toLowerCase();
-// };
+const { width } = Dimensions.get('window');
 
 export default function TopicListScreen() {
   const [topics, setTopics] = useState([]);
@@ -45,12 +27,20 @@ export default function TopicListScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideUpAnim = useRef(new Animated.Value(50)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const updateIntervalRef = useRef(null);
+
   const loadTopics = async (isRefreshing = false) => {
     try {
       if (!isRefreshing) setLoading(true);
+      console.log('Loading topics...');
       const res = await fetchAllTopics();
+      console.log('Topics loaded:', res.data.length);
       setTopics(res.data);
     } catch (err) {
+      console.error('Error loading topics:', err);
       Alert.alert('Lỗi', 'Không thể tải danh sách chủ đề');
     } finally {
       setLoading(false);
@@ -58,72 +48,284 @@ export default function TopicListScreen() {
     }
   };
 
-  // Auto refresh khi quay lại màn hình
+  // Tính năng 2: Tự động cập nhật dữ liệu định kỳ
+  const startAutoUpdate = () => {
+    // Cập nhật mỗi 30 giây
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+    }
+
+    updateIntervalRef.current = setInterval(() => {
+      console.log('Auto-updating topics data...');
+      loadTopics();
+    }, 30000); // 30 giây
+  };
+
+  // Sửa lại useFocusEffect để tránh re-render không cần thiết
   useFocusEffect(
     React.useCallback(() => {
-      loadTopics();
-    }, [])
+      console.log('TopicListScreen focused');
+
+      let isActive = true;
+
+      const initScreen = async () => {
+        await loadTopics();
+
+        if (isActive) {
+          Animated.parallel([
+            Animated.timing(fadeAnim, {
+              toValue: 1,
+              duration: 600,
+              useNativeDriver: true,
+            }),
+            Animated.timing(slideUpAnim, {
+              toValue: 0,
+              duration: 600,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+          ]).start();
+
+          // Pulsing animation for header icon
+          Animated.loop(
+            Animated.sequence([
+              Animated.timing(pulseAnim, {
+                toValue: 1.1,
+                duration: 1500,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true,
+              }),
+              Animated.timing(pulseAnim, {
+                toValue: 1,
+                duration: 1500,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true,
+              }),
+            ]),
+          ).start();
+
+          // Bắt đầu tự động cập nhật
+          startAutoUpdate();
+        }
+      };
+
+      initScreen();
+
+      return () => {
+        console.log('TopicListScreen unfocused');
+        isActive = false;
+        // Dọn dẹp interval khi rời màn hình
+        if (updateIntervalRef.current) {
+          clearInterval(updateIntervalRef.current);
+          updateIntervalRef.current = null;
+        }
+      };
+    }, []),
   );
 
-  // Pull to refresh
+  // Tính năng 1: Vuốt xuống để load lại
   const onRefresh = () => {
     setRefreshing(true);
     loadTopics(true);
+    // Reset interval sau khi refresh
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+    }
+    startAutoUpdate();
   };
 
-  // const getImageForTopic = topic => {
-  //   const key = removeVietnameseTones(topic.name);
-  //   return topicImages[key] || require('../assets/topics/default.png');
-  // };
   const getImageForTopic = topic => {
     if (topic.image_url) {
-      return { uri: topic.image_url }; // ảnh từ backend
+      return { uri: topic.image_url };
     }
-    return require('../assets/topics/hoctapvatruonghoc.png'); // ảnh mặc định
+    return require('../assets/topics/hoctapvatruonghoc.png');
   };
 
-  if (loading)
+  const getCompletionColor = percentage => {
+    if (percentage >= 80) return '#4ECDC4';
+    if (percentage >= 50) return '#FFB347';
+    if (percentage >= 20) return '#FF6B35';
+    return '#FFD93D';
+  };
+
+  const renderTopicCard = ({ item, index }) => (
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.7}
+      onPress={() => navigation.navigate('TopicReadings', { topic: item })}
+    >
+      <LinearGradient
+        colors={['#FFFFFF', '#F8FAFF']}
+        style={styles.cardGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {/* Image Container */}
+        <View style={styles.imageWrapper}>
+          <Image
+            source={getImageForTopic(item)}
+            style={styles.topicImage}
+            resizeMode="cover"
+          />
+          <View style={styles.imageOverlay} />
+        </View>
+
+        {/* Topic Info */}
+        <View style={styles.cardContent}>
+          <Text style={styles.topicName} numberOfLines={2}>
+            {item.name}
+          </Text>
+
+          {/* Progress Indicator */}
+          {item.total_readings > 0 && (
+            <View style={styles.progressWrapper}>
+              <View style={styles.progressInfo}>
+                <Text style={styles.progressPercentage}>
+                  {Math.round(item.completion_percentage)}%
+                </Text>
+                <Text style={styles.progressCount}>
+                  {item.completed_readings}/{item.total_readings} bài
+                </Text>
+              </View>
+
+              <View style={styles.progressBar}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${item.completion_percentage}%`,
+                      backgroundColor: getCompletionColor(
+                        item.completion_percentage,
+                      ),
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Start Button */}
+        <TouchableOpacity
+          style={styles.startButton}
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate('TopicReadings', { topic: item })}
+        >
+          <Icon name="play-arrow" size={18} color="#FFFFFF" />
+        </TouchableOpacity>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+
+  if (loading && topics.length === 0) {
     return (
-      <View style={styles.center}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#5E72EB" />
       </View>
     );
+  }
 
   return (
-    <SafeAreaView
-      style={styles.container}
-      edges={['top', 'left', 'right', 'bottom']}
-    >
-      {/* Background gradient */}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Gradient Background */}
       <LinearGradient
-        colors={['#F0F7FF', '#E6FCFF']}
+        colors={['#F8FAFF', '#E6F3FF']}
         style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       />
 
       {/* Header */}
-      <View style={styles.header}>
+      <Animated.View
+        style={[
+          styles.header,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideUpAnim }],
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          activeOpacity={0.7}
         >
-          <Icon name="arrow-back" size={28} color="#5E72EB" />
+          <Icon name="arrow-back" size={24} color="#5E72EB" />
         </TouchableOpacity>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>Chủ đề bài đọc</Text>
+
+        <View style={styles.titleWrapper}>
+          <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+            <Icon name="library-books" size={24} color="#5E72EB" />
+          </Animated.View>
+          <Text style={styles.title}>Chủ đề học tập</Text>
         </View>
-        <View style={styles.headerRightPlaceholder} />
-      </View>
 
-      <View style={styles.content}>
-        <Text style={styles.subtitle}>
-          Chọn chủ đề bạn quan tâm để bắt đầu luyện tập
-        </Text>
+        {/* Đã bỏ icon filter */}
+      </Animated.View>
 
+      {/* Stats Overview */}
+      {topics.length > 0 && (
+        <Animated.View
+          style={[
+            styles.statsContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideUpAnim }],
+            },
+          ]}
+        >
+          <LinearGradient
+            colors={['#FFFFFF', '#F8FAFF']}
+            style={styles.statsCard}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{topics.length}</Text>
+              <Text style={styles.statLabel}>Chủ đề</Text>
+            </View>
+
+            <View style={styles.statDivider} />
+
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>
+                {topics.reduce(
+                  (total, topic) => total + topic.total_readings,
+                  0,
+                )}
+              </Text>
+              <Text style={styles.statLabel}>Bài đọc</Text>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+      )}
+
+      {/* Topics List */}
+      <Animated.View
+        style={[
+          styles.listContainer,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideUpAnim }],
+          },
+        ]}
+      >
         <FlatList
           data={topics}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={item => `topic-${item.id}`}
           numColumns={2}
           columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          renderItem={renderTopicCard}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Icon name="folder-off" size={60} color="#C5C5D3" />
+              <Text style={styles.emptyText}>Không có chủ đề nào</Text>
+            </View>
+          }
+          extraData={topics}
+          // TÍNH NĂNG 1: Thêm refresh control cho pull-to-refresh
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -132,44 +334,8 @@ export default function TopicListScreen() {
               tintColor="#5E72EB"
             />
           }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.card}
-              activeOpacity={0.8}
-              onPress={() =>
-                navigation.navigate('TopicReadings', { topic: item })
-              }
-            >
-              <View style={styles.cardInner}>
-                <Image
-                  source={getImageForTopic(item)}
-                  style={styles.image}
-                  resizeMode="contain"
-                />
-                <Text style={styles.topicName}>{item.name}</Text>
-                
-                {/* Hiển thị tiến độ hoàn thành */}
-                {item.total_readings > 0 && (
-                  <View style={styles.progressContainer}>
-                    <Text style={styles.progressText}>
-                      {item.completed_readings}/{item.total_readings} ({item.completion_percentage}%)
-                    </Text>
-                    <View style={styles.progressBar}>
-                      <View 
-                        style={[
-                          styles.progressFill, 
-                          { width: `${item.completion_percentage}%` }
-                        ]} 
-                      />
-                    </View>
-                  </View>
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={[styles.listContainer, { flexGrow: 1 }]}
         />
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -177,118 +343,186 @@ export default function TopicListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F8FAFF',
   },
-  content: {
+  loadingContainer: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFF',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#888',
+    marginTop: 10,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 25,
+    justifyContent: 'center', // Thay đổi từ 'space-between' thành 'center'
+    paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 15,
   },
   backButton: {
-    padding: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+    position: 'absolute', // Đặt vị trí absolute
+    left: 20, // Căn trái
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(94, 114, 235, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  titleContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.2)',
+  titleWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   title: {
     fontSize: 20,
+    fontWeight: '700',
+    color: '#1A2980',
+    letterSpacing: 0.5,
+  },
+  // Đã xoá styles.filterButton
+  statsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  statsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#5E72EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 28,
     fontWeight: '800',
     color: '#5E72EB',
+    marginBottom: 4,
   },
-  headerRightPlaceholder: {
-    width: 40,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#495057',
+  statLabel: {
+    fontSize: 14,
+    color: '#666',
     fontWeight: '500',
-    textAlign: 'center',
-    marginBottom: 25,
-    paddingHorizontal: 20,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(94, 114, 235, 0.2)',
+    marginHorizontal: 20,
+  },
+  listContainer: {
+    flex: 1,
+  },
+  listContent: {
+    paddingHorizontal: 15,
+    paddingBottom: 30,
+    minHeight: 200,
   },
   row: {
     justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  listContainer: {
-    paddingBottom: 30,
+    marginBottom: 15,
   },
   card: {
-    width: '48%',
-    aspectRatio: 1,
-    marginBottom: 15,
-  },
-  cardInner: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    width: (width - 40) / 2,
     borderRadius: 20,
-    padding: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 114, 235, 0.1)',
-    shadowColor: '#5E72EB',
-    shadowOffset: { width: 0, height: 5 },
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  image: {
-    width: 60,
-    height: 60,
-    marginBottom: 15,
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
+  cardGradient: {
+    position: 'relative',
+  },
+  imageWrapper: {
+    height: 120,
+    borderRadius: 15,
+    overflow: 'hidden',
+    margin: 10,
+    marginBottom: 0,
+  },
+  topicImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(26, 41, 128, 0.1)',
+  },
+  cardContent: {
+    padding: 15,
+    paddingTop: 10,
   },
   topicName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#343A40',
-    textAlign: 'center',
-    marginBottom: 8,
+    fontWeight: '700',
+    color: '#1A2980',
+    marginBottom: 12,
+    lineHeight: 22,
+    minHeight: 44,
   },
-  progressContainer: {
-    width: '100%',
+  progressWrapper: {
+    gap: 8,
+  },
+  progressInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  progressText: {
-    fontSize: 13,
+  progressPercentage: {
+    fontSize: 15,
+    fontWeight: '700',
     color: '#5E72EB',
-    fontWeight: '600',
-    marginBottom: 5,
+  },
+  progressCount: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
   },
   progressBar: {
     width: '100%',
     height: 6,
-    backgroundColor: '#E9ECEF',
+    backgroundColor: 'rgba(94, 114, 235, 0.1)',
     borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#5E72EB',
     borderRadius: 3,
   },
-  center: {
-    flex: 1,
+  startButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#5E72EB',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#5E72EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });
