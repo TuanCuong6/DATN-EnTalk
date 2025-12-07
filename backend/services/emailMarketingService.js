@@ -1,11 +1,12 @@
 // backend/services/emailMarketingService.js
 const axios = require("axios");
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_KEY3 = process.env.GEMINI_API_KEY3;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY3}`;
 
 // Logo EnTalk trên Cloudinary
-const ENTALK_LOGO_URL = "https://res.cloudinary.com/dy48uivag/image/upload/v1764040680/email_marketing/zfahovhhcijtch1eiyh8.png";
+const ENTALK_LOGO_URL =
+  "https://res.cloudinary.com/dy48uivag/image/upload/v1764040680/email_marketing/zfahovhhcijtch1eiyh8.png";
 
 exports.generateEmailHTML = async ({
   title,
@@ -17,9 +18,10 @@ exports.generateEmailHTML = async ({
   designStyle = "modern",
 }) => {
   // Format images list
-  const imagesText = imageUrls.length > 0
-    ? imageUrls.map((url, i) => `  ${i + 1}. ${url}`).join("\n")
-    : "Không có ảnh";
+  const imagesText =
+    imageUrls.length > 0
+      ? imageUrls.map((url, i) => `  ${i + 1}. ${url}`).join("\n")
+      : "Không có ảnh";
 
   const prompt = `Bạn là chuyên gia thiết kế email marketing hiện đại. Hãy tạo một email HTML/CSS responsive, HIỆN ĐẠI, TRẺ TRUNG, GỌNG GÀNG với các yêu cầu sau:
 
@@ -52,7 +54,9 @@ exports.generateEmailHTML = async ({
    - Nội dung: font-size 16px, line-height 1.6, color #333
 
 4. **Images Layout (QUAN TRỌNG):**
-   ${imageUrls.length > 0 ? `
+   ${
+     imageUrls.length > 0
+       ? `
    - XEN KẼ ảnh với text, KHÔNG để 2 ảnh dính nhau
    - Mỗi ảnh có margin: 25px 0
    - Border-radius: 12px
@@ -60,7 +64,9 @@ exports.generateEmailHTML = async ({
    - Width: 100%, max-width: 100%
    - Nếu có 2+ ảnh: Ảnh 1 → Text → Ảnh 2 → Text → Ảnh 3...
    - Giữa mỗi ảnh có đoạn text ngắn hoặc spacing 30px
-   ` : '- Không có ảnh'}
+   `
+       : "- Không có ảnh"
+   }
 
 5. **CTA Button:**
    - Background: gradient (${primaryColor} to darker)
@@ -156,8 +162,9 @@ Hãy tạo email HTML HIỆN ĐẠI ngay bây giờ:`;
       contents: [{ parts: [{ text: prompt }] }],
     });
 
-    let htmlContent = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    
+    let htmlContent =
+      response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
     console.log("🎨 Gemini Email Response received");
 
     // Clean up markdown code blocks nếu có
@@ -165,7 +172,13 @@ Hãy tạo email HTML HIỆN ĐẠI ngay bây giờ:`;
 
     return htmlContent.trim();
   } catch (error) {
-    console.error("❌ Lỗi gọi Gemini API:", error.response?.data || error.message);
-    throw new Error("Không thể tạo email HTML với Gemini: " + (error.response?.data?.error?.message || error.message));
+    console.error(
+      "❌ Lỗi gọi Gemini API:",
+      error.response?.data || error.message
+    );
+    throw new Error(
+      "Không thể tạo email HTML với Gemini: " +
+        (error.response?.data?.error?.message || error.message)
+    );
   }
 };

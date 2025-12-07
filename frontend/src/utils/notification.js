@@ -37,13 +37,8 @@ export async function setupFCM() {
       getGlobalFetchUnreadCount?.()();
       triggerNotificationReload?.();
 
-      Alert.alert(title || 'Thông báo', body, [
-        {
-          text: 'Luyện ngay',
-          onPress: () => handleNotificationClick(data),
-        },
-        { text: 'Đóng', style: 'cancel' },
-      ]);
+      // Không hiển thị popup, chỉ cập nhật badge và danh sách thông báo
+      console.log('📩 [Foreground] Nhận thông báo:', title, body);
     });
 
     // 👉 Background

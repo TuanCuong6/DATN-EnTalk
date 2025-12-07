@@ -1,9 +1,9 @@
 const db = require("../config/db");
 const axios = require("axios");
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY3 = process.env.GEMINI_API_KEY3;
 // const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY3}`;
 
 exports.askQuestion = async (req, res) => {
   const { message } = req.body;
@@ -44,7 +44,10 @@ exports.askQuestion = async (req, res) => {
 
     // Tạo lịch sử hội thoại cho Gemini
     const conversationHistory = contextMessages
-      .map((msg) => `${msg.role === "user" ? "Người dùng" : "Trợ lý"}: ${msg.message}`)
+      .map(
+        (msg) =>
+          `${msg.role === "user" ? "Người dùng" : "Trợ lý"}: ${msg.message}`
+      )
       .join("\n");
 
     // Lưu câu hỏi mới
