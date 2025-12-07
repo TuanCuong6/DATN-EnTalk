@@ -1,10 +1,13 @@
 // backend/services/aiReadingService.js
 const axios = require("axios");
 const db = require("../config/db");
-const { CONTENT_LIMITS, validateContentLength } = require("../config/contentLimits");
+const {
+  CONTENT_LIMITS,
+  validateContentLength,
+} = require("../config/contentLimits");
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_KEY5 = process.env.GEMINI_API_KEY5;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY5}`;
 
 const AI_LIMITS = CONTENT_LIMITS.AI_GENERATED;
 
@@ -48,9 +51,7 @@ async function generateReadingContent(topic, description = "", userId) {
       historyText = `\nCÁC BÀI ĐÃ TẠO TRƯỚC ĐÓ (TRÁNH TRÙNG LẶP):\n${previousTexts}`;
     }
 
-    const descriptionText = description
-      ? `Mô tả chi tiết: ${description}`
-      : "";
+    const descriptionText = description ? `Mô tả chi tiết: ${description}` : "";
 
     const prompt = PROMPT_TEMPLATE.replace("{{topic}}", topic)
       .replace("{{description}}", descriptionText)
@@ -70,24 +71,27 @@ async function generateReadingContent(topic, description = "", userId) {
     }
 
     const trimmedContent = content.trim();
-    
+
     // Validate độ dài
-    const validation = validateContentLength(trimmedContent, 'AI_GENERATED');
+    const validation = validateContentLength(trimmedContent, "AI_GENERATED");
     console.log(`📊 Validation: ${validation.message}`);
-    
+
     if (!validation.valid) {
-      console.warn(`⚠️ Bài đọc AI tạo không đúng độ dài: ${validation.wordCount} từ (yêu cầu: ${validation.min}-${validation.max})`);
+      console.warn(
+        `⚠️ Bài đọc AI tạo không đúng độ dài: ${validation.wordCount} từ (yêu cầu: ${validation.min}-${validation.max})`
+      );
       // Vẫn trả về nhưng log warning
     }
 
-    console.log(`✅ Đã tạo bài đọc: "${trimmedContent.substring(0, 50)}..." (${validation.wordCount} từ)`);
+    console.log(
+      `✅ Đã tạo bài đọc: "${trimmedContent.substring(0, 50)}..." (${
+        validation.wordCount
+      } từ)`
+    );
 
     return trimmedContent;
   } catch (err) {
-    console.error(
-      "❌ Lỗi gọi Gemini AI:",
-      err.response?.data || err.message
-    );
+    console.error("❌ Lỗi gọi Gemini AI:", err.response?.data || err.message);
     throw new Error("Không thể tạo bài đọc với AI");
   }
 }

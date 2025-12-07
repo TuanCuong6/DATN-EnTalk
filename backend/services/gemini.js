@@ -3,8 +3,8 @@ const axios = require("axios");
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_API_KEY2 = process.env.GEMINI_API_KEY2;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-const GEMINI_URL2 = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY2}`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_URL2 = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY2}`;
 
 // PROMPT 1: CHỈ CHẤM ĐIỂM (Key 1)
 const SCORING_PROMPT = `
@@ -103,7 +103,7 @@ function buildWordAnalysisPrompt(originalText) {
 // Function 1: Chấm điểm (Key 1)
 async function getScores(transcript, originalText) {
   const prompt = buildScoringPrompt(transcript, originalText);
-  
+
   try {
     const response = await axios.post(GEMINI_URL, {
       contents: [{ parts: [{ text: prompt }] }],
@@ -112,7 +112,7 @@ async function getScores(transcript, originalText) {
         topK: 40,
         topP: 0.95,
         maxOutputTokens: 2048,
-      }
+      },
     });
 
     const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
@@ -123,11 +123,11 @@ async function getScores(transcript, originalText) {
     if (match) cleaned = match[1].trim();
 
     const parsed = JSON.parse(cleaned);
-    
+
     if (!parsed.scores || !parsed.comment) {
       throw new Error("Invalid scoring response");
     }
-    
+
     return parsed;
   } catch (err) {
     console.error("❌ Key1 lỗi:", err.message);
@@ -138,9 +138,9 @@ async function getScores(transcript, originalText) {
 // Function 2: Phân tích từ (Key 2)
 async function getWordAnalysis(originalText) {
   if (!originalText) return [];
-  
+
   const prompt = buildWordAnalysisPrompt(originalText);
-  
+
   try {
     const response = await axios.post(GEMINI_URL2, {
       contents: [{ parts: [{ text: prompt }] }],
@@ -149,7 +149,7 @@ async function getWordAnalysis(originalText) {
         topK: 20,
         topP: 0.8,
         maxOutputTokens: 4096,
-      }
+      },
     });
 
     const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
@@ -160,7 +160,7 @@ async function getWordAnalysis(originalText) {
     if (match) cleaned = match[1].trim();
 
     const parsed = JSON.parse(cleaned);
-    
+
     return parsed.wordAnalysis || [];
   } catch (err) {
     console.error("❌ Key2 lỗi:", err.message);
@@ -173,30 +173,32 @@ async function getWordAnalysis(originalText) {
 async function scoreWithGemini(transcript, originalText = null) {
   try {
     console.log("🚀 Bắt đầu chấm điểm song song với 2 keys...");
-    
+
     // Chạy 2 tasks song song
     const [scoringResult, wordAnalysis] = await Promise.all([
       getScores(transcript, originalText),
-      getWordAnalysis(originalText)
+      getWordAnalysis(originalText),
     ]);
-    
+
     console.log("✅ Cả 2 tasks hoàn thành");
-    
+
     // Trả về khi cả 2 xong
     return {
       scores: scoringResult.scores,
       comment: scoringResult.comment,
-      wordAnalysis: wordAnalysis
+      wordAnalysis: wordAnalysis,
     };
   } catch (err) {
     console.error("❌ Lỗi gọi Gemini:", err.response?.data || err.message);
-    
+
     if (err.response?.status === 429) {
       throw new Error("Hệ thống đang quá tải, vui lòng thử lại sau.");
     } else if (err.response?.status >= 500) {
       throw new Error("Lỗi từ phía Gemini, vui lòng thử lại sau.");
     } else if (err instanceof SyntaxError) {
-      throw new Error("Không thể phân tích kết quả chấm điểm. Vui lòng thử lại.");
+      throw new Error(
+        "Không thể phân tích kết quả chấm điểm. Vui lòng thử lại."
+      );
     } else {
       throw new Error("Không thể chấm điểm với Gemini lúc này.");
     }

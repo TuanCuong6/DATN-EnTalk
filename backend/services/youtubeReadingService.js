@@ -5,9 +5,9 @@ const {
   validateContentLength,
 } = require("../config/contentLimits");
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY5 = process.env.GEMINI_API_KEY5;
 const VCYON_API_KEY = process.env.VCYON_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY5}`;
 const VCYON_API_URL = "https://api.vcyon.com/v1/youtube/transcript";
 
 const YTB_LIMITS = CONTENT_LIMITS.YOUTUBE_READING;
