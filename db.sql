@@ -114,6 +114,8 @@ CREATE TABLE chat_messages (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+DELETE FROM chat_messages WHERE user_id = 2;
+
 
 -- thêm bảng admin
 CREATE TABLE admins (

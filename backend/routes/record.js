@@ -65,7 +65,7 @@ router.post(
 
       const geminiRes = await scoreWithGemini(transcript, originalText);
 
-      // SỬA phần tạo record - thêm word_analysis
+      // thêm word_analysis
       await dbConnection.execute(
         `INSERT INTO records (
     user_id, reading_id, original_content, transcript,
@@ -88,7 +88,7 @@ router.post(
         ]
       );
 
-      // 🆕 Cập nhật reading progress (chỉ với bài đọc có sẵn, không phải custom)
+      // Cập nhật reading progress (chỉ với bài đọc có sẵn, không phải custom)
       if (readingId && geminiRes.scores.overall) {
         try {
           await ReadingProgress.updateProgress(
@@ -96,18 +96,18 @@ router.post(
             readingIdToUse,
             geminiRes.scores.overall
           );
-          console.log("✅ Đã cập nhật reading progress");
+          console.log(" Đã cập nhật reading progress");
         } catch (progressErr) {
-          console.error("⚠️ Lỗi cập nhật progress (không ảnh hưởng):", progressErr);
+          console.error("Lỗi cập nhật progress (không ảnh hưởng):", progressErr);
         }
       }
 
-      // 🔥 Cập nhật streak khi user luyện đọc
+      // Cập nhật streak khi user luyện đọc
       try {
         const streakResult = await updateStreakOnPractice(userId);
-        console.log("🔥 Đã cập nhật streak:", streakResult);
+        console.log("Đã cập nhật streak:", streakResult);
       } catch (streakErr) {
-        console.error("⚠️ Lỗi cập nhật streak (không ảnh hưởng):", streakErr);
+        console.error("Lỗi cập nhật streak (không ảnh hưởng):", streakErr);
       }
 
       fs.unlinkSync(filePath);
