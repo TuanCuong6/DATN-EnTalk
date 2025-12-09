@@ -150,33 +150,14 @@ export default function PracticeCustomReadingScreen({ route }) {
             {scoreResult && (
               <ScrollView style={styles.scoreScrollView}>
                 <View style={styles.scoreContainer}>
-                  {/* Compact Score Summary */}
+                  {/* Score Summary - Chỉ hiển thị điểm tổng */}
                   <View style={styles.compactScoreCard}>
                     <View style={styles.overallScoreCompact}>
-                      <Text style={styles.overallLabelCompact}>Tổng điểm</Text>
+                      <Text style={styles.overallLabelCompact}>Điểm của bạn</Text>
                       <Text style={styles.overallValueCompact}>
                         {scoreResult.scores.overall}
                         <Text style={styles.overallTotalCompact}>/10</Text>
                       </Text>
-                    </View>
-                    
-                    <View style={styles.scoreDetailsCompact}>
-                      <View style={styles.scoreItemCompact}>
-                        <Text style={styles.scoreLabelCompact}>Phát âm</Text>
-                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.pronunciation}</Text>
-                      </View>
-                      <View style={styles.scoreItemCompact}>
-                        <Text style={styles.scoreLabelCompact}>Ngữ điệu</Text>
-                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.intonation}</Text>
-                      </View>
-                      <View style={styles.scoreItemCompact}>
-                        <Text style={styles.scoreLabelCompact}>Lưu loát</Text>
-                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.fluency}</Text>
-                      </View>
-                      <View style={styles.scoreItemCompact}>
-                        <Text style={styles.scoreLabelCompact}>Tốc độ</Text>
-                        <Text style={styles.scoreValueCompact}>{scoreResult.scores.speed}</Text>
-                      </View>
                     </View>
                   </View>
 

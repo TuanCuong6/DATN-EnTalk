@@ -61,37 +61,14 @@ const RecordDetail = () => {
           </div>
         </div>
 
-        {/* Điểm số */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="text-center p-3 bg-gray-50 rounded">
-            <div className="text-sm text-gray-600 mb-1">Điểm tổng</div>
-            <div className="text-2xl font-bold text-blue-600">
+        {/* Điểm số - Chỉ hiển thị điểm tổng */}
+        <div className="flex justify-center">
+          <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200 min-w-[200px]">
+            <div className="text-sm text-gray-600 mb-2 font-medium">Điểm của học viên</div>
+            <div className="text-5xl font-bold text-blue-600">
               {record.score_overall ? parseFloat(record.score_overall).toFixed(1) : 'N/A'}
             </div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded">
-            <div className="text-sm text-gray-600 mb-1">Phát âm</div>
-            <div className="text-2xl font-bold">
-              {record.score_pronunciation ? parseFloat(record.score_pronunciation).toFixed(1) : 'N/A'}
-            </div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded">
-            <div className="text-sm text-gray-600 mb-1">Lưu loát</div>
-            <div className="text-2xl font-bold">
-              {record.score_fluency ? parseFloat(record.score_fluency).toFixed(1) : 'N/A'}
-            </div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded">
-            <div className="text-sm text-gray-600 mb-1">Ngữ điệu</div>
-            <div className="text-2xl font-bold">
-              {record.score_intonation ? parseFloat(record.score_intonation).toFixed(1) : 'N/A'}
-            </div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded">
-            <div className="text-sm text-gray-600 mb-1">Tốc độ nói</div>
-            <div className="text-2xl font-bold">
-              {record.score_speed ? parseFloat(record.score_speed).toFixed(1) : 'N/A'}
-            </div>
+            <div className="text-sm text-gray-500 mt-1">/10</div>
           </div>
         </div>
       </div>

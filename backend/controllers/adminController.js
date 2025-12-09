@@ -101,16 +101,20 @@ exports.getDashboardStats = async (req, res) => {
       LIMIT 5
     `);
 
-    // Điểm trung bình theo kỹ năng
-    const [[qualityStats]] = await db.execute(`
+    // Phân bổ điểm số (thay thế qualityStats)
+    const [scoreDistribution] = await db.execute(`
       SELECT 
-        AVG(score_pronunciation) as avg_pronunciation,
-        AVG(score_fluency) as avg_fluency,
-        AVG(score_intonation) as avg_intonation,
-        AVG(score_speed) as avg_speed
+        SUM(CASE WHEN score_overall >= 8 THEN 1 ELSE 0 END) as excellent,
+        SUM(CASE WHEN score_overall >= 6 AND score_overall < 8 THEN 1 ELSE 0 END) as good,
+        SUM(CASE WHEN score_overall >= 4 AND score_overall < 6 THEN 1 ELSE 0 END) as average,
+        SUM(CASE WHEN score_overall < 4 THEN 1 ELSE 0 END) as poor,
+        COUNT(*) as total
       FROM records
       WHERE score_overall IS NOT NULL
     `);
+
+    const dist = scoreDistribution[0];
+    const total = dist.total || 1; // Tránh chia cho 0
 
     res.json({
       totalUsers,
@@ -125,11 +129,15 @@ exports.getDashboardStats = async (req, res) => {
         avg_score: u.avg_score ? parseFloat(u.avg_score).toFixed(1) : 0
       })),
       recentActivities,
-      qualityStats: {
-        pronunciation: qualityStats.avg_pronunciation ? parseFloat(qualityStats.avg_pronunciation).toFixed(1) : 0,
-        fluency: qualityStats.avg_fluency ? parseFloat(qualityStats.avg_fluency).toFixed(1) : 0,
-        intonation: qualityStats.avg_intonation ? parseFloat(qualityStats.avg_intonation).toFixed(1) : 0,
-        speed: qualityStats.avg_speed ? parseFloat(qualityStats.avg_speed).toFixed(1) : 0
+      scoreDistribution: {
+        excellent: parseInt(dist.excellent) || 0,
+        good: parseInt(dist.good) || 0,
+        average: parseInt(dist.average) || 0,
+        poor: parseInt(dist.poor) || 0,
+        excellentPercent: ((dist.excellent / total) * 100).toFixed(1),
+        goodPercent: ((dist.good / total) * 100).toFixed(1),
+        averagePercent: ((dist.average / total) * 100).toFixed(1),
+        poorPercent: ((dist.poor / total) * 100).toFixed(1)
       }
     });
   } catch (err) {

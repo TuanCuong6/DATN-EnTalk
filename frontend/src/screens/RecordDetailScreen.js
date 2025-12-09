@@ -189,33 +189,14 @@ export default function RecordDetailScreen({ route }) {
           </View>
         )}
 
-        {/* Compact Score Summary */}
+        {/* Score Summary - Chỉ hiển thị điểm tổng */}
         <View style={styles.compactScoreCard}>
           <View style={styles.overallScoreCompact}>
-            <Text style={styles.overallLabelCompact}>Tổng điểm</Text>
+            <Text style={styles.overallLabelCompact}>Điểm của bạn</Text>
             <Text style={styles.overallValueCompact}>
               {detail.score_overall?.toFixed(1)}
               <Text style={styles.overallTotalCompact}>/10</Text>
             </Text>
-          </View>
-          
-          <View style={styles.scoreDetailsCompact}>
-            <View style={styles.scoreItemCompact}>
-              <Text style={styles.scoreLabelCompact}>Phát âm</Text>
-              <Text style={styles.scoreValueCompact}>{parseFloat(detail.score_pronunciation).toFixed(1)}</Text>
-            </View>
-            <View style={styles.scoreItemCompact}>
-              <Text style={styles.scoreLabelCompact}>Ngữ điệu</Text>
-              <Text style={styles.scoreValueCompact}>{parseFloat(detail.score_intonation).toFixed(1)}</Text>
-            </View>
-            <View style={styles.scoreItemCompact}>
-              <Text style={styles.scoreLabelCompact}>Lưu loát</Text>
-              <Text style={styles.scoreValueCompact}>{parseFloat(detail.score_fluency).toFixed(1)}</Text>
-            </View>
-            <View style={styles.scoreItemCompact}>
-              <Text style={styles.scoreLabelCompact}>Tốc độ</Text>
-              <Text style={styles.scoreValueCompact}>{parseFloat(detail.score_speed).toFixed(1)}</Text>
-            </View>
           </View>
         </View>
 
