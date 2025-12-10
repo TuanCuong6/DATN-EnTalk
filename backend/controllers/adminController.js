@@ -37,84 +37,73 @@ exports.adminLogin = async (req, res) => {
   }
 };
 
-// Dashboard Statistics
+// Dashboard Statistics - OPTIMIZED
 exports.getDashboardStats = async (req, res) => {
   try {
-    // Thống kê cơ bản
-    const [[{ totalUsers }]] = await db.execute(
-      "SELECT COUNT(*) as totalUsers FROM users"
-    );
-    const [[{ totalReadings }]] = await db.execute(
-      "SELECT COUNT(*) as totalReadings FROM readings WHERE topic_id IS NOT NULL"
-    );
-    const [[{ totalRecords }]] = await db.execute(
-      "SELECT COUNT(*) as totalRecords FROM records"
-    );
-    const [[{ avgScore }]] = await db.execute(
-      "SELECT AVG(score_overall) as avgScore FROM records WHERE score_overall IS NOT NULL"
-    );
-
-    // Feedback chưa trả lời
-    const [[{ pendingFeedbacks }]] = await db.execute(
-      "SELECT COUNT(*) as pendingFeedbacks FROM feedbacks WHERE status = 'pending'"
-    );
-
-    // Users hoạt động 7 ngày qua
-    const [[{ activeUsers }]] = await db.execute(
-      "SELECT COUNT(DISTINCT user_id) as activeUsers FROM records WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
-    );
-
-    // Luyện tập 7 ngày qua (cho biểu đồ)
-    const [dailyRecords] = await db.execute(`
-      SELECT DATE(created_at) as date, COUNT(*) as count
-      FROM records
-      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-      GROUP BY DATE(created_at)
-      ORDER BY date ASC
-    `);
-
-    // Top 3 users tích cực nhất
-    const [topUsers] = await db.execute(`
-      SELECT u.id, u.name, 
-             COUNT(r.id) as total_records,
-             AVG(r.score_overall) as avg_score,
-             COALESCE(us.current_streak, 0) as streak
-      FROM users u
-      LEFT JOIN records r ON u.id = r.user_id
-      LEFT JOIN user_streaks us ON u.id = us.user_id
-      GROUP BY u.id
-      HAVING total_records > 0
-      ORDER BY total_records DESC
-      LIMIT 3
-    `);
-
-    // 5 hoạt động gần đây
-    const [recentActivities] = await db.execute(`
-      SELECT r.id, r.score_overall, r.created_at,
-             u.name as user_name,
-             t.name as topic_name
-      FROM records r
-      LEFT JOIN users u ON r.user_id = u.id
-      LEFT JOIN readings rd ON r.reading_id = rd.id
-      LEFT JOIN topics t ON rd.topic_id = t.id
-      ORDER BY r.created_at DESC
-      LIMIT 5
-    `);
-
-    // Phân bổ điểm số (thay thế qualityStats)
-    const [scoreDistribution] = await db.execute(`
-      SELECT 
-        SUM(CASE WHEN score_overall >= 8 THEN 1 ELSE 0 END) as excellent,
-        SUM(CASE WHEN score_overall >= 6 AND score_overall < 8 THEN 1 ELSE 0 END) as good,
-        SUM(CASE WHEN score_overall >= 4 AND score_overall < 6 THEN 1 ELSE 0 END) as average,
-        SUM(CASE WHEN score_overall < 4 THEN 1 ELSE 0 END) as poor,
-        COUNT(*) as total
-      FROM records
-      WHERE score_overall IS NOT NULL
-    `);
+    // Chạy song song tất cả queries để giảm thời gian
+    const [
+      [[{ totalUsers }]],
+      [[{ totalReadings }]],
+      [[{ totalRecords }]],
+      [[{ avgScore }]],
+      [[{ pendingFeedbacks }]],
+      [[{ activeUsers }]],
+      [dailyRecords],
+      [topUsers],
+      [recentActivities],
+      [scoreDistribution]
+    ] = await Promise.all([
+      db.execute("SELECT COUNT(*) as totalUsers FROM users"),
+      db.execute("SELECT COUNT(*) as totalReadings FROM readings WHERE topic_id IS NOT NULL"),
+      db.execute("SELECT COUNT(*) as totalRecords FROM records"),
+      db.execute("SELECT AVG(score_overall) as avgScore FROM records WHERE score_overall IS NOT NULL"),
+      db.execute("SELECT COUNT(*) as pendingFeedbacks FROM feedbacks WHERE status = 'pending'"),
+      db.execute("SELECT COUNT(DISTINCT user_id) as activeUsers FROM records WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"),
+      db.execute(`
+        SELECT DATE(created_at) as date, COUNT(*) as count
+        FROM records
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `),
+      db.execute(`
+        SELECT u.id, u.name, 
+               COUNT(r.id) as total_records,
+               AVG(r.score_overall) as avg_score,
+               COALESCE(us.current_streak, 0) as streak
+        FROM users u
+        LEFT JOIN records r ON u.id = r.user_id
+        LEFT JOIN user_streaks us ON u.id = us.user_id
+        GROUP BY u.id
+        HAVING total_records > 0
+        ORDER BY total_records DESC
+        LIMIT 3
+      `),
+      db.execute(`
+        SELECT r.id, r.score_overall, r.created_at,
+               u.name as user_name,
+               t.name as topic_name
+        FROM records r
+        LEFT JOIN users u ON r.user_id = u.id
+        LEFT JOIN readings rd ON r.reading_id = rd.id
+        LEFT JOIN topics t ON rd.topic_id = t.id
+        ORDER BY r.created_at DESC
+        LIMIT 5
+      `),
+      db.execute(`
+        SELECT 
+          SUM(CASE WHEN score_overall >= 8 THEN 1 ELSE 0 END) as excellent,
+          SUM(CASE WHEN score_overall >= 6 AND score_overall < 8 THEN 1 ELSE 0 END) as good,
+          SUM(CASE WHEN score_overall >= 4 AND score_overall < 6 THEN 1 ELSE 0 END) as average,
+          SUM(CASE WHEN score_overall < 4 THEN 1 ELSE 0 END) as poor,
+          COUNT(*) as total
+        FROM records
+        WHERE score_overall IS NOT NULL
+      `)
+    ]);
 
     const dist = scoreDistribution[0];
-    const total = dist.total || 1; // Tránh chia cho 0
+    const total = dist.total || 1;
 
     res.json({
       totalUsers,

@@ -28,12 +28,8 @@ const Dashboard = () => {
   const [animatedRecords, setAnimatedRecords] = useState(0);
   const [animatedScore, setAnimatedScore] = useState(0);
   const [animatedFeedbacks, setAnimatedFeedbacks] = useState(0);
-  const [chartVisible, setChartVisible] = useState(true); // Hiển thị ngay
-  const [qualityVisible, setQualityVisible] = useState(true); // Hiển thị ngay
   const [activitiesVisible, setActivitiesVisible] = useState(false);
 
-  const chartRef = useRef(null);
-  const qualityRef = useRef(null);
   const activitiesRef = useRef(null);
 
   useEffect(() => {
@@ -41,26 +37,20 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
+    if (!activitiesRef.current) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.target === chartRef.current && entry.isIntersecting) {
-            setChartVisible(true);
-          }
-          if (entry.target === qualityRef.current && entry.isIntersecting) {
-            setQualityVisible(true);
-          }
-          if (entry.target === activitiesRef.current && entry.isIntersecting) {
+          if (entry.isIntersecting) {
             setActivitiesVisible(true);
           }
         });
       },
-      { threshold: 0.01 } // Giảm từ 0.1 xuống 0.01 để hiển thị sớm hơn
+      { threshold: 0.01 }
     );
 
-    if (chartRef.current) observer.observe(chartRef.current);
-    if (qualityRef.current) observer.observe(qualityRef.current);
-    if (activitiesRef.current) observer.observe(activitiesRef.current);
+    observer.observe(activitiesRef.current);
 
     return () => observer.disconnect();
   }, [stats]);
@@ -289,10 +279,7 @@ const Dashboard = () => {
       </div>
 
       {/* Biểu đồ luyện tập 7 ngày - Recharts */}
-      <div
-        ref={chartRef}
-        className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
-      >
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <div className="flex items-center gap-2 mb-5">
           <svg
             className="w-5 h-5 text-gray-700"
@@ -365,8 +352,7 @@ const Dashboard = () => {
               dataKey="count" 
               fill="#3b82f6" 
               radius={[8, 8, 0, 0]}
-              animationDuration={300}
-              animationEasing="ease-out"
+              isAnimationActive={false}
             />
           </BarChart>
         </ResponsiveContainer>
@@ -380,17 +366,7 @@ const Dashboard = () => {
         {/* CỘT TRÁI: Phân bổ điểm số + Top Users */}
         <div className="space-y-6">
           {/* Biểu đồ phân bổ điểm số */}
-          <div
-            ref={qualityRef}
-            className="bg-white rounded-lg shadow-sm border border-gray-100 p-6"
-            style={{
-              opacity: activitiesVisible ? 1 : 0,
-              transform: activitiesVisible
-                ? "translateX(0)"
-                : "translateX(-20px)",
-              transition: "all 0.6s ease-out",
-            }}
-          >
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-5">
               <svg
                 className="w-5 h-5 text-gray-700"
@@ -449,8 +425,7 @@ const Dashboard = () => {
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
-                    animationDuration={300}
-                    animationEasing="ease-out"
+                    isAnimationActive={false}
                   >
                     {[
                       "#22c55e", // Tốt - xanh lá
