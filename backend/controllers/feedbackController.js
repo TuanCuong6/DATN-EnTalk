@@ -1,6 +1,6 @@
 //backend/controllers/feedbackController.js
 const db = require("../config/db");
-const { sendFeedbackEmail, sendReplyEmail } = require("../services/mailer");
+const { sendFeedbackEmail, sendReplyEmail, sendFeedbackConfirmationEmail } = require("../services/mailer");
 
 exports.sendFeedback = async (req, res) => {
   const { content, rating } = req.body;
@@ -27,7 +27,7 @@ exports.sendFeedback = async (req, res) => {
       [user.id, user.email, content, parseInt(rating), screenshot_url]
     );
 
-    // Gửi email thông báo với ảnh và rating
+    // Gửi email thông báo đến admin
     await sendFeedbackEmail({
       fromUser: user.email,
       userId: user.id,
@@ -35,6 +35,15 @@ exports.sendFeedback = async (req, res) => {
       rating: parseInt(rating),
       screenshot_url,
       hasImage: !!screenshot_url,
+    });
+
+    // Gửi email xác nhận đến người dùng
+    await sendFeedbackConfirmationEmail({
+      to: user.email,
+      user_name: user.name || "Người dùng",
+      content,
+      rating: parseInt(rating),
+      screenshot_url,
     });
 
     res.json({ message: "Đã gửi góp ý thành công!" });

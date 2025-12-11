@@ -1,3 +1,4 @@
+//backend/controllers/chatController.js
 const db = require("../config/db");
 const axios = require("axios");
 
@@ -23,7 +24,7 @@ exports.askQuestion = async (req, res) => {
 
     if (isFirstTime) {
       const welcomeMessage =
-        "Xin chào! Tôi là trợ lý tiếng Anh của EnTalk. Bạn có thể hỏi tôi về ngữ pháp, từ vựng, phát âm, dịch thuật, luyện thi IELTS/TOEIC, và mọi thứ liên quan đến tiếng Anh.";
+        "Xin chào! Tôi là trợ lý tiếng Anh của EnTalk. Bạn có thể hỏi tôi về ngữ pháp, từ vựng, phát âm, dịch thuật và mọi thứ liên quan đến tiếng Anh.";
       await db.execute(
         `INSERT INTO chat_messages (user_id, role, message) VALUES (?, 'assistant', ?)`,
         [userId, welcomeMessage]

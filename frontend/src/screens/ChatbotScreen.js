@@ -77,6 +77,12 @@ export default function ChatbotScreen() {
       );
     } catch (err) {
       console.error('Lỗi khi gửi câu hỏi:', err.message);
+      // ✅ Cập nhật messages với tin nhắn lỗi từ backend hoặc fallback
+      const errorMessage = err.response?.data?.reply || 'Hiện tại tôi chưa thể phản hồi, vui lòng thử lại sau.';
+      const updated = { ...userMessage, answer: errorMessage };
+      setMessages(prev =>
+        prev.map(m => (m.id === userMessage.id ? updated : m)),
+      );
     } finally {
       setLoading(false);
     }
