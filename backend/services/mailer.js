@@ -40,8 +40,15 @@ exports.sendFeedbackEmail = async ({
   hasImage,
 }) => {
   // Tạo rating stars (using HTML entities)
-  const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
-  const ratingColor = ['', '#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997'][rating];
+  const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+  const ratingColor = [
+    "",
+    "#dc3545",
+    "#fd7e14",
+    "#ffc107",
+    "#28a745",
+    "#20c997",
+  ][rating];
 
   let imageSection = "";
   if (hasImage && screenshot_url) {
@@ -211,7 +218,7 @@ exports.sendFeedbackConfirmationEmail = async ({
   rating,
   screenshot_url,
 }) => {
-  const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
 
   let imageSection = "";
   if (screenshot_url) {

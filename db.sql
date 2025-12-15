@@ -47,7 +47,7 @@ CREATE TABLE records (
     score_intonation FLOAT,                                -- Điểm ngữ điệu
     score_speed FLOAT,                                     -- Tốc độ nói (tuỳ chọn)
     score_overall FLOAT,                                   -- Tổng điểm trung bình
-    comment TEXT,                                          -- Gợi ý chung từ AI (GPT)
+    comment TEXT,                                          -- Gợi ý chung từ AI
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     custom_text TEXT,  									-- Lưu nội dung người dùng tự tạo để đọc
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -314,19 +314,6 @@ ADD COLUMN audio_generated_at DATETIME DEFAULT NULL COMMENT 'Thời điểm tạ
 -- Tạo index để tăng tốc query
 CREATE INDEX idx_audio_file ON readings(audio_file);
 
-
--- Thay đổi ENUM trong database
-ALTER TABLE users MODIFY COLUMN level ENUM('A1','B1','C1') DEFAULT 'A1';
-ALTER TABLE readings MODIFY COLUMN level ENUM('A1','B1','C1');
-
--- Migrate dữ liệu cũ
-UPDATE users SET level = 'A1' WHERE level IN ('A1', 'A2');
-UPDATE users SET level = 'B1' WHERE level IN ('B1', 'B2');
-UPDATE users SET level = 'C1' WHERE level IN ('C1', 'C2');
-
-UPDATE readings SET level = 'A1' WHERE level IN ('A1', 'A2');
-UPDATE readings SET level = 'B1' WHERE level IN ('B1', 'B2');
-UPDATE readings SET level = 'C1' WHERE level IN ('C1', 'C2');
 
 -- thêm cột phân tích từ 
 ALTER TABLE records 

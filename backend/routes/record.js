@@ -39,8 +39,25 @@ router.post(
         formData,
         { headers: formData.getHeaders() }
       );
+      
+      // Kiểm tra nếu Whisper phát hiện im lặng
+      if (whisperRes.data.warning) {
+        fs.unlinkSync(filePath);
+        return res.status(400).json({ 
+          message: whisperRes.data.warning 
+        });
+      }
+      
       const transcript = whisperRes.data.transcript;
       console.log("✅ Transcript từ Whisper:", transcript);
+      
+      // Kiểm tra transcript có nội dung không
+      if (!transcript || transcript.trim().length === 0) {
+        fs.unlinkSync(filePath);
+        return res.status(400).json({ 
+          message: "Không phát hiện nội dung rõ ràng. Vui lòng thử lại." 
+        });
+      }
 
       let originalText = null;
       let readingIdToUse = readingId;
@@ -64,6 +81,14 @@ router.post(
       }
 
       const geminiRes = await scoreWithGemini(transcript, originalText);
+      
+      // Kiểm tra geminiRes có đầy đủ dữ liệu không
+      if (!geminiRes || !geminiRes.scores || geminiRes.scores.overall === undefined) {
+        fs.unlinkSync(filePath);
+        return res.status(500).json({ 
+          message: "Lỗi khi chấm điểm. Vui lòng thử lại sau." 
+        });
+      }
 
       // thêm word_analysis
       await dbConnection.execute(
