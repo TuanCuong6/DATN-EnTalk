@@ -66,12 +66,23 @@ export default function PracticeCustomReadingScreen({ route }) {
     setIsScoring(true);
     try {
       const res = await submitRecording(filePath, null, customText);
+      
+      // Kiểm tra response có đầy đủ dữ liệu không
+      if (!res.data || !res.data.scores || res.data.scores.overall === undefined) {
+        throw new Error('Không phát hiện giọng nói rõ ràng');
+      }
+      
       setScoreResult(res.data);
       setShowScoreModal(true);
       setAudioPath(null);
     } catch (err) {
       console.error('❌ Lỗi gửi file:', err);
-      Alert.alert('Lỗi khi gửi file ghi âm', err?.response?.data?.message || 'Server lỗi');
+      Alert.alert(
+        'Không thể chấm điểm',
+        err?.response?.data?.message ||
+          err.message ||
+          'Đã xảy ra lỗi không xác định. Vui lòng thử lại sau.',
+      );
     } finally {
       setIsScoring(false);
     }
@@ -147,7 +158,7 @@ export default function PracticeCustomReadingScreen({ route }) {
               <Text style={styles.modalTitle}>Kết quả đánh giá</Text>
             </LinearGradient>
 
-            {scoreResult && (
+            {scoreResult && scoreResult.scores && (
               <ScrollView style={styles.scoreScrollView}>
                 <View style={styles.scoreContainer}>
                   {/* Score Summary - Chỉ hiển thị điểm tổng */}

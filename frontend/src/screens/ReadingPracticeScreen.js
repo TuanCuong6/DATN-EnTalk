@@ -97,23 +97,33 @@ export default function ReadingPracticeScreen({ route, navigation }) {
     setAudioPath(path);
   };
 
-  const handleSubmit = async (path) => {
+  const handleSubmit = async path => {
     const filePath = path || audioPath;
     if (!filePath) {
       Alert.alert('Lỗi', 'Không có file ghi âm');
       return;
     }
-    
+
     setIsScoring(true);
     try {
       const res = await submitRecording(filePath, reading.id);
+
+      // Kiểm tra response có đầy đủ dữ liệu không
+      if (
+        !res.data ||
+        !res.data.scores ||
+        res.data.scores.overall === undefined
+      ) {
+        throw new Error('Không phát hiện giọng nói rõ ràng');
+      }
+
       setScoreResult(res.data);
       setShowScoreModal(true);
       setAudioPath(null);
     } catch (err) {
       console.error('❌ Gửi file lỗi:', err);
       Alert.alert(
-        '😢 Không thể chấm điểm',
+        'Không thể chấm điểm',
         err?.response?.data?.message ||
           err.message ||
           'Đã xảy ra lỗi không xác định. Vui lòng thử lại sau.',
@@ -181,7 +191,11 @@ export default function ReadingPracticeScreen({ route, navigation }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{reading.title || 'Bài đọc'}</Text>
           <Text style={styles.contentText}>{reading.content}</Text>
-          <TextToSpeechPlayer text={reading.content} readingId={reading.id} style={styles.ttsPlayer} />
+          <TextToSpeechPlayer
+            text={reading.content}
+            readingId={reading.id}
+            style={styles.ttsPlayer}
+          />
         </View>
 
         <View style={styles.recorderContainer}>
@@ -223,13 +237,15 @@ export default function ReadingPracticeScreen({ route, navigation }) {
               <Text style={styles.modalTitle}>Kết quả đánh giá</Text>
             </LinearGradient>
 
-            {scoreResult && (
+            {scoreResult && scoreResult.scores && (
               <ScrollView style={styles.scoreScrollView}>
                 <View style={styles.scoreContainer}>
                   {/* Score Summary - Chỉ hiển thị điểm tổng */}
                   <View style={styles.compactScoreCard}>
                     <View style={styles.overallScoreCompact}>
-                      <Text style={styles.overallLabelCompact}>Điểm của bạn</Text>
+                      <Text style={styles.overallLabelCompact}>
+                        Điểm của bạn
+                      </Text>
                       <Text style={styles.overallValueCompact}>
                         {scoreResult.scores.overall}
                         <Text style={styles.overallTotalCompact}>/10</Text>
@@ -238,18 +254,21 @@ export default function ReadingPracticeScreen({ route, navigation }) {
                   </View>
 
                   {/* Word Analysis */}
-                  {scoreResult.wordAnalysis && scoreResult.wordAnalysis.length > 0 && (
-                    <WordAnalysisDisplay 
-                      wordAnalysis={scoreResult.wordAnalysis}
-                      originalText={reading?.content}
-                      transcript={scoreResult.transcript}
-                    />
-                  )}
+                  {scoreResult.wordAnalysis &&
+                    scoreResult.wordAnalysis.length > 0 && (
+                      <WordAnalysisDisplay
+                        wordAnalysis={scoreResult.wordAnalysis}
+                        originalText={reading?.content}
+                        transcript={scoreResult.transcript}
+                      />
+                    )}
 
                   {/* Comment Section */}
                   <View style={styles.commentContainer}>
                     <Text style={styles.commentLabel}>💬 Nhận xét</Text>
-                    <Text style={styles.commentText}>{scoreResult.comment}</Text>
+                    <Text style={styles.commentText}>
+                      {scoreResult.comment}
+                    </Text>
                   </View>
                 </View>
               </ScrollView>
